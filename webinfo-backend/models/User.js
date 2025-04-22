@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto'); // Import crypto for token generation
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -9,52 +10,66 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
   },
+  // --- ADDED EMAIL FIELD ---
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/.+@.+\..+/, 'Please enter a valid email address'] // Basic format check
+  },
+  // --- END EMAIL FIELD ---
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters long'] // Example validation
+    minlength: [6, 'Password must be at least 6 characters long']
   },
-  // You could add email, creation date, etc. here later
-  // email: {
-  //   type: String,
-  //   required: false, // Make required if needed
-  //   unique: true,
-  //   trim: true,
-  //   lowercase: true,
-  //   match: [/.+@.+\..+/, 'Please enter a valid email address'] // Basic format validation
-  // },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  resetPasswordToken: {
+      type: String,
+      required: false
+  },
+  resetPasswordExpires: {
+      type: Date,
+      required: false
   }
 });
 
-// Password hashing middleware - runs BEFORE saving a user
+// Password hashing middleware
 userSchema.pre('save', async function(next) {
-  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
-
   try {
-    // Generate a salt
-    const salt = await bcrypt.genSalt(10); // 10 rounds is generally recommended
-    // Hash the password using the salt
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
-    next(error); // Pass error to the next middleware/save operation
+    next(error);
   }
 });
 
-// Method to compare candidate password with the user's hashed password
+// Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
-    throw error; // Re-throw error to be caught by calling function
+    throw error;
   }
 };
 
+// Generate Password Reset Token Method
+userSchema.methods.generatePasswordResetToken = function() {
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+    this.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    return resetToken; // Return raw token
+};
 
 const User = mongoose.model('User', userSchema);
-
 module.exports = User;

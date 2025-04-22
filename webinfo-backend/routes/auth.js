@@ -1,7 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const User = require('../models/User');
-const { Resend } = require('resend'); // Import Resend
+const { Resend } = require('resend'); // Use Resend
 
 const router = express.Router();
 
@@ -11,24 +11,47 @@ if (process.env.RESEND_API_KEY) {
     resend = new Resend(process.env.RESEND_API_KEY);
 } else {
     console.warn('WARNING: RESEND_API_KEY environment variable not set. Email sending will fail.');
-    // Create a dummy object to prevent errors when calling .emails.send in dev without a key
     resend = { emails: { send: () => Promise.reject("Resend API Key not configured") } };
 }
 
-// --- Registration Route (no changes) ---
+// --- Registration Route (Handles Email) ---
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ message: 'Please provide username and password' });
-    if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    // Get email along with username/password
+    const { username, password, email } = req.body;
+
+    // Add validation for email
+    if (!username || !password || !email) {
+        return res.status(400).json({ message: 'Please provide username, email, and password' });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+    // Optional: Add more robust email format validation here if needed
+
     try {
-        const existingUser = await User.findOne({ username: username.toLowerCase() });
-        if (existingUser) return res.status(400).json({ message: 'Username already exists' });
-        const newUser = new User({ username, password });
+        // Check if username OR email already exists
+        const existingUser = await User.findOne({
+            $or: [{ username: username.toLowerCase() }, { email: email.toLowerCase() }]
+        });
+        if (existingUser) {
+            let message = existingUser.username === username.toLowerCase() ? 'Username already exists' : 'Email already registered';
+            return res.status(400).json({ message: message });
+        }
+
+        // Include email when creating user
+        const newUser = new User({
+            username: username,
+            email: email, // Save email
+            password: password,
+        });
+
         await newUser.save();
         res.status(201).json({ message: 'User registered successfully!', userId: newUser._id });
+
     } catch (error) {
         console.error("Registration Error:", error);
         if (error.name === 'ValidationError') {
+            // Extract validation messages
             let messages = Object.values(error.errors).map(val => val.message);
             return res.status(400).json({ message: messages.join('. ') });
         }
@@ -36,7 +59,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// --- Login Route (no changes) ---
+// --- Login Route (no changes needed) ---
 router.post('/login', async (req, res) => {
      const { username, password } = req.body;
      if (!username || !password) return res.status(400).json({ message: 'Please provide username and password' });
@@ -52,12 +75,12 @@ router.post('/login', async (req, res) => {
      }
 });
 
-
-// --- Forgot Password Route (Uses Resend) ---
+// --- Forgot Password Route (Uses Real Email) ---
 router.post('/forgot-password', async (req, res) => {
-    const { username } = req.body;
-    if (!username) {
-        return res.status(400).json({ message: 'Please provide username' });
+    // Use email for lookup now
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Please provide your registered email address' });
     }
 
     const configuredFrom = process.env.EMAIL_FROM;
@@ -65,84 +88,62 @@ router.post('/forgot-password', async (req, res) => {
 
     if (!process.env.RESEND_API_KEY || !configuredFrom || !configuredFrontendUrl) {
         console.error('Forgot Password Error: Resend API Key, From Email, or Frontend URL not configured.');
-        return res.status(200).json({ message: 'If an account with that username exists, and email is configured, a reset link will be sent.' });
+        return res.status(200).json({ message: 'If an account with that email exists, and email sending is configured, a reset link will be sent.' });
     }
 
-    let user; // Define user outside try block to use in catch
+    let user;
     try {
-        user = await User.findOne({ username: username.toLowerCase() });
+        // Find user by EMAIL
+        user = await User.findOne({ email: email.toLowerCase() });
 
         if (!user) {
-            console.log(`Password reset requested for non-existent user: ${username}`);
-            // Still send generic success message
-            return res.status(200).json({ message: 'If an account with that username exists, a password reset link has been sent.' });
+            console.log(`Password reset requested for non-existent email: ${email}`);
+            return res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
         }
 
-        // ** IMPORTANT: We need an actual email address field on the user model **
-        // This is a placeholder - replace with user.email when you add it!
-        const recipientEmail = user.username + "@example.com"; // <<< Replace this logic
-        if(!recipientEmail || !recipientEmail.includes('@')) { // Basic check
-             console.error(`Forgot Password Error: Cannot send email, user ${username} has no valid email address.`);
-             return res.status(200).json({ message: 'If an account with that username exists and has a valid email, a password reset link has been sent.' });
-        }
-        // ** End Placeholder **
-
-
+        const recipientEmail = user.email; // Use the actual user email
         const resetToken = user.generatePasswordResetToken();
         await user.save({ validateBeforeSave: false });
 
-        const resetUrl = `${configuredFrontendUrl}/reset-password.html?token=${resetToken}`; // Or your SPA route
+        const resetUrl = `${configuredFrontendUrl}/reset-password.html?token=${resetToken}`; // Adjust path if needed
 
-        // --- Use Resend to send email ---
+        // Use Resend to send email
         const { data, error } = await resend.emails.send({
-            from: configuredFrom, // e.g., 'Your App <onboarding@resend.dev>' or 'Your Name <your@verified-domain.com>'
-            to: [recipientEmail], // Must be an array
+            from: configuredFrom,
+            to: [recipientEmail], // Use the real email
             subject: 'Your Portfolio Password Reset Request',
-            text: `You requested a password reset. Click this link within one hour:\n\n${resetUrl}\n\nIf you didn't request this, ignore this email.`,
-            // Optionally add html: `...` for a better looking email
+            text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\nPlease click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\n${resetUrl}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`,
+            // html: `... HTML version ...`
         });
 
         if (error) {
           console.error('Resend Error:', error);
-          // Throw error to be caught by the catch block below
           throw new Error('Failed to send password reset email.');
         }
-        // --- End Resend ---
 
-        console.log(`Password reset email sent successfully via Resend to user: ${username}, ID: ${data.id}`);
-        res.status(200).json({ message: 'If an account with that username exists, a password reset link has been sent.' });
+        console.log(`Password reset email sent via Resend to: ${recipientEmail}, ID: ${data.id}`);
+        res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
 
     } catch (error) {
         console.error('Forgot Password Process Error:', error);
-        if (user) { // Attempt to clear token fields if user was found before error
+        if (user) {
             user.resetPasswordToken = undefined;
             user.resetPasswordExpires = undefined;
-            try {
-                 await user.save({ validateBeforeSave: false });
-            } catch (saveError) {
-                 console.error("Error clearing reset token after failure:", saveError);
-            }
+            try { await user.save({ validateBeforeSave: false }); } catch (saveError) { console.error("Error clearing reset token after failure:", saveError); }
         }
-        // Still send generic message
-        res.status(200).json({ message: 'If an account with that username exists, and email is configured, a reset link will be sent.' });
+        res.status(200).json({ message: 'If an account with that email exists, and email sending is configured, a reset link will be sent.' });
     }
 });
 
 
-// --- Reset Password Route (no changes needed here, logic is independent of email provider) ---
+// --- Reset Password Route (no changes needed here) ---
 router.post('/reset-password', async (req, res) => {
     const { token, password } = req.body;
-
-    if (!token || !password) {
-        return res.status(400).json({ message: 'Please provide token and new password' });
-    }
-     if (password.length < 6) {
-        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
-    }
+    if (!token || !password) return res.status(400).json({ message: 'Please provide token and new password' });
+    if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters long' });
 
     try {
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-
         const user = await User.findOne({
             resetPasswordToken: hashedToken,
             resetPasswordExpires: { $gt: Date.now() }
@@ -152,13 +153,12 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
         }
 
-        user.password = password; // Pre-save hook hashes
+        user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
 
         res.status(200).json({ message: 'Password has been reset successfully.' });
-
     } catch (error) {
         console.error('Reset Password Error:', error);
         if (error.name === 'ValidationError') {
