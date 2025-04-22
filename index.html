@@ -19,28 +19,23 @@
 
             <!-- Top Bar / Header Navigation -->
             <header class="content-header">
-                <!-- === Inner Wrapper (The Floating Card) === -->
                 <div class="header-inner">
                      <div class="header-left">
-                        <!-- Wrapper for Logo and Mobile Toggle -->
                         <div class="logo-and-mobile-toggle">
                              <a href="index.html" class="logo-link">
                                 <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image">
                                 <span class="logo-text">KiritoMainBro</span>
                              </a>
-                             <!-- Mobile Hamburger Button -->
                              <button id="mobile-menu-toggle" class="icon-button mobile-nav-toggle" aria-label="Toggle Mobile Menu" aria-expanded="false">
                                  <i class="fas fa-bars"></i>
                              </button>
                         </div>
                      </div>
-
-                     <!-- Desktop Header Navigation -->
                      <nav class="header-nav">
                          <a href="#intro" class="header-nav-link active">
                              <i class="fas fa-home fa-fw"></i> <span class="nav-link-text">Trang chính</span>
                          </a>
-                         <div class="nav-item-wrapper">
+                         <div class="nav-item-wrapper"> <!-- Wrapper for dropdown -->
                              <a href="#" class="header-nav-link nav-dropdown-trigger">
                                  <i class="fas fa-cogs fa-fw"></i>
                                  <span class="nav-link-text">Dịch vụ</span>
@@ -59,7 +54,6 @@
                              </div>
                          </div>
                      </nav>
-
                      <div class="header-right">
                          <button id="donate-button-header" class="cta-button donate-header-button">
                             <i class="fas fa-donate icon-left"></i>
@@ -81,7 +75,7 @@
                  </div> <!-- End header-inner -->
             </header>
 
-            <!-- Mobile Navigation Menu (Hidden by default) -->
+            <!-- Mobile Navigation Menu -->
             <nav id="mobile-nav" class="mobile-nav-menu">
                 <a href="#intro" class="mobile-nav-link"><i class="fas fa-home fa-fw"></i> Trang chính</a>
                 <a href="shopping.html" class="mobile-nav-link" id="shopping-link-mobile"><i class="fas fa-shopping-bag fa-fw"></i> Mua hàng</a>
@@ -111,33 +105,38 @@
                     <div class="background-overlay-grid"></div>
                 </section>
 
-                <!-- Intro Section (Simplified Layout) -->
+                <!-- Intro Section (Column Layout) -->
                 <section id="intro" class="content-section">
-                    <div class="content-center-block" data-animate="fade-up" data-delay="0.1">
-                         <div class="image-card shadow-lift centered-image-card">
-                            <img src="images/greeting-cat.jpg" alt="Mèo chào hỏi" class="content-image">
-                         </div>
-                    </div>
-                    <div class="content-center-block text-center" data-animate="fade-up" data-delay="0.2">
-                         <h2 class="section-title">Xin chào! Mình là <span class="highlight-text">Chương</span></h2>
-                         <p data-editable="intro"> Còn được biết đến là <strong>KiritoMainBro</strong>. Với <span id="age"></span> năm trải nghiệm, mình đang là sinh viên tại <span class="highlight-text">Đại học FPT (Campus TP.HCM)</span>, nuôi dưỡng đam mê với thế giới lập trình và sáng tạo nội dung tại TP. Hồ Chí Minh. </p>
-                         <p class="text-secondary">Luôn sẵn sàng học hỏi và đối mặt thử thách mới.</p>
+                    <div class="content-row">
+                        <div class="image-col" data-animate="fade-right" data-delay="0.1">
+                             <div class="image-card shadow-lift">
+                                <img src="images/greeting-cat.jpg" alt="Mèo chào hỏi" class="content-image">
+                             </div>
+                        </div>
+                        <div class="text-col" data-animate="fade-left" data-delay="0.1">
+                             <h2 class="section-title">Xin chào! Mình là <span class="highlight-text">Chương</span></h2>
+                             <p data-editable="intro"> Còn được biết đến là <strong>KiritoMainBro</strong>. Với <span id="age"></span> năm trải nghiệm, mình đang là sinh viên tại <span class="highlight-text">Đại học FPT (Campus TP.HCM)</span>, nuôi dưỡng đam mê với thế giới lập trình và sáng tạo nội dung tại TP. Hồ Chí Minh. </p>
+                             <p class="text-secondary">Luôn sẵn sàng học hỏi và đối mặt thử thách mới.</p>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Skills Section (Simplified Layout) -->
+                <!-- Skills Section (Column Layout) -->
                 <section id="skills" class="content-section background-alt">
-                   <div class="content-center-block text-center" data-animate="fade-up">
-                         <h2 class="section-title">Công nghệ & <span class="highlight-text">Kỹ năng</span></h2>
-                         <p data-editable="skills"> Mình đang xây dựng nền tảng với <span class="code-text">C</span>, <span class="code-text">Javascript</span>, <span class="code-text">C++</span>, và <span class="code-text">Python</span>. Mục tiêu là tạo ra những sản phẩm có giá trị và giải quyết vấn đề thực tế. </p>
-                         <div class="skills-grid" data-animate="fade-up" data-stagger="0.08">
-                             <div class="skill-item"><i class="fas fa-code"></i> Web Dev Basics</div> <div class="skill-item"><i class="fas fa-terminal"></i> C/C++</div> <div class="skill-item"><i class="fab fa-python"></i> Python</div> <div class="skill-item"><i class="fas fa-brain"></i> Problem Solving</div> <div class="skill-item"><i class="fas fa-comments"></i> Communication</div> </div>
-                    </div>
-                     <div class="content-center-block" data-animate="fade-up" data-delay="0.1">
-                         <div class="image-card shadow-lift centered-image-card">
-                            <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image">
-                         </div>
-                     </div>
+                   <div class="content-row alternate">
+                       <div class="text-col" data-animate="fade-right">
+                             <h2 class="section-title">Công nghệ & <span class="highlight-text">Kỹ năng</span></h2>
+                             <p data-editable="skills"> Mình đang xây dựng nền tảng với <span class="code-text">C</span>, <span class="code-text">Javascript</span>, <span class="code-text">C++</span>, và <span class="code-text">Python</span>. Mục tiêu là tạo ra những sản phẩm có giá trị và giải quyết vấn đề thực tế. </p>
+                             <div class="skills-grid" data-animate="fade-up" data-stagger="0.08">
+                                 <div class="skill-item"><i class="fas fa-code"></i> Web Dev Basics</div> <div class="skill-item"><i class="fas fa-terminal"></i> C/C++</div> <div class="skill-item"><i class="fab fa-python"></i> Python</div> <div class="skill-item"><i class="fas fa-brain"></i> Problem Solving</div> <div class="skill-item"><i class="fas fa-comments"></i> Communication</div>
+                             </div>
+                       </div>
+                       <div class="image-col" data-animate="fade-left">
+                             <div class="image-card shadow-lift">
+                                <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image">
+                             </div>
+                       </div>
+                   </div>
                 </section>
 
                 <!-- Content Creator Section -->
@@ -170,13 +169,10 @@
 
     <!-- Login/Register Forms Modal -->
     <div id="auth-container" style="display: none;">
-        <!-- Login Form -->
-        <div id="login-form-wrapper" class="auth-form-wrapper sky-form"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close login form">×</button> <h3>Đăng Nhập</h3> <p class="auth-subtext">Đăng Nhập Vào Hệ Thống</p> <form id="login-form"> <div class="form-group"> <label for="login-username">Tài Khoản</label> <input type="text" id="login-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="login-password">Mật Khẩu</label> <input type="password" id="login-password" name="password" required placeholder="Nhập Mật Khẩu Của Bạn"> </div> <div class="form-group remember-forgot"> <label class="remember-me"><input type="checkbox" name="remember"> Ghi Nhớ Tài Khoản</label> <a href="#" onclick="showForgotForm()" class="forgot-link">Bạn Quên Mật Khẩu?</a> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Nhập</button> <p id="login-message" class="auth-message"></p> </form> <p class="switch-form-link">BẠN CHƯA CÓ TÀI KHOẢN? <a href="#" onclick="showRegisterForm()">ĐĂNG KÝ NGAY</a></p> </div>
-        <!-- Register Form -->
+        <!-- ... Auth forms ... -->
+         <div id="login-form-wrapper" class="auth-form-wrapper sky-form"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close login form">×</button> <h3>Đăng Nhập</h3> <p class="auth-subtext">Đăng Nhập Vào Hệ Thống</p> <form id="login-form"> <div class="form-group"> <label for="login-username">Tài Khoản</label> <input type="text" id="login-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="login-password">Mật Khẩu</label> <input type="password" id="login-password" name="password" required placeholder="Nhập Mật Khẩu Của Bạn"> </div> <div class="form-group remember-forgot"> <label class="remember-me"><input type="checkbox" name="remember"> Ghi Nhớ Tài Khoản</label> <a href="#" onclick="showForgotForm()" class="forgot-link">Bạn Quên Mật Khẩu?</a> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Nhập</button> <p id="login-message" class="auth-message"></p> </form> <p class="switch-form-link">BẠN CHƯA CÓ TÀI KHOẢN? <a href="#" onclick="showRegisterForm()">ĐĂNG KÝ NGAY</a></p> </div>
         <div id="register-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close registration form">×</button> <h3>Đăng Ký</h3> <p class="auth-subtext">Đăng Ký Tài Khoản Mới</p> <form id="register-form"> <div class="form-group"> <label for="register-username">Tài Khoản</label> <input type="text" id="register-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="register-email">Địa Chỉ Email</label> <input type="email" id="register-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <div class="form-group"> <label for="register-password">Mật Khẩu</label> <input type="password" id="register-password" name="password" required minlength="6" placeholder="Ít nhất 6 ký tự, gồm chữ hoa, số, ký tự đặc biệt"> </div> <div class="form-group"> <label for="register-confirm-password">Nhập Lại Mật Khẩu</label> <input type="password" id="register-confirm-password" name="confirmPassword" required placeholder="Nhập Lại Mật Khẩu"> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Ký</button> <p id="register-message" class="auth-message"></p> </form> <p class="switch-form-link">ĐÃ CÓ TÀI KHOẢN? <a href="#" onclick="showLoginForm()">ĐĂNG NHẬP NGAY</a></p> </div>
-        <!-- Forgot Password Form -->
         <div id="forgot-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close forgot password form">×</button> <h3>Đặt Lại Mật Khẩu</h3> <p class="auth-subtext">Nhập Email Của Bạn Để Chúng Tôi Gửi Lại Mật Khẩu Mới</p> <form id="forgot-form"> <div class="form-group"> <label for="forgot-email">Địa Chỉ Email</label> <input type="email" id="forgot-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <button type="submit" class="cta-button auth-submit-btn">Đặt Lại Mật Khẩu</button> <p id="forgot-message" class="auth-message"></p> </form> <p class="switch-form-link"><a href="#" onclick="showLoginForm()">Quay Lại Đăng Nhập</a></p> </div>
-        <!-- Reset Password Form -->
         <div id="reset-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close reset password form">×</button> <h3>Đặt Mật Khẩu Mới</h3> <p class="auth-subtext">Nhập mã token từ email và mật khẩu mới.</p> <form id="reset-form"> <div class="form-group"> <label for="reset-token">Mã Token</label> <input type="text" id="reset-token" name="token" required placeholder="Nhập mã token từ email"> </div> <div class="form-group"> <label for="reset-password">Mật Khẩu Mới</label> <input type="password" id="reset-password" name="password" required minlength="6" placeholder="Mật khẩu mới (yêu cầu như đăng ký)"> </div> <div class="form-group"> <label for="reset-confirm-password">Nhập Lại Mật Khẩu Mới</label> <input type="password" id="reset-confirm-password" name="confirmPassword" required placeholder="Nhập lại mật khẩu mới"> </div> <button type="submit" class="cta-button auth-submit-btn">Lưu Mật Khẩu</button> <p id="reset-message" class="auth-message"></p> </form> <p class="switch-form-link"><a href="#" onclick="showLoginForm()">Quay Lại Đăng Nhập</a></p> </div>
     </div>
 
