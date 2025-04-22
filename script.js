@@ -30,25 +30,6 @@ function setupSidebarToggle() {
             button.addEventListener('click', toggleSidebar);
         }
     });
-
-    // Optional: Load saved state
-    // const savedState = localStorage.getItem('sidebarState');
-    // if (savedState === 'collapsed') {
-    //    body.classList.add('sidebar-collapsed');
-    //    body.classList.remove('sidebar-expanded');
-    // } else if (savedState === 'expanded') {
-    //    body.classList.remove('sidebar-collapsed');
-    //    body.classList.add('sidebar-expanded');
-    // } else {
-       // Default state (could be collapsed on tablet/desktop if desired)
-       // body.classList.add('sidebar-collapsed'); // Uncomment to default collapsed
-       // body.classList.remove('sidebar-expanded');
-    // }
-
-    // Initial setup based on screen size (optional - CSS handles initial collapsed state for < 992px)
-    // if (window.innerWidth < 992 && !body.classList.contains('sidebar-manual-toggle')) {
-    //     body.classList.add('sidebar-collapsed');
-    // }
 }
 
 
@@ -285,9 +266,7 @@ const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // YOUR RENDER URL HERE
 let authContainer = null, loginFormWrapper = null, registerFormWrapper = null, forgotFormWrapper = null, resetFormWrapper = null;
 let loginForm = null, registerForm = null, forgotForm = null, resetForm = null;
 let loginMessageEl = null, registerMessageEl = null, forgotMessageEl = null, resetMessageEl = null;
-// Dropdown action links
 let loginActionLink = null, registerActionLink = null, forgotActionLink = null, logoutActionLink = null;
-// User display elements
 let userStatusEl = null, userNameEl = null, userAvatarEl = null;
 
 function showLoginForm() { if (registerFormWrapper) registerFormWrapper.style.display = 'none'; if (forgotFormWrapper) forgotFormWrapper.style.display = 'none'; if (resetFormWrapper) resetFormWrapper.style.display = 'none'; if (loginFormWrapper) loginFormWrapper.style.display = 'block'; if (loginMessageEl) loginMessageEl.textContent = ''; if (registerMessageEl) registerMessageEl.textContent = ''; if (forgotMessageEl) forgotMessageEl.textContent = ''; if (resetMessageEl) resetMessageEl.textContent = ''; if (authContainer && !authContainer.classList.contains('visible')) { authContainer.style.display = 'flex'; setTimeout(() => { authContainer.classList.add('visible'); }, 10); } }
@@ -382,155 +361,70 @@ function handleLogoutClick(e) {
 }
 
 // --- Form Submission Handlers ---
-
 async function handleRegisterSubmit(e) {
     e.preventDefault();
     const username = registerForm.username.value;
-    const email = registerForm.email.value; // Get email
+    const email = registerForm.email.value;
     const password = registerForm.password.value;
     const confirmPassword = registerForm.confirmPassword.value;
 
-    if (password !== confirmPassword) {
-        displayAuthMessage(registerMessageEl, 'Passwords do not match!', true);
-        return;
-    }
-
+    if (password !== confirmPassword) { displayAuthMessage(registerMessageEl, 'Passwords do not match!', true); return; }
     displayAuthMessage(registerMessageEl, 'Registering...', false);
-
     try {
-        const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password }) // Send email
-        });
+        const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) });
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) { throw new Error(data.message || `HTTP error! status: ${response.status}`); }
         displayAuthMessage(registerMessageEl, 'Registration successful! Please log in.', false);
-        setTimeout(() => {
-             closeAuthForms();
-             showLoginForm(); // Redirect to login form
-         }, 1500);
-
-    } catch (error) {
-        console.error("Registration failed:", error);
-        displayAuthMessage(registerMessageEl, `Registration failed: ${error.message}`, true);
-    }
+        setTimeout(() => { closeAuthForms(); showLoginForm(); }, 1500);
+    } catch (error) { console.error("Registration failed:", error); displayAuthMessage(registerMessageEl, `Registration failed: ${error.message}`, true); }
 }
-
 async function handleLoginSubmit(e) {
     e.preventDefault();
     const username = loginForm.username.value;
     const password = loginForm.password.value;
     displayAuthMessage(loginMessageEl, 'Logging in...', false);
-
     try {
-        const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
+        const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) { throw new Error(data.message || `HTTP error! status: ${response.status}`); }
         displayAuthMessage(loginMessageEl, 'Login successful!', false);
         localStorage.setItem('portfolioUser', JSON.stringify({ userId: data.userId, username: data.username }));
-        // localStorage.setItem('portfolioUserRole', data.role || 'user'); // Store role if backend sends it
-
-        updateUserLoginState(); // Update UI immediately
-        setTimeout(closeAuthForms, 1000); // Close form after a short delay
-
-    } catch (error) {
-        console.error("Login failed:", error);
-        displayAuthMessage(loginMessageEl, `Login failed: ${error.message}`, true);
-    }
+        updateUserLoginState();
+        setTimeout(closeAuthForms, 1000);
+    } catch (error) { console.error("Login failed:", error); displayAuthMessage(loginMessageEl, `Login failed: ${error.message}`, true); }
 }
-
 async function handleForgotSubmit(e) {
     e.preventDefault();
     const email = forgotForm.email.value;
     displayAuthMessage(forgotMessageEl, 'Sending reset instructions...', false);
-
     try {
-        const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        const data = await response.json(); // Backend sends 200 OK even if email not found
-
-        if (!response.ok) { // Should technically always be ok based on backend logic, but good practice
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
-        }
-
-        displayAuthMessage(forgotMessageEl, data.message, false); // Display message from backend
-        // Don't close automatically, let user read message
-
-    } catch (error) {
-        console.error("Forgot password request failed:", error);
-        displayAuthMessage(forgotMessageEl, `Request failed: ${error.message}`, true);
-    }
+        const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+        const data = await response.json();
+        if (!response.ok) { throw new Error(data.message || `HTTP error! status: ${response.status}`); }
+        displayAuthMessage(forgotMessageEl, data.message, false);
+    } catch (error) { console.error("Forgot password request failed:", error); displayAuthMessage(forgotMessageEl, `Request failed: ${error.message}`, true); }
 }
-
 async function handleResetSubmit(e) {
     e.preventDefault();
     const token = resetForm.token.value;
     const password = resetForm.password.value;
     const confirmPassword = resetForm.confirmPassword.value;
 
-    if (password !== confirmPassword) {
-        displayAuthMessage(resetMessageEl, 'New passwords do not match!', true);
-        return;
-    }
-     if (!token) {
-         displayAuthMessage(resetMessageEl, 'Reset token is missing.', true);
-         return;
-     }
-
+    if (password !== confirmPassword) { displayAuthMessage(resetMessageEl, 'New passwords do not match!', true); return; }
+    if (!token) { displayAuthMessage(resetMessageEl, 'Reset token is missing.', true); return; }
     displayAuthMessage(resetMessageEl, 'Resetting password...', false);
-
     try {
-        const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, password })
-        });
+        const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) });
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) { throw new Error(data.message || `HTTP error! status: ${response.status}`); }
         displayAuthMessage(resetMessageEl, 'Password reset successfully! Please log in.', false);
-        setTimeout(() => {
-             closeAuthForms();
-             showLoginForm();
-         }, 2000);
-
-    } catch (error) {
-        console.error("Password reset failed:", error);
-        displayAuthMessage(resetMessageEl, `Reset failed: ${error.message}`, true);
-    }
+        setTimeout(() => { closeAuthForms(); showLoginForm(); }, 2000);
+    } catch (error) { console.error("Password reset failed:", error); displayAuthMessage(resetMessageEl, `Reset failed: ${error.message}`, true); }
 }
 
 
-// Setup Action Buttons (incl. Auth for new layout)
+// Setup Action Buttons
 function setupActionButtons() {
-    const donateLink = document.querySelector('.sidebar-link.donate-link');
-    if(donateLink) {
-        donateLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Chức năng Donate đang được phát triển!');
-        });
-    }
-
-    // Get references to auth form elements
     authContainer = document.getElementById('auth-container');
     loginFormWrapper = document.getElementById('login-form-wrapper');
     registerFormWrapper = document.getElementById('register-form-wrapper');
@@ -545,43 +439,23 @@ function setupActionButtons() {
     forgotMessageEl = document.getElementById('forgot-message');
     resetMessageEl = document.getElementById('reset-message');
 
-    // Attach submit listeners
     if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit); else console.error("Login form not found");
     if (registerForm) registerForm.addEventListener('submit', handleRegisterSubmit); else console.error("Register form not found");
     if (forgotForm) forgotForm.addEventListener('submit', handleForgotSubmit); else console.error("Forgot Password form not found");
     if (resetForm) resetForm.addEventListener('submit', handleResetSubmit); else console.error("Reset Password form not found");
 
-    // Set initial state of the user area and dropdown links
     updateUserLoginState();
 
-    // Listener to close modal on background click
-    if(authContainer) {
-        authContainer.addEventListener('click', (e) => {
-            if (e.target === authContainer) {
-                closeAuthForms();
-            }
-        });
-    }
+    if(authContainer) { authContainer.addEventListener('click', (e) => { if (e.target === authContainer) { closeAuthForms(); } }); }
+    document.addEventListener('keydown', (e) => { if (e.key === "Escape" && authContainer && authContainer.classList.contains('visible')) { closeAuthForms(); } });
 
-    // Listener to close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === "Escape" && authContainer && authContainer.classList.contains('visible')) {
-            closeAuthForms();
-        }
-    });
-
-
-    // Handle token in URL on page load (for password reset)
     const urlParams = new URLSearchParams(window.location.search);
     const resetTokenFromUrl = urlParams.get('token');
     if (resetTokenFromUrl && resetFormWrapper) {
         console.log("Found reset token in URL:", resetTokenFromUrl);
-        showResetForm(); // Show the reset form
+        showResetForm();
         const tokenInput = document.getElementById('reset-token');
-        if(tokenInput) {
-            tokenInput.value = resetTokenFromUrl; // Pre-fill token input
-        }
-        // Clean the URL
+        if(tokenInput) { tokenInput.value = resetTokenFromUrl; }
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
@@ -592,26 +466,35 @@ function initializePage() {
     updateYear();
     setupSidebarToggle();
     setupUserDropdown();
-    setupThemeToggle(); // Handles default theme
+    setupThemeToggle();
     setupLanguageToggle();
-    setupProfessionalAnimations(); // Ensure mainContent selector is correct inside
-    setupAdminPanel(); // Check permissions inside
-    setupActionButtons(); // Sets up auth listeners and initial state
+    setupProfessionalAnimations();
+    setupAdminPanel();
+    setupActionButtons();
 
-    // Initial age calculation
+    // Listener for Fixed Donate Button
+    const donateButtonMain = document.getElementById('donate-button-main');
+    if (donateButtonMain) {
+        donateButtonMain.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Chức năng Donate đang được phát triển!');
+        });
+        // Add micro-interaction
+        donateButtonMain.addEventListener('mousedown', () => gsap.to(donateButtonMain, { scale: 0.97, duration: 0.1 }));
+        donateButtonMain.addEventListener('mouseup', () => gsap.to(donateButtonMain, { scale: 1, duration: 0.1 }));
+        donateButtonMain.addEventListener('mouseleave', () => gsap.to(donateButtonMain, { scale: 1, duration: 0.1 }));
+    } else {
+        console.warn("Main donate button (#donate-button-main) not found");
+    }
+
     const ageSpan = document.getElementById('age');
     if (ageSpan) {
-        try {
-            ageSpan.textContent = calculateAge('2006-08-08');
-        } catch (e) {
-            console.error("Error calculating age:", e);
-            ageSpan.textContent = "??";
-        }
+        try { ageSpan.textContent = calculateAge('2006-08-08'); }
+        catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; }
     } else {
-        console.warn("Age span element not found in the current HTML structure.");
+        console.warn("Age span element not found.");
     }
     console.log("Page initialization complete.");
 }
 
-// Wait for the DOM to be fully loaded before running scripts
 document.addEventListener('DOMContentLoaded', initializePage);

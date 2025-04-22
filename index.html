@@ -17,7 +17,10 @@
         <!-- ===== Sidebar Navigation ===== -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
-                 <!-- Hamburger button REMOVED from here -->
+                 <!-- === HAMBURGER BUTTON BACK INSIDE HEADER === -->
+                 <button id="sidebar-toggle-in-header" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
+                     <i class="fas fa-bars"></i>
+                 </button>
                  <!-- Logo link -->
                  <a href="index.html" class="logo-link">
                     <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image">
@@ -25,27 +28,17 @@
                 </a>
             </div>
 
-            <!-- === HAMBURGER BUTTON MOVED HERE === -->
-            <button id="sidebar-toggle-in-header" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
-                <i class="fas fa-bars"></i>
-            </button>
-
             <hr class="sidebar-divider">
 
             <nav class="sidebar-nav">
-                <!-- === NAVIGATION LINKS REMOVED/COMMENTED OUT === -->
-                <!--
+                <!-- === NAVIGATION LINKS RESTORED === -->
                 <a href="#intro" class="sidebar-link"><i class="fas fa-user fa-fw icon-left"></i><span class="link-text">Về tôi</span></a>
                 <a href="#skills" class="sidebar-link"><i class="fas fa-code fa-fw icon-left"></i><span class="link-text">Kỹ năng</span></a>
                 <a href="#content-creator" class="sidebar-link"><i class="fas fa-video fa-fw icon-left"></i><span class="link-text">Sáng tạo</span></a>
                 <a href="#interests" class="sidebar-link"><i class="fas fa-star fa-fw icon-left"></i><span class="link-text">Sở thích</span></a>
-                -->
             </nav>
 
-            <!-- Donate link remains at the bottom -->
-            <a href="#donate" class="sidebar-link donate-link">
-                <i class="fas fa-donate fa-fw icon-left"></i><span class="link-text">Donate</span>
-            </a>
+            <!-- Donate link removed from sidebar -->
 
         </aside>
 
@@ -55,7 +48,7 @@
             <!-- Top Bar -->
             <header class="content-header">
                  <div class="header-left">
-                     <!-- This toggle button remains for the expanded sidebar -->
+                     <!-- This toggle button remains for the expanded sidebar view -->
                      <button id="sidebar-toggle-in-content" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
                          <i class="fas fa-bars"></i>
                      </button>
@@ -194,6 +187,12 @@
                  </div>
                 <div class="footer-bottom"> <p>© <span id="year">2024</span> KiritoMainBro. Inspired by the best.</p> </div>
             </footer>
+
+            <!-- === FIXED DONATE BUTTON === -->
+            <button id="donate-button-main" class="cta-button donate-fixed-button" aria-label="Donate">
+                <i class="fas fa-donate icon-left"></i>
+                <span>Donate</span>
+            </button>
 
         </div><!-- End Main Content Area -->
     </div> <!-- End Page Wrapper -->

@@ -9,22 +9,22 @@
     --bg-tertiary: #21262d;
     --bg-sidebar: #161b22;
     --bg-content-header: #161b22;
-    --bg-auth-modal: #ffffff; /* Added for auth modal consistency */
+    --bg-auth-modal: #ffffff;
     --border-primary: #30363d;
     --border-secondary: #444c56;
-    --border-auth-modal: #e5e7eb; /* Added for auth modal consistency */
+    --border-auth-modal: #e5e7eb;
     --text-primary: #e6edf3;
     --text-secondary: #7d8590;
     --text-link: #58a6ff;
     --text-link-hover: #79c0ff;
-    --text-auth-primary: #1f2937; /* Added for auth modal consistency */
-    --text-auth-secondary: #6b7280; /* Added for auth modal consistency */
-    --text-auth-link: #3b82f6; /* Added for auth modal consistency */
+    --text-auth-primary: #1f2937;
+    --text-auth-secondary: #6b7280;
+    --text-auth-link: #3b82f6;
     --accent-primary: #2f81f7;
     --accent-primary-hover: #58a6ff;
-    --accent-secondary: #a371f7; /* If used */
-    --success-color: #10b981; /* Added for auth messages */
-    --danger-color: #ef4444; /* Added for auth messages */
+    --accent-secondary: #a371f7;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
 
     --sidebar-width: 260px;
     --sidebar-width-collapsed: 80px;
@@ -38,7 +38,7 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --transition-main: 0.25s ease-in-out; /* Smoother transition */
+    --transition-main: 0.25s ease-in-out;
     --transition-fast: 0.15s ease;
 }
 
@@ -66,7 +66,7 @@ a:hover { color: var(--text-link-hover); }
 h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.3; margin-bottom: 0.75em; }
 p { margin-bottom: 1.2em; color: var(--text-secondary); }
 section p:last-of-type { margin-bottom: 0; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; padding: 0; } /* Reset button padding */
+button { font-family: inherit; cursor: pointer; border: none; background: none; padding: 0; }
 input { font-family: inherit; }
 
 
@@ -77,7 +77,7 @@ input { font-family: inherit; }
 .code-text { font-family: var(--font-mono); background-color: var(--bg-tertiary); color: var(--text-secondary); padding: 0.1em 0.4em; border-radius: var(--border-radius-sm); font-size: 0.9em; border: 1px solid var(--border-primary); }
 .icon-left { margin-right: 0.8em; width: 18px; text-align: center; }
 .icon-right { margin-left: 0.5em; }
-.icon-button { background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; padding: 0.5rem; border-radius: 50%; cursor: pointer; transition: background-color var(--transition-fast), color var(--transition-fast); line-height: 1; display: inline-flex; align-items: center; justify-content: center; } /* Ensure flex alignment */
+.icon-button { background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; padding: 0.5rem; border-radius: 50%; cursor: pointer; transition: background-color var(--transition-fast), color var(--transition-fast); line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
 .icon-button:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
 .shadow-lift { box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.2); transition: box-shadow var(--transition-main), transform var(--transition-main); }
 .shadow-lift:hover { box-shadow: 0 15px 40px -15px rgba(0, 0, 0, 0.3); transform: translateY(-3px); }
@@ -104,7 +104,6 @@ input { font-family: inherit; }
     padding: 0; flex-shrink: 0;
     transition: width var(--transition-main);
     overflow: hidden;
-    position: relative;
 }
 body.sidebar-collapsed .sidebar {
     width: var(--sidebar-width-collapsed);
@@ -113,10 +112,10 @@ body.sidebar-collapsed .sidebar {
     padding: 0 1.25rem;
     height: var(--header-height); display: flex; align-items: center;
     flex-shrink: 0;
-    justify-content: center; /* Center the logo link */
-    gap: 10px; /* Maintain gap if other items were added */
+    justify-content: space-between; /* Back to space-between */
+    gap: 10px;
 }
-.sidebar-header .logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; overflow: hidden; /* Don't let logo grow excessively */ }
+.sidebar-header .logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; overflow: hidden; flex-grow: 1; }
 .sidebar-header .logo-image { height: 34px; width: 34px; border-radius: 50%; flex-shrink: 0; }
 .sidebar-header .logo-text { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; transition: opacity var(--transition-fast); opacity: 1; }
 body.sidebar-collapsed .sidebar-header .logo-text { opacity: 0; pointer-events: none; }
@@ -124,14 +123,12 @@ body.sidebar-collapsed .sidebar-header .logo-text { opacity: 0; pointer-events: 
 /* --- Sidebar Toggle Buttons --- */
 .sidebar-toggle-btn { font-size: 1.3rem; padding: 0.6rem; }
 
-/* Toggle Button in Header (now below header) */
+/* Toggle Button in Header (Original Position) */
 #sidebar-toggle-in-header {
-    display: none; /* Hidden by default */
-    margin: 0.5rem auto; /* Top/bottom margin, centered horizontally */
-    flex-shrink: 0; /* Prevent shrinking */
+    display: none; /* Hidden by default (shown when collapsed) */
 }
 body.sidebar-collapsed #sidebar-toggle-in-header {
-    display: block; /* Show as block to enable margin auto */
+    display: inline-flex; /* Show only when collapsed */
 }
 
 /* Toggle Button in Main Content */
@@ -148,7 +145,7 @@ hr.sidebar-divider {
     border: 0;
     height: 1px;
     background-color: var(--border-primary);
-    margin: 0.5rem 1.5rem; /* Consistent margin */
+    margin: 0.5rem 1.5rem;
     flex-shrink: 0;
     transition: margin var(--transition-main), width var(--transition-main);
 }
@@ -157,16 +154,16 @@ body.sidebar-collapsed hr.sidebar-divider {
     width: 60%;
 }
 
-/* --- Sidebar Nav (Now Empty) --- */
+/* --- Sidebar Nav (Restored) --- */
 .sidebar-nav {
     flex-grow: 1; /* Takes up available space */
     overflow-y: auto;
     overflow-x: hidden;
-    padding-top: 0.8rem; /* Keep some padding */
-    padding-bottom: 60px; /* Avoid overlap with donate link */
+    padding-top: 0.8rem;
+    padding-bottom: 1rem;
 }
 
-/* --- Sidebar Links (General - will apply only to donate link now) --- */
+/* --- Sidebar Links (General - For Nav items) --- */
 .sidebar-link {
     display: flex;
     align-items: center;
@@ -188,7 +185,7 @@ body.sidebar-collapsed hr.sidebar-divider {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
 }
-.sidebar-link.active { /* Style may not be needed if nav is empty */
+.sidebar-link.active {
     color: var(--text-primary);
     border-left-color: var(--accent-primary);
     background-color: rgba(47, 129, 247, 0.1);
@@ -205,7 +202,7 @@ body.sidebar-collapsed hr.sidebar-divider {
 .sidebar-link:hover .icon-left { color: var(--text-primary); }
 .sidebar-link.active .icon-left { color: var(--accent-primary); }
 
-/* --- Sidebar Links (Collapsed State - for donate link) --- */
+/* --- Sidebar Links (Collapsed State) --- */
 body.sidebar-collapsed .sidebar-link {
     padding: 0;
     justify-content: center;
@@ -223,50 +220,6 @@ body.sidebar-collapsed .sidebar-link.active {
 body.sidebar-collapsed .sidebar-link .icon-left {
     margin-right: 0;
     width: 100%;
-}
-
-/* --- Donate Link Specific Styles --- */
-.sidebar-link.donate-link {
-    position: absolute;
-    bottom: 1rem;
-    left: 1.5rem;
-    right: 1.5rem;
-    width: calc(100% - 3rem);
-    border-left: none;
-    background-color: var(--bg-tertiary);
-    border-radius: var(--border-radius-md);
-    justify-content: center;
-    height: auto;
-    padding: 0.7rem 1rem;
-    box-sizing: border-box;
-    transition: all var(--transition-main);
-    z-index: 5;
-}
-.sidebar-link.donate-link:hover {
-    background-color: var(--accent-primary);
-    color: #fff;
-}
-/* Donate Link Collapsed State */
-body.sidebar-collapsed .sidebar-link.donate-link {
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(var(--sidebar-width-collapsed) - 1.5rem);
-    padding: 0.7rem 0;
-    justify-content: center;
-    bottom: 1rem;
-    right: auto;
-}
-body.sidebar-collapsed .sidebar-link.donate-link .link-text {
-    display: none;
-    opacity: 0;
-}
-body.sidebar-collapsed .sidebar-link.donate-link .icon-left {
-    margin-right: 0;
-    width: auto;
-}
-body:not(.sidebar-collapsed) .sidebar-link.donate-link .icon-left {
-     margin-right: 0.6rem;
-     width: 20px;
 }
 
 
@@ -318,14 +271,7 @@ body:not(.sidebar-collapsed) .sidebar-link.donate-link .icon-left {
 
 
 /* --- Main Scrollable Content --- */
-.site-main {
-    padding: 2.5rem;
-    flex-grow: 1;
-    width: 100%;
-    max-width: 100%;
-}
-
-/* Section Base Styles */
+.site-main { padding: 2.5rem; flex-grow: 1; width: 100%; max-width: 100%; }
 .content-section { padding: 4rem 0; max-width: 1140px; margin-left: auto; margin-right: auto; }
 .section-title { font-size: 1.8rem; margin-bottom: 1.5rem; color: var(--text-primary); }
 .content-row { display: flex; flex-wrap: wrap; gap: 2.5rem; align-items: center; }
@@ -424,6 +370,39 @@ body:not(.sidebar-collapsed) .sidebar-link.donate-link .icon-left {
 #admin-panel textarea { width: 100%; min-height: 100px; padding: 0.8rem; margin-bottom: 1rem; background-color: var(--bg-tertiary); border: 1px solid var(--border-primary); color: var(--text-primary); border-radius: var(--border-radius-md); resize: vertical; }
 #admin-panel .cta-button { margin-top: 1rem; }
 
+/* --- Fixed Donate Button --- */
+#donate-button-main.donate-fixed-button {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 95;
+    padding: 0.8rem 1.2rem;
+    background-color: var(--accent-primary);
+    color: #fff;
+    border-radius: 50px;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.2s ease-out, background-color var(--transition-fast);
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+#donate-button-main.donate-fixed-button:hover {
+    transform: scale(1.05);
+    background-color: var(--accent-primary-hover);
+}
+#donate-button-main.donate-fixed-button .icon-left {
+    margin-right: 0;
+    width: auto;
+    font-size: 1rem;
+}
+#donate-button-main.donate-fixed-button span {
+    line-height: 1;
+}
+
 
 /* --- Light Theme --- */
 body.light-theme {
@@ -469,8 +448,8 @@ body.light-theme .shadow-lift { box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.1);
 body.light-theme .shadow-lift:hover { box-shadow: 0 12px 25px -10px rgba(0, 0, 0, 0.15); }
 body.light-theme .background-overlay-grid { background-image: linear-gradient(var(--border-primary) 1px, transparent 1px), linear-gradient(to right, var(--border-primary) 1px, transparent 1px); opacity: 0.2; }
 body.light-theme hr.sidebar-divider { background-color: var(--border-primary); }
-body.light-theme .sidebar-link.donate-link { background-color: var(--bg-tertiary); }
-body.light-theme .sidebar-link.donate-link:hover { background-color: var(--accent-primary); color: #fff; }
+body.light-theme #donate-button-main.donate-fixed-button { background-color: var(--accent-primary); color: #fff; }
+body.light-theme #donate-button-main.donate-fixed-button:hover { background-color: var(--accent-primary-hover); }
 
 
 /* --- Responsive Adjustments --- */
@@ -479,36 +458,22 @@ body.light-theme .sidebar-link.donate-link:hover { background-color: var(--accen
      body:not(.sidebar-manual-toggle) { padding-left: var(--sidebar-width-collapsed); }
      body:not(.sidebar-manual-toggle) .sidebar { width: var(--sidebar-width-collapsed); }
      body:not(.sidebar-manual-toggle) .sidebar-header .logo-text { opacity: 0; pointer-events: none; }
-     body:not(.sidebar-manual-toggle) #sidebar-toggle-in-header { display: block; } /* Show toggle below logo */
+     body:not(.sidebar-manual-toggle) #sidebar-toggle-in-header { display: inline-flex; } /* Show toggle in header */
      body:not(.sidebar-manual-toggle) hr.sidebar-divider { margin: 0.5rem auto; width: 60%; }
      body:not(.sidebar-manual-toggle) .sidebar-link .link-text { opacity: 0; position: absolute; pointer-events: none; }
      body:not(.sidebar-manual-toggle) .sidebar-link { justify-content: center; padding: 0;}
      body:not(.sidebar-manual-toggle) .sidebar-link .icon-left { margin-right: 0;}
-     body:not(.sidebar-manual-toggle) .sidebar-link.donate-link {
-        left: 50%; transform: translateX(-50%);
-        width: calc(var(--sidebar-width-collapsed) - 1.5rem);
-        padding: 0.7rem 0; justify-content: center; bottom: 1rem; right: auto;
-     }
-     body:not(.sidebar-manual-toggle) .sidebar-link.donate-link .link-text { display: none; opacity: 0; }
-     body:not(.sidebar-manual-toggle) .sidebar-link.donate-link .icon-left { margin-right: 0; width: auto; }
 
      /* Sidebar manually expanded */
      body.sidebar-expanded { padding-left: var(--sidebar-width); }
      body.sidebar-expanded .sidebar { width: var(--sidebar-width); }
-     body.sidebar-expanded #sidebar-toggle-in-header { display: none; } /* Hide toggle below logo */
+     body.sidebar-expanded #sidebar-toggle-in-header { display: none; } /* Hide toggle in header */
      body.sidebar-expanded #sidebar-toggle-in-content { display: inline-flex; }
      body.sidebar-expanded .sidebar-header .logo-text { opacity: 1; }
      body.sidebar-expanded hr.sidebar-divider { margin: 0.5rem 1.5rem; width: auto; }
      body.sidebar-expanded .sidebar-link { padding: 0 1.5rem; justify-content: flex-start; }
      body.sidebar-expanded .sidebar-link .link-text { opacity: 1; position: static; }
      body.sidebar-expanded .sidebar-link .icon-left { margin-right: 0.9rem; width: 24px; }
-     body.sidebar-expanded .sidebar-link.donate-link {
-         left: 1.5rem; right: 1.5rem; transform: none;
-         width: calc(100% - 3rem);
-         padding: 0.7rem 1rem; justify-content: center;
-     }
-     body.sidebar-expanded .sidebar-link.donate-link .link-text { display: inline; opacity: 1;}
-     body.sidebar-expanded .sidebar-link.donate-link .icon-left { margin-right: 0.6rem; width: 20px; }
 
      .content-header { padding: 0 1.5rem; }
      .site-main { padding: 2rem; }
@@ -523,7 +488,7 @@ body.light-theme .sidebar-link.donate-link:hover { background-color: var(--accen
     .sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-primary); padding: 0.5rem 1rem; transition: none; overflow: visible; }
 
     /* Mobile Sidebar Header */
-    .sidebar-header { padding: 0.5rem 0; height: auto; border-bottom: none; margin-bottom: 0; justify-content: center; } /* Center logo */
+    .sidebar-header { padding: 0.5rem 0; height: auto; border-bottom: none; margin-bottom: 0; justify-content: space-between; }
     .sidebar-header .logo-link { flex-grow: 0; }
     .sidebar-header .logo-text { display: inline; opacity: 1; }
 
@@ -535,28 +500,23 @@ body.light-theme .sidebar-link.donate-link:hover { background-color: var(--accen
 
     /* Mobile Sidebar Nav */
     .sidebar-nav {
-        /* Still grows, but likely empty */
-        padding-bottom: 1rem;
-        min-height: 50px; /* Give it some min-height even when empty */
+        display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem;
+        justify-content: center; overflow-y: visible;
+        padding-top: 0.5rem; padding-bottom: 1rem;
+        min-height: auto;
     }
-
-    /* Mobile Donate Link - Static positioning */
-    .sidebar-link.donate-link {
-        position: static; width: auto;
-        margin: 0.5rem auto 0.5rem auto;
-        justify-content: center;
-        transform: none; left: auto; right: auto; bottom: auto;
-        padding: 0.7rem 1rem;
+    /* Style nav links on mobile */
+    .sidebar-link {
+        padding: 0.5rem 0.8rem; border-left: none;
+        border-radius: var(--border-radius-sm); height: auto;
+        justify-content: center; flex-grow: 1; text-align: center;
     }
-    .sidebar-link.donate-link .link-text { display: inline; opacity: 1; }
-    .sidebar-link.donate-link .icon-left { margin-right: 0.6em; width: 20px; }
-    /* Unset collapsed styles for donate link on mobile */
-     body.sidebar-collapsed .sidebar-link.donate-link {
-         transform: none; width: auto; padding: 0.7rem 1rem;
-         left: auto; right: auto; bottom: auto;
-     }
-     body.sidebar-collapsed .sidebar-link.donate-link .link-text { display: inline; }
-     body.sidebar-collapsed .sidebar-link.donate-link .icon-left { margin-right: 0.6em; width: 20px; }
+    .sidebar-link .link-text { display: inline; opacity: 1; position: static;}
+    .sidebar-link .icon-left { width: auto; margin-right: 0.6em; }
+    /* Unset collapsed styles for nav links */
+    body.sidebar-collapsed .sidebar-link { padding: 0.5rem 0.8rem; justify-content: center; }
+    body.sidebar-collapsed .sidebar-link .link-text { display: inline; }
+    body.sidebar-collapsed .sidebar-link .icon-left { margin-right: 0.6em; }
 
 
     .main-content-area { margin-left: 0; width: 100%; height: auto; overflow: visible; }
@@ -580,6 +540,14 @@ body.light-theme .sidebar-link.donate-link:hover { background-color: var(--accen
     .hero-title { font-size: 2.2rem; }
     .hero-subtitle { font-size: 1rem; }
 
+    /* Fixed donate button on mobile */
+    #donate-button-main.donate-fixed-button {
+         bottom: 1rem;
+         right: 1rem;
+         padding: 0.6rem 1rem;
+         font-size: 0.9rem;
+    }
+
     .content-footer { padding: 1.5rem; }
     .content-footer .footer-social { gap: 1.2rem; margin-bottom: 1rem; }
     .auth-form-wrapper.sky-form { max-width: 95%; padding: 2rem 1.5rem; }
@@ -588,7 +556,7 @@ body.light-theme .sidebar-link.donate-link:hover { background-color: var(--accen
 
 /* GSAP Initial States & Fixes */
 [data-animate="reveal-text"], [data-animate="fade-up"], [data-animate="fade-left"], [data-animate="fade-right"] { }
-.image-card, .cta-button, .sidebar-link, .social-button, .interest-card, .icon-button, .user-area { will-change: transform, box-shadow, background-color, color, opacity; }
+.image-card, .cta-button, .sidebar-link, .social-button, .interest-card, .icon-button, .user-area, #donate-button-main { will-change: transform, box-shadow, background-color, color, opacity; }
 [data-animate] { will-change: opacity, transform; }
 .content-header { will-change: background-color, border-color; }
 .sidebar { will-change: width; }
