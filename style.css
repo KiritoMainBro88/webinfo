@@ -362,5 +362,7 @@ p { margin-bottom: 1.2em; }
     .social-buttons-inline { flex-direction: column; gap: 0.8rem; align-items: center;}
 }
 
-/* GSAP Initial States */
-[data-animate] { opacity: 0; } /* Chỉ ẩn ban đầu */
+/* GSAP Initial States (Tạm thời vô hiệu hóa để debug) */
+/*
+[data-animate] { opacity: 0; }
+*/
