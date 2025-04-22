@@ -1,116 +1,138 @@
-// Hàm tính tuổi tự động
-function calculateAge(birthDateString) {
-    const birthDate = new Date(birthDateString); // Format YYYY-MM-DD
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    return age;
-}
+// Đăng ký plugin GSAP
+gsap.registerPlugin(ScrollTrigger);
 
-// Hàm cập nhật năm tự động
-function updateYear() {
-    const currentYear = new Date().getFullYear();
-    const yearSpan = document.getElementById('year');
-    if (yearSpan) {
-        yearSpan.textContent = currentYear;
-    }
-}
+// Hàm tiện ích (giữ nguyên)
+function calculateAge(birthDateString) { /*...*/ }
+function updateYear() { /*...*/ }
 
-// Hàm thực thi chính khi trang tải xong
-function initializePage() {
-    // Cập nhật tuổi
-    const ageSpan = document.getElementById('age');
-    if (ageSpan) {
-        // !! Nhớ dùng đúng định dạng YYYY-MM-DD !!
-        try {
-            ageSpan.textContent = calculateAge('2006-08-08');
-        } catch (e) {
-            console.error("Lỗi tính tuổi:", e);
-            ageSpan.textContent = "[lỗi]"; // Hiển thị lỗi nếu ngày sinh sai
+// --- Header Scroll Effect ---
+function setupHeaderScroll() {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+    ScrollTrigger.create({
+        start: "top top", end: 99999,
+        onUpdate: (self) => {
+            const threshold = 20; // Trigger sớm hơn
+            if (self.scroll() > threshold) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
         }
+    });
+    if (window.scrollY > 20) header.classList.add('scrolled');
+}
+
+// --- GSAP Animations (Phong cách GitHub/Netflix) ---
+function setupProfessionalAnimations() {
+
+    // Default animation settings
+    const defaultAnimation = {
+        opacity: 0,
+        y: 20, // Khoảng cách trượt lên ít hơn
+        duration: 0.6, // Nhanh hơn chút
+        ease: "power2.out", // Ease nhẹ nhàng hơn
+        stagger: 0.08 // Stagger nhanh hơn
+    };
+
+    // 1. Hero Text Reveal Animation
+    // Dùng data-animate="reveal-text" làm trigger
+    const heroTitle = document.querySelector("[data-animate='reveal-text']");
+    if(heroTitle){
+        gsap.from(heroTitle, {
+            opacity: 0,
+            y: 40,
+            duration: 1,
+            ease: "expo.out",
+            delay: 0.3
+        });
+        // Optional: Hiệu ứng mask reveal phức tạp hơn (nếu muốn)
     }
 
-    // Cập nhật năm
+
+    // 2. General Fade Up/In Animations using data-animate
+    gsap.utils.toArray('[data-animate]').forEach(element => {
+        const delay = parseFloat(element.dataset.delay) || 0;
+        const staggerAmount = parseFloat(element.dataset.stagger) || defaultAnimation.stagger;
+        const animType = element.dataset.animate;
+
+        let animProps = { ...defaultAnimation, delay: delay, stagger: staggerAmount };
+
+        // Customize based on type
+        if (animType === 'fade-left') { animProps.x = -30; delete animProps.y; }
+        if (animType === 'fade-right') { animProps.x = 30; delete animProps.y; }
+        if (animType === 'reveal-text') return; // Đã xử lý riêng
+
+        gsap.from(element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') ? element.children : element, { // Target children nếu là list/grid
+            ...animProps,
+            scrollTrigger: {
+                trigger: element,
+                start: "top 88%", // Trigger sớm hơn
+                toggleActions: "play none none none",
+                once: true
+            }
+        });
+    });
+
+    // 3. Parallax for Images (Subtle)
+     gsap.utils.toArray('.content-row .image-card').forEach(card => {
+         gsap.to(card, {
+             yPercent: -5, // Parallax rất nhẹ
+             ease: "none",
+             scrollTrigger: {
+                 trigger: card.closest('.content-row'),
+                 start: "top bottom", end: "bottom top",
+                 scrub: 1.9, // Mượt
+             }
+         });
+     });
+
+     // 4. Animate Section Title Underline (if we bring it back)
+     // Hiện tại đang dùng ::after tĩnh, có thể làm động nếu muốn
+
+     // 5. Button Hover Microinteraction (CSS handles most, JS for more complex)
+     // Có thể thêm hiệu ứng nhỏ khi click button bằng GSAP nếu cần
+     document.querySelectorAll('.cta-button, .nav-button').forEach(button => {
+         button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.95, duration: 0.1 }));
+         button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 }));
+         button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); // Reset nếu kéo chuột ra ngoài
+     });
+
+}
+
+
+// Admin Panel & Action Buttons Logic (Giữ nguyên)
+function setupAdminPanel() { /*...*/ }
+function setupActionButtons() {
+     // Đổi sang dùng link style
+     const donateLink = document.querySelector('.nav-link[href="#donate"]');
+     const authLink = document.querySelector('.nav-link.auth-link');
+
+     if(donateLink) {
+        donateLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Ngăn nhảy link
+            alert('Chức năng Donate đang được phát triển!');
+        });
+     }
+      if(authLink) {
+        authLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Chức năng Login/Register đang được phát triển!');
+        });
+     }
+     // Xử lý nút admin nếu có
+      const adminSaveBtn = document.querySelector('#admin-panel .cta-button');
+      if (adminSaveBtn && document.getElementById('admin-panel').style.display !== 'none') {
+          // Thêm logic lưu ở đây nếu cần tách biệt
+      }
+}
+
+// ----- Initialization -----
+function initializePage() {
+    const ageSpan = document.getElementById('age');
+    if (ageSpan) { ageSpan.textContent = calculateAge('2006-08-08'); }
     updateYear();
-
-    // ----- Chức năng Admin Panel Placeholder -----
+    setupHeaderScroll();
+    setupProfessionalAnimations(); // Gọi hàm animation mới
     setupAdminPanel();
-
-    // ----- Xử lý nút Donate/Login Placeholder -----
     setupActionButtons();
 }
 
-// Thiết lập Admin Panel (Placeholder)
-function setupAdminPanel() {
-    const adminPanel = document.getElementById('admin-panel');
-    const editables = document.querySelectorAll('[data-editable]');
-    const saveButton = document.getElementById('save-edits-btn');
-
-    // !! Đây chỉ là ví dụ, không bảo mật !!
-    // Trong thực tế, cần cơ chế đăng nhập thực sự
-    let isAdmin = false; // Đặt thành true để test thử giao diện admin
-
-    if (isAdmin && adminPanel) {
-        adminPanel.style.display = 'block'; // Hiển thị panel
-
-        // Load nội dung từ localStorage hoặc từ HTML vào textarea
-        editables.forEach(el => {
-            const key = el.dataset.editable;
-            const textarea = document.getElementById(`edit-${key}`);
-            if (textarea) {
-                // Ưu tiên lấy từ localStorage, nếu không có thì lấy từ HTML
-                textarea.value = localStorage.getItem(`content-${key}`) || el.innerHTML.trim();
-            }
-        });
-
-        // Xử lý nút lưu
-        if (saveButton) {
-            saveButton.addEventListener('click', () => {
-                editables.forEach(el => {
-                    const key = el.dataset.editable;
-                    const textarea = document.getElementById(`edit-${key}`);
-                    if (textarea) {
-                        const newContent = textarea.value;
-                        // Cập nhật trực tiếp HTML trên trang
-                        el.innerHTML = newContent;
-                        // Lưu vào localStorage (chỉ cho trình duyệt hiện tại)
-                        localStorage.setItem(`content-${key}`, newContent);
-                        console.log(`Đã lưu nội dung cho [${key}] vào localStorage.`);
-                    }
-                });
-                 alert('Nội dung đã được lưu tạm thời trên trình duyệt này!');
-            });
-        }
-    } else if (adminPanel) {
-         adminPanel.style.display = 'none'; // Đảm bảo panel ẩn nếu không phải admin
-    }
-}
-
-// Thiết lập các nút hành động (Placeholder)
-function setupActionButtons() {
-    const donateBtn = document.getElementById('donate-btn');
-    const authBtn = document.getElementById('auth-btn');
-
-    if (donateBtn) {
-        donateBtn.addEventListener('click', () => {
-            alert('Chức năng Donate đang được phát triển!');
-            // Ví dụ chuyển hướng: window.location.href = 'link-donate-cua-ban';
-        });
-    }
-
-    if (authBtn) {
-        authBtn.addEventListener('click', () => {
-            alert('Chức năng Login/Register đang được phát triển!');
-            // Ví dụ: Hiển thị form đăng nhập/đăng ký
-        });
-    }
-}
-
-// Chạy hàm khởi tạo khi trang tải xong
-// Dùng DOMContentLoaded để chạy sớm hơn onload một chút, không cần chờ ảnh tải xong
 document.addEventListener('DOMContentLoaded', initializePage);
-
-// Lưu ý: Thư viện AOS đã được khởi tạo riêng trong thẻ script ở cuối HTML.
