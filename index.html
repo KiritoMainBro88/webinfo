@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KiritoMainBro - Trang Chủ</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Thêm thư viện AOS cho hiệu ứng cuộn trang (tùy chọn) -->
+    <!-- Thêm thư viện AOS cho hiệu ứng cuộn trang -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
@@ -22,9 +22,10 @@
     <main>
         <h1 data-aos="fade-down">Gặp gỡ KiritoMainBro (Chuong)</h1>
 
-        <!-- Section Intro -->
+        <!-- Section Intro (Ảnh trái, Chữ phải) -->
         <section id="intro" class="content-row" data-aos="fade-right">
             <div class="image-col">
+                <!-- !! Đảm bảo file images/greeting-cat.gif tồn tại !! -->
                 <img src="images/greeting-cat.gif" alt="Mèo chào hỏi" class="content-image">
             </div>
             <div class="text-col">
@@ -35,22 +36,23 @@
             </div>
         </section>
 
-        <!-- Section Skills - Alternate layout -->
+        <!-- Section Skills - Alternate layout (Chữ trái, Ảnh phải) -->
         <section id="skills" class="content-row alternate" data-aos="fade-left">
-             <div class="image-col">
-                <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image">
-            </div>
+            <!-- !! TEXT-COL LÊN TRƯỚC TRONG HTML !! -->
             <div class="text-col">
                  <h2>"Vọc vạch" cùng Code</h2>
                 <p data-editable="skills">
                     Thế giới công nghệ luôn có sức hút đặc biệt với mình. Mình đã có kiến thức cơ bản về C, Javascript, C++, Python và đang không ngừng tò mò, học hỏi thêm mỗi ngày để "build" những điều thú vị trong tương lai. Con đường developer còn dài, nhưng mình rất hào hứng!
                 </p>
             </div>
+             <!-- !! IMAGE-COL XUỐNG SAU TRONG HTML !! -->
+             <div class="image-col">
+                <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image">
+            </div>
         </section>
 
         <!-- Section Content Creator -->
         <section id="content-creator" data-aos="fade-up">
-            <!-- Layout này có thể giữ nguyên hoặc chia cột nếu muốn -->
             <h2>Hành trình làm "Content Creator"</h2>
             <p data-editable="content-creator">
                 Ngoài code, mình còn có đam mê chia sẻ qua video. Hành trình làm YouTube/Streamer nghiệp dư của mình bắt đầu từ năm 2018. Tuy có chút lận đận (kênh đầu tiên 2k sub bị "bay màu" vì bản quyền T_T), mình vẫn tiếp tục với niềm vui này. Mình đã từng xây dựng vài kênh YouTube nhỏ và hiện đang hoạt động chính trên:
@@ -66,64 +68,67 @@
         <section id="interests">
             <h2 data-aos="zoom-in">Những mảnh ghép khác của mình</h2>
 
-            <!-- Food Interest -->
+            <!-- Food Interest (Ảnh trái, Chữ phải) -->
             <div class="content-row interest-item" data-aos="fade-right">
                 <div class="image-col">
                      <img src="images/food-cat.jpg" alt="Mèo ăn cơm tấm" class="content-image">
                 </div>
                 <div class="text-col">
-                     <h3><i class="fas fa-utensils"></i> Tâm hồn ăn uống</h3>
+                     <h3><i class="fas fa-utensils"></i> Tâm hồn ăn uống</h3> <!-- Thêm Font Awesome nếu muốn có icon -->
                      <p data-editable="food-interests">
                         Nói đến Việt Nam là phải nói đến ẩm thực! Mình mê đồ ăn Việt lắm, và "chân ái" chắc chắn là <strong>Cơm tấm Sài Gòn</strong>. Đĩa cơm nóng hổi với sườn, bì, chả, trứng ốp la... nghĩ tới là thấy thèm!
                     </p>
                 </div>
             </div>
 
-             <!-- Gaming Interest - Alternate -->
+             <!-- Gaming Interest - Alternate (Chữ trái, Ảnh phải) -->
              <div class="content-row interest-item alternate" data-aos="fade-left">
-                 <div class="image-col">
-                     <img src="images/gaming-cat.jpg" alt="Mèo chơi game" class="content-image">
-                 </div>
+                 <!-- !! TEXT-COL LÊN TRƯỚC TRONG HTML !! -->
                 <div class="text-col">
-                     <h3><i class="fas fa-gamepad"></i> Chiến trường ảo</h3>
+                     <h3><i class="fas fa-gamepad"></i> Chiến trường ảo</h3> <!-- Thêm Font Awesome nếu muốn có icon -->
                     <p data-editable="gaming-interests">
                         Game là một phần không thể thiếu để giải trí và kết nối. Mình từng "cháy" hết mình với Liên Quân Mobile và PUBG Mobile trên điện thoại. Còn trên PC, thế giới sáng tạo của Roblox và những cuộc phiêu lưu trong GTA 5 luôn có sức hấp dẫn đặc biệt. Bạn chơi game gì? Kết nối với mình nhé!
                     </p>
                 </div>
+                <!-- !! IMAGE-COL XUỐNG SAU TRONG HTML !! -->
+                 <div class="image-col">
+                     <img src="images/gaming-cat.jpg" alt="Mèo chơi game" class="content-image">
+                 </div>
             </div>
         </section>
 
-        <!-- Admin Panel không thay đổi cấu trúc -->
+        <!-- Admin Panel (Giữ nguyên như trước) -->
         <section id="admin-panel" style="display: none;">
              <h2>Admin Edit Panel (Tính năng tương lai)</h2>
              <p>Đây là nơi bạn có thể chỉnh sửa nội dung trang web sau khi đăng nhập với quyền admin.</p>
-             <textarea id="edit-intro" rows="4" style="width: 90%;"></textarea><br>
-             <textarea id="edit-skills" rows="4" style="width: 90%;"></textarea><br>
-             <textarea id="edit-content-creator" rows="6" style="width: 90%;"></textarea><br>
-             <textarea id="edit-food-interests" rows="4" style="width: 90%;"></textarea><br>
-             <textarea id="edit-gaming-interests" rows="4" style="width: 90%;"></textarea><br>
+             <textarea id="edit-intro" rows="4" style="width: 90%; margin-bottom: 5px;"></textarea><br>
+             <textarea id="edit-skills" rows="4" style="width: 90%; margin-bottom: 5px;"></textarea><br>
+             <textarea id="edit-content-creator" rows="6" style="width: 90%; margin-bottom: 5px;"></textarea><br>
+             <textarea id="edit-food-interests" rows="4" style="width: 90%; margin-bottom: 5px;"></textarea><br>
+             <textarea id="edit-gaming-interests" rows="4" style="width: 90%; margin-bottom: 5px;"></textarea><br>
              <button id="save-edits-btn">Lưu thay đổi</button>
         </section>
 
     </main>
 
     <footer>
-        <!-- Footer giữ nguyên -->
         <nav class="footer-nav">
             <a href="#">Trang khác (Sắp có)</a>
         </nav>
-        <p>Copyright by KMB <span id="year"></span></p>
+        <p>Copyright by KMB <span id="year">2025</span></p> <!-- Năm sẽ được JS cập nhật -->
     </footer>
 
     <script src="script.js"></script>
-    <!-- Thêm thư viện AOS JS và khởi tạo (tùy chọn) -->
+    <!-- Thêm thư viện AOS JS và khởi tạo -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
       AOS.init({
           duration: 800, // Thời gian hiệu ứng (ms)
-          once: true // Chỉ chạy hiệu ứng 1 lần
+          once: true,    // Chỉ chạy hiệu ứng 1 lần khi cuộn tới
+          offset: 100    // Chạy hiệu ứng khi cách top màn hình 100px
       });
     </script>
-    <!-- <script src="https://kit.fontawesome.com/your-fontawesome-kit-code.js" crossorigin="anonymous"></script> -->
+    <!-- Nếu muốn dùng icon Font Awesome, thêm link kit của bạn vào đây -->
+    <!-- <script src="https://kit.fontawesome.com/YOUR_KIT_CODE.js" crossorigin="anonymous"></script> -->
 </body>
 </html>

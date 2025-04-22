@@ -1,157 +1,308 @@
-/* Reset và body giữ nguyên như trước */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* Reset cơ bản */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.7; color: #333; background-color: #f8f9fa;
+    line-height: 1.7;
+    color: #333;
+    background-color: #f8f9fa;
     overflow-x: hidden; /* Ngăn cuộn ngang do animation */
 }
 
-/* Header giữ nguyên như trước */
-header { /*...*/ }
-.logo-link { /*...*/ }
-.logo-image { /*...*/ }
-.header-nav button { /*...*/ }
-.header-nav button:hover { /*...*/ }
-.header-nav button:active { /*...*/ }
+/* Header */
+header {
+    background-color: #343a40;
+    color: #fff;
+    padding: 0.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky; /* Giữ header cố định khi cuộn */
+    top: 0;
+    z-index: 1000; /* Đảm bảo header nằm trên các phần tử khác */
+}
 
-/* Main giữ nguyên như trước */
-main { /*...*/ }
+.logo-link {
+    display: inline-block;
+}
 
-/* Tiêu đề giữ nguyên */
-h1 { /*...*/ }
-h2 { /*...*/ }
-h3 { /*...*/ }
+.logo-image {
+    height: 55px;
+    width: auto;
+    vertical-align: middle;
+}
 
-/* Section và nội dung cơ bản giữ nguyên */
-section { margin-bottom: 3rem; } /* Tăng khoảng cách section */
-section p { margin-bottom: 1rem; color: #555; }
-section ul { /*...*/ }
-section li { /*...*/ }
-section li::before { /*...*/ }
-section a { /*...*/ }
-section a:hover { /*...*/ }
+.header-nav button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    margin-left: 0.8rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.header-nav button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+.header-nav button:active {
+    transform: translateY(0px);
+}
+
+/* Main content */
+main {
+    max-width: 950px; /* Tăng nhẹ chiều rộng */
+    margin: 2.5rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Headings */
+h1 {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: #343a40;
+    font-size: 2.2rem;
+}
+
+h2 {
+    color: #007bff;
+    margin-bottom: 1rem; /* Giảm margin bottom để gần text hơn */
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+    font-size: 1.8rem;
+}
+
+h3 {
+    color: #5a6268;
+    margin-bottom: 0.7rem;
+    font-size: 1.4rem;
+}
+
+/* Section styling */
+section {
+    margin-bottom: 3.5rem; /* Tăng khoảng cách giữa các section */
+}
+
+section p {
+    margin-bottom: 1rem;
+    color: #555;
+}
+
+section ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+section li {
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-left: 1.8rem; /* Tăng padding cho icon */
+}
+section li::before {
+    content: '⭐'; /* Hoặc '🚀', '🎮', '✅' */
+    position: absolute;
+    left: 0;
+    top: 1px;
+    color: #ffc107;
+    font-size: 0.9em; /* Điều chỉnh kích thước icon */
+}
+
+section a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+section a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
 
 /* --- Layout Ảnh - Chữ Xen Kẽ --- */
 .content-row {
-    display: flex; /* Sử dụng Flexbox */
-    flex-wrap: wrap; /* Cho phép xuống dòng trên màn hình nhỏ */
-    align-items: center; /* Căn giữa các item theo chiều dọc */
-    margin-bottom: 3rem; /* Khoảng cách giữa các row */
-    gap: 2rem; /* Khoảng cách giữa cột ảnh và cột chữ */
-    overflow: hidden; /* Giấu phần tràn ra do animation */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 3rem;
+    gap: 2.5rem; /* Tăng nhẹ khoảng cách cột */
+    overflow: hidden; /* Quan trọng cho AOS */
 }
 
 .image-col, .text-col {
-    flex: 1; /* Mỗi cột chiếm 1 phần không gian bằng nhau */
-    min-width: 280px; /* Chiều rộng tối thiểu trước khi xuống dòng */
+    flex: 1;
+    min-width: 300px; /* Tăng nhẹ min-width */
 }
 
-/* Đảo vị trí cho các hàng có class 'alternate' */
-.content-row.alternate .image-col {
-    order: 2; /* Đẩy cột ảnh sang phải */
-}
-.content-row.alternate .text-col {
-    order: 1; /* Đẩy cột chữ sang trái */
-}
+/* Không cần CSS order nếu đã đảo div trong HTML */
 
 .content-image {
     display: block;
-    width: 100%; /* Ảnh chiếm toàn bộ chiều rộng cột */
-    max-width: 400px; /* Giới hạn kích thước tối đa ảnh */
+    width: 100%;
+    max-width: 420px; /* Tăng nhẹ max-width ảnh */
     height: auto;
-    margin: 0 auto; /* Căn giữa ảnh nếu cột rộng hơn max-width */
-    border-radius: 10px; /* Bo tròn nhiều hơn */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.4s ease-out, box-shadow 0.4s ease; /* Thêm transition cho hiệu ứng */
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+    transition: transform 0.4s ease-out, box-shadow 0.4s ease;
 }
 
 /* --- Hiệu ứng Hover --- */
 .content-row:hover .content-image {
-    transform: scale(1.05); /* Phóng to nhẹ ảnh khi hover vào row */
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2); /* Tăng bóng đổ */
+    transform: scale(1.04); /* Giảm nhẹ hiệu ứng scale */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.18);
 }
 
-/* Tùy chọn: Hiệu ứng nhẹ cho chữ khi hover */
 .content-row:hover .text-col h2 {
-    color: #0056b3; /* Đổi màu tiêu đề */
+    color: #0056b3;
 }
 
-/* --- Hiệu ứng Scroll (Sử dụng AOS) --- */
-/* CSS này đã được thêm bằng link CDN ở HTML */
-/* Bạn có thể tùy chỉnh các hiệu ứng data-aos trong HTML:
-   - data-aos="fade-up", "fade-down", "fade-left", "fade-right"
-   - data-aos="zoom-in", "zoom-out"
-   - data-aos="flip-left", "flip-right"
-   Xem thêm tại: https://michalsnik.github.io/aos/
-*/
-
-
-/* Section Interests giữ nguyên cách styling cơ bản */
+/* --- Section Interests Styling --- */
 .interest-item {
-    /* Bỏ display: flex ở đây vì đã có ở .content-row */
-    margin-bottom: 2rem;
-    padding: 1.5rem; /* Tăng padding */
-    background-color: #ffffff; /* Có thể để nền trắng */
+    /* Class này giờ chỉ thêm style phụ, layout chính do .content-row xử lý */
+    padding: 1.5rem;
+    background-color: #ffffff;
     border-left: 5px solid #007bff;
-    border-radius: 8px;
+    border-radius: 8px; /* Chỉ bo góc phải */
     transition: border-color 0.3s ease, background-color 0.3s ease;
+    margin-top: 1.5rem; /* Thêm khoảng cách giữa các interest item */
 }
+/* Ghi đè margin bottom của .content-row cho interest-item đầu tiên */
+#interests .content-row.interest-item:first-of-type {
+    margin-bottom: 1.5rem; /* Giảm khoảng cách dưới của food */
+}
+
 
 .interest-item:hover {
-     border-left-color: #0056b3; /* Đổi màu viền khi hover */
-     background-color: #f8f9fa; /* Đổi nhẹ màu nền */
+     border-left-color: #0056b3;
+     background-color: #f8f9fa;
 }
 
-.interest-item .content-image { /* Ảnh trong interest có thể nhỏ hơn */
-    max-width: 300px;
+.interest-item .content-image {
+    max-width: 350px; /* Đồng bộ kích thước ảnh interest */
 }
 
 /* Icon Font Awesome (Nếu dùng) */
-.interest-item h3 i { /*...*/ }
+.interest-item h3 i {
+    margin-right: 8px;
+    color: #007bff;
+}
 
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background-color: #343a40;
+    color: #adb5bd;
+}
 
-/* Footer giữ nguyên */
-footer { /*...*/ }
-footer .footer-nav a { /*...*/ }
-footer .footer-nav a:hover { /*...*/ }
+footer .footer-nav {
+    margin-bottom: 0.8rem;
+}
 
-/* Admin Panel giữ nguyên */
-#admin-panel { /*...*/ }
-#admin-panel h2 { /*...*/ }
-#admin-panel button { /*...*/ }
-#admin-panel button:hover { /*...*/ }
+footer .footer-nav a {
+    color: #dee2e6;
+    text-decoration: none;
+    margin: 0 15px;
+    transition: color 0.2s ease;
+}
 
+footer .footer-nav a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Admin Panel */
+#admin-panel {
+    border: 1px dashed #ccc;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+#admin-panel h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: none; /* Bỏ gạch chân trong admin panel */
+    color: #555;
+    font-size: 1.5rem;
+}
+#admin-panel textarea {
+    display: block; /* Để chiếm full width */
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#admin-panel button {
+     background-color: #28a745;
+     color: white;
+     padding: 10px 15px;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+     margin-top: 10px;
+     transition: background-color 0.2s ease;
+ }
+ #admin-panel button:hover {
+     background-color: #218838;
+ }
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-    /* Header, Main, Tiêu đề giữ nguyên responsive cũ */
-    header { flex-direction: column; text-align: center; padding: 1rem; }
+    header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+        position: static; /* Bỏ sticky trên mobile nếu muốn */
+    }
     .logo-link { margin-bottom: 0.8rem; }
     .header-nav { margin-top: 0.5rem; }
     .header-nav button { margin: 0.3rem 0.3rem; }
-    main { margin: 1.5rem 1rem; padding: 1.5rem; }
+
+    main {
+        margin: 1.5rem 1rem;
+        padding: 1.5rem;
+    }
     h1 { font-size: 1.8rem; margin-bottom: 1.5rem; }
     h2 { font-size: 1.5rem; margin-top: 1.5rem; margin-bottom: 0.8rem; }
     h3 { font-size: 1.2rem; }
 
     .content-row {
-        flex-direction: column; /* Xếp chồng lên nhau trên màn hình nhỏ */
-        text-align: center; /* Căn giữa text */
-        gap: 1rem; /* Giảm khoảng cách */
+        flex-direction: column; /* Xếp chồng lên nhau */
+        text-align: center;
+        gap: 1.5rem; /* Điều chỉnh khoảng cách dọc */
     }
 
-    /* Reset lại order để hiển thị theo thứ tự HTML */
-    .content-row.alternate .image-col,
-    .content-row.alternate .text-col {
-        order: initial;
-    }
+    /* Quan trọng: Đảo lại thứ tự div trên mobile cho alternate */
+    /* nếu bạn muốn ảnh luôn ở trên chữ chẳng hạn */
+     .content-row.alternate .text-col {
+         order: 2; /* Chữ xuống dưới */
+     }
+     .content-row.alternate .image-col {
+         order: 1; /* Ảnh lên trên */
+     }
 
     .image-col, .text-col {
-         min-width: 100%; /* Chiếm toàn bộ chiều rộng */
+         min-width: 100%;
+         order: initial; /* Reset order mặc định */
     }
 
     .content-image {
-        max-width: 80%; /* Vẫn giới hạn chiều rộng ảnh */
+        max-width: 85%; /* Tăng nhẹ % ảnh */
         margin-bottom: 1rem;
     }
 
@@ -161,13 +312,18 @@ footer .footer-nav a:hover { /*...*/ }
 
      .interest-item {
          padding: 1rem;
+         border-left-width: 4px;
      }
 }
 
 @media (max-width: 480px) {
-     /* Giữ nguyên responsive cũ cho font, nút */
      h1 { font-size: 1.6rem; }
      h2 { font-size: 1.3rem; }
      h3 { font-size: 1.1rem; }
-     .header-nav button { padding: 0.5rem 1rem; }
+     .header-nav button {
+        padding: 0.5rem 1rem;
+     }
+      .content-image {
+        max-width: 90%;
+    }
 }

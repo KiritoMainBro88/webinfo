@@ -1,15 +1,9 @@
 // Hàm tính tuổi tự động
 function calculateAge(birthDateString) {
-    // Định dạng ngày sinh 'YYYY/MM/DD' hoặc 'MM/DD/YYYY' đều được Date() chấp nhận
-    // Tốt nhất là dùng 'YYYY-MM-DD'
-    const birthDate = new Date(birthDateString); // Ví dụ: '2006-08-08'
+    const birthDate = new Date(birthDateString); // Format YYYY-MM-DD
     const today = new Date();
-
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    // Nếu tháng hiện tại nhỏ hơn tháng sinh, hoặc cùng tháng nhưng ngày hiện tại nhỏ hơn ngày sinh
-    // thì chưa đủ tuổi, giảm đi 1
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
@@ -25,43 +19,51 @@ function updateYear() {
     }
 }
 
-// Hàm thực thi khi trang tải xong
-window.onload = function() {
+// Hàm thực thi chính khi trang tải xong
+function initializePage() {
     // Cập nhật tuổi
     const ageSpan = document.getElementById('age');
     if (ageSpan) {
-        // Thay '2006-08-08' bằng ngày sinh chính xác của bạn theo định dạng YYYY-MM-DD
-        ageSpan.textContent = calculateAge('2006-08-08');
+        // !! Nhớ dùng đúng định dạng YYYY-MM-DD !!
+        try {
+            ageSpan.textContent = calculateAge('2006-08-08');
+        } catch (e) {
+            console.error("Lỗi tính tuổi:", e);
+            ageSpan.textContent = "[lỗi]"; // Hiển thị lỗi nếu ngày sinh sai
+        }
     }
 
     // Cập nhật năm
     updateYear();
 
-    // ----- Chức năng chỉnh sửa (Admin - Sẽ phát triển sau) -----
-    // Đây là ví dụ rất cơ bản, không bảo mật và chỉ lưu trên trình duyệt người dùng
-    // Chức năng thực tế cần backend hoặc Headless CMS
+    // ----- Chức năng Admin Panel Placeholder -----
+    setupAdminPanel();
 
+    // ----- Xử lý nút Donate/Login Placeholder -----
+    setupActionButtons();
+}
+
+// Thiết lập Admin Panel (Placeholder)
+function setupAdminPanel() {
     const adminPanel = document.getElementById('admin-panel');
     const editables = document.querySelectorAll('[data-editable]');
     const saveButton = document.getElementById('save-edits-btn');
 
-    // Giả sử có cách nào đó xác định bạn là admin (ví dụ: qua login)
-    let isAdmin = false; // Đặt thành true để test thử
+    // !! Đây chỉ là ví dụ, không bảo mật !!
+    // Trong thực tế, cần cơ chế đăng nhập thực sự
+    let isAdmin = false; // Đặt thành true để test thử giao diện admin
 
-    if (isAdmin) {
-        adminPanel.style.display = 'block'; // Hiển thị panel admin
+    if (isAdmin && adminPanel) {
+        adminPanel.style.display = 'block'; // Hiển thị panel
 
-        // Load nội dung vào textarea (nếu có lưu trữ trước đó)
+        // Load nội dung từ localStorage hoặc từ HTML vào textarea
         editables.forEach(el => {
             const key = el.dataset.editable;
             const textarea = document.getElementById(`edit-${key}`);
             if (textarea) {
-                // Lấy nội dung từ local storage nếu có, hoặc từ chính element
+                // Ưu tiên lấy từ localStorage, nếu không có thì lấy từ HTML
                 textarea.value = localStorage.getItem(`content-${key}`) || el.innerHTML.trim();
             }
-             // Thêm thuộc tính contenteditable để sửa trực tiếp (tuỳ chọn)
-             // el.contentEditable = true;
-             // el.style.border = '1px dashed blue'; // Cho biết là có thể sửa
         });
 
         // Xử lý nút lưu
@@ -72,33 +74,43 @@ window.onload = function() {
                     const textarea = document.getElementById(`edit-${key}`);
                     if (textarea) {
                         const newContent = textarea.value;
-                        el.innerHTML = newContent; // Cập nhật nội dung trên trang
-                        localStorage.setItem(`content-${key}`, newContent); // Lưu vào local storage (chỉ cho trình duyệt này)
-                        console.log(`Đã lưu nội dung cho: ${key}`);
+                        // Cập nhật trực tiếp HTML trên trang
+                        el.innerHTML = newContent;
+                        // Lưu vào localStorage (chỉ cho trình duyệt hiện tại)
+                        localStorage.setItem(`content-${key}`, newContent);
+                        console.log(`Đã lưu nội dung cho [${key}] vào localStorage.`);
                     }
                 });
-                 alert('Nội dung đã được lưu (tạm thời trên trình duyệt này)!');
+                 alert('Nội dung đã được lưu tạm thời trên trình duyệt này!');
             });
         }
+    } else if (adminPanel) {
+         adminPanel.style.display = 'none'; // Đảm bảo panel ẩn nếu không phải admin
     }
-};
-
-// ----- Các xử lý khác (Donate, Login/Register) -----
-// Hiện tại chỉ là placeholder, cần logic thực tế sau này
-
-const donateBtn = document.getElementById('donate-btn');
-const authBtn = document.getElementById('auth-btn');
-
-if (donateBtn) {
-    donateBtn.addEventListener('click', () => {
-        alert('Chức năng Donate đang được phát triển!');
-        // Sau này có thể chuyển hướng đến trang donate (MoMo, PayPal, ...)
-    });
 }
 
-if (authBtn) {
-    authBtn.addEventListener('click', () => {
-        alert('Chức năng Login/Register đang được phát triển!');
-        // Sau này sẽ mở form đăng nhập/đăng ký hoặc chuyển trang
-    });
+// Thiết lập các nút hành động (Placeholder)
+function setupActionButtons() {
+    const donateBtn = document.getElementById('donate-btn');
+    const authBtn = document.getElementById('auth-btn');
+
+    if (donateBtn) {
+        donateBtn.addEventListener('click', () => {
+            alert('Chức năng Donate đang được phát triển!');
+            // Ví dụ chuyển hướng: window.location.href = 'link-donate-cua-ban';
+        });
+    }
+
+    if (authBtn) {
+        authBtn.addEventListener('click', () => {
+            alert('Chức năng Login/Register đang được phát triển!');
+            // Ví dụ: Hiển thị form đăng nhập/đăng ký
+        });
+    }
 }
+
+// Chạy hàm khởi tạo khi trang tải xong
+// Dùng DOMContentLoaded để chạy sớm hơn onload một chút, không cần chờ ảnh tải xong
+document.addEventListener('DOMContentLoaded', initializePage);
+
+// Lưu ý: Thư viện AOS đã được khởi tạo riêng trong thẻ script ở cuối HTML.
