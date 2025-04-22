@@ -28,6 +28,7 @@
     --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2), 0 6px 15px rgba(0, 0, 0, 0.15);
     --transition-main: 0.3s cubic-bezier(0.3, 0, 0.5, 1); /* Transition mượt */
+    --transition-fast: 0.15s cubic-bezier(0.3, 0, 0.5, 1); /* Faster transition */
 }
 
 /* Base & Reset */
@@ -42,6 +43,7 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Scaling removed */
 }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--text-link); text-decoration: none; transition: color var(--transition-main); }
@@ -77,6 +79,7 @@ p { margin-bottom: 1.2em; }
 .site-header.scrolled {
     background-color: rgba(13, 17, 23, 0.8); /* #0d1117 với alpha */
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); /* Safari */
     border-bottom-color: var(--border-primary);
     padding: 0.75rem 3rem;
 }
@@ -158,6 +161,7 @@ p { margin-bottom: 1.2em; }
     background-size: 30px 30px;
     opacity: 0.3;
     mask-image: linear-gradient(to bottom, white 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, white 50%, transparent 100%); /* Safari */
 }
 
 /* --- CTA Button --- */
@@ -177,14 +181,25 @@ p { margin-bottom: 1.2em; }
     background-color: var(--accent-primary);
     border-color: var(--accent-primary);
     color: #fff;
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* Keep visual transform, GSAP handles click */
     box-shadow: 0 4px 10px rgba(47, 129, 247, 0.2);
 }
-/* ... icon styling ... */
+/* Make icon transition color smoothly */
+.cta-button .fas { transition: color var(--transition-main); }
+.cta-button:hover .fas { color: #fff; }
+
 
 /* --- Content Section --- */
-.content-section { padding: 6rem 0; }
-.background-alt { background-color: var(--bg-secondary); }
+.content-section { padding: 6rem 0; margin: 0 auto; max-width: 1140px; padding-left: 1rem; padding-right: 1rem; } /* Add max-width and horizontal padding */
+.background-alt { background-color: var(--bg-secondary); max-width: none; padding-left: 0; padding-right: 0; } /* Full width background */
+.background-alt > .content-row, /* Target direct children for padding */
+.background-alt > .text-center-section,
+.background-alt > .interests-carousel,
+.background-alt > .section-title {
+     max-width: 1140px; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem;
+}
+.background-alt > .section-title { margin-bottom: 3rem; } /* Ensure title spacing is consistent */
+
 
 .section-title {
     font-size: clamp(2rem, 5vw, 3rem);
@@ -199,7 +214,7 @@ p { margin-bottom: 1.2em; }
 .section-title .highlight-text { color: var(--accent-primary); }
 
 .text-center { text-align: center; }
-.text-center .section-title { text-align: center; }
+.text-center .section-title { text-align: center; /* Already centered via block context */ }
 
 /* --- Layout Row & Cards --- */
 .content-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4rem; } /* Tăng gap */
@@ -242,7 +257,7 @@ p { margin-bottom: 1.2em; }
     color: var(--text-secondary);
     transition: background-color var(--transition-main), color var(--transition-main), border-color var(--transition-main);
 }
-.skill-item i { color: var(--accent-secondary); margin-right: 0.7em; font-size: 1.1em; }
+.skill-item i { color: var(--accent-secondary); margin-right: 0.7em; font-size: 1.1em; transition: color var(--transition-main); }
 .skill-item:hover {
     background-color: var(--accent-secondary);
     border-color: var(--accent-secondary);
@@ -256,11 +271,17 @@ p { margin-bottom: 1.2em; }
 .social-button {
     display: inline-flex; align-items: center; padding: 0.7rem 1.5rem;
     border-radius: var(--border-radius-sm); text-decoration: none; color: #fff;
-    font-weight: 600; transition: transform var(--transition-fast), opacity 0.3s ease;
+    font-weight: 600; transition: transform var(--transition-fast), opacity 0.3s ease, background-color var(--transition-fast); /* Added background transition */
+    border: 1px solid transparent; /* Add border for consistency */
 }
-.social-button:hover { transform: scale(1.05); opacity: 0.9; }
-.social-button.youtube { background-color: #c4302b; }
-.social-button.tiktok { background-color: #111; }
+.social-button:hover {
+    transform: scale(1.05); /* Keep visual hover scale, GSAP handles click */
+    opacity: 0.9;
+}
+.social-button.youtube { background-color: #c4302b; border-color: #c4302b; }
+.social-button.youtube:hover { background-color: #e04a43; border-color: #e04a43; } /* Lighter red */
+.social-button.tiktok { background-color: #111; border-color: #333; } /* Add border */
+.social-button.tiktok:hover { background-color: #333; border-color: #555; } /* Lighter black/grey */
 .social-button .icon-left { margin-right: 0.6em; font-size: 1.1em; }
 
 /* --- Interests Carousel --- */
@@ -277,14 +298,15 @@ p { margin-bottom: 1.2em; }
     padding: 1.8rem 1.5rem;
     border-radius: var(--border-radius-md);
     text-align: center;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast); /* Added border-color */
 }
 .interest-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
-    border-color: var(--accent-primary);
+    border-color: var(--accent-primary); /* Change border color on hover */
 }
-.interest-icon { font-size: 2rem; color: var(--accent-primary); margin-bottom: 1rem; }
+.interest-icon { font-size: 2rem; color: var(--accent-primary); margin-bottom: 1rem; transition: color var(--transition-fast); }
+.interest-card:hover .interest-icon { color: var(--accent-primary-hover); } /* Optional: change icon color too */
 .interest-title { font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
 .interest-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0; }
 
@@ -292,7 +314,7 @@ p { margin-bottom: 1.2em; }
 .site-footer {
     background-color: var(--bg-secondary);
     color: var(--text-secondary);
-    padding: 4rem 1.5rem;
+    padding: 4rem 1.5rem 2rem 1.5rem; /* Reduced bottom padding */
     border-top: 1px solid var(--border-primary);
     margin-top: 6rem;
 }
@@ -306,9 +328,9 @@ p { margin-bottom: 1.2em; }
 }
 .footer-about .footer-logo { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); text-decoration: none; display: block; margin-bottom: 0.5rem;}
 .footer-about p { font-size: 0.9rem; margin-bottom: 1rem; }
-.footer-nav { display: flex; gap: 1.5rem; }
+.footer-nav { display: flex; flex-wrap: wrap; gap: 1.5rem; } /* Allow wrap */
 .footer-nav a { color: var(--text-secondary); font-size: 0.9rem; }
-.footer-social { display: flex; gap: 1rem; }
+.footer-social { display: flex; gap: 1rem; align-items: center; } /* Align items */
 .footer-social a { color: var(--text-secondary); font-size: 1.2rem; transition: color var(--transition-main), transform var(--transition-main); }
 .footer-social a:hover { color: var(--text-primary); transform: scale(1.2); }
 .footer-bottom { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-primary); }
@@ -318,26 +340,69 @@ p { margin-bottom: 1.2em; }
 #admin-panel {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-primary);
-    padding: 2rem; border-radius: var(--border-radius-md); margin-top: 4rem;
+    padding: 2rem; border-radius: var(--border-radius-md); margin: 4rem auto;
+    max-width: 1140px; /* Match content width */
 }
-#admin-panel h2 { color: var(--text-primary); }
+#admin-panel h2 { color: var(--text-primary); margin-bottom: 1.5rem;}
+#admin-panel label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); }
 #admin-panel textarea {
     background-color: var(--bg-primary); border: 1px solid var(--border-primary);
-    color: var(--text-primary); /* Code giữ nguyên */
+    color: var(--text-primary);
+    width: 100%; /* Full width */
+    min-height: 100px; /* Min height */
+    padding: 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    margin-bottom: 1.5rem;
+    resize: vertical; /* Allow vertical resize */
 }
-#admin-panel button { /* Dùng style .cta-button */ }
+#admin-panel .cta-button { /* Use existing button style */
+    margin-top: 1rem;
+    background-color: var(--success-color); /* Green for save */
+    border-color: var(--success-color);
+    color: #fff;
+}
+#admin-panel .cta-button:hover {
+    background-color: #48c75a; /* Lighter green */
+    border-color: #48c75a;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(63, 185, 80, 0.2);
+}
 
 
 /* Responsive */
+@media (max-width: 1200px) { /* Adjust breakpoint for container padding */
+    .content-section,
+    .background-alt > .content-row,
+    .background-alt > .text-center-section,
+    .background-alt > .interests-carousel,
+    .background-alt > .section-title,
+    .footer-container,
+    #admin-panel {
+        max-width: 960px; /* Slightly smaller container */
+    }
+}
+
 @media (max-width: 992px) {
     .site-header { padding: 1rem 2rem; }
     .site-header.scrolled { padding: 0.75rem 2rem; }
     .footer-main { flex-direction: column; align-items: center; text-align: center; }
     .footer-nav { justify-content: center; }
     .footer-social { justify-content: center; }
+    .content-section,
+    .background-alt > .content-row,
+    .background-alt > .text-center-section,
+    .background-alt > .interests-carousel,
+    .background-alt > .section-title,
+    .footer-container,
+    #admin-panel {
+        max-width: 720px; /* Even smaller container */
+    }
 }
 @media (max-width: 768px) {
     html { font-size: 15px; }
+    /* body scaling adjustment removed */
     .site-header { padding: 0.8rem 1rem; }
     .site-header.scrolled { padding: 0.6rem 1rem; }
     .logo-text { font-size: 1.1rem; }
@@ -345,24 +410,75 @@ p { margin-bottom: 1.2em; }
     .header-nav { gap: 1rem; }
 
     .site-main { padding-top: 2rem; }
-    .hero-section { min-height: 75vh; }
+    .hero-section { min-height: 75vh; padding: 4rem 1rem; }
     .content-section { padding: 4rem 0; }
     .content-row { flex-direction: column; gap: 2.5rem; }
     .content-row .image-col { order: 1; margin-bottom: 0; } /* Ảnh luôn lên trước */
     .content-row .text-col { order: 2; text-align: left; }
     .content-row.alternate .text-col { order: 2; } /* Vẫn text sau */
     .content-row.alternate .image-col { order: 1; } /* Vẫn ảnh trước */
-    .text-center-section .text-col { text-align: center; }
+
+    /* Ensure sections with background take padding */
+     .background-alt > .content-row,
+     .background-alt > .text-center-section,
+     .background-alt > .interests-carousel,
+     .background-alt > .section-title {
+        padding-left: 1rem; padding-right: 1rem;
+     }
+
+    .text-center-section .text-col { text-align: center; } /* Center text in specific sections */
     .section-title { text-align: center; display: block; }
     .section-title::after { display: none; } /* Bỏ underline trên mobile */
     .skills-grid { grid-template-columns: 1fr 1fr; } /* 2 cột */
+
+    /* Adjust max-width for smaller screens */
+    .content-section,
+    .background-alt > .content-row,
+    .background-alt > .text-center-section,
+    .background-alt > .interests-carousel,
+    .background-alt > .section-title,
+    .footer-container,
+    #admin-panel {
+        max-width: 540px;
+        padding-left: 1rem; padding-right: 1rem; /* Ensure padding on mobile */
+    }
+    .background-alt { padding-left: 0; padding-right: 0;} /* Keep background full width */
+
 }
-@media (max-width: 480px) {
+@media (max-width: 576px) {
     .skills-grid { grid-template-columns: 1fr; } /* 1 cột */
-    .social-buttons-inline { flex-direction: column; gap: 0.8rem; align-items: center;}
+    .social-buttons-inline { flex-direction: column; gap: 0.8rem; align-items: stretch; } /* Stretch buttons */
+     .social-button { justify-content: center; } /* Center text/icon inside button */
+    .interests-carousel { grid-template-columns: 1fr; } /* 1 column for interests */
+
+     .content-section,
+     .background-alt > .content-row,
+     .background-alt > .text-center-section,
+     .background-alt > .interests-carousel,
+     .background-alt > .section-title,
+     .footer-container,
+     #admin-panel {
+         max-width: none; /* Allow full width within viewport padding */
+         padding-left: 1rem; padding-right: 1rem;
+     }
 }
 
-/* GSAP Initial States (Tạm thời vô hiệu hóa để debug) */
-/*
-[data-animate] { opacity: 0; }
-*/
+/* GSAP Initial States (Remove opacity:0 to see content if JS fails) */
+/* Ensure elements are initially hidden if they will be animated in */
+[data-animate="reveal-text"],
+[data-animate="fade-up"],
+[data-animate="fade-left"],
+[data-animate="fade-right"] {
+    opacity: 0; /* Keep opacity 0 for animations */
+}
+
+/* Fix potential jitter by telling browser these will change */
+.image-card, .cta-button, .nav-button, .social-button, .interest-card {
+    will-change: transform, box-shadow;
+}
+[data-animate] {
+    will-change: opacity, transform;
+}
+.site-header {
+    will-change: background-color, backdrop-filter, border-color, padding;
+}
