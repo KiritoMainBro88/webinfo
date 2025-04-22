@@ -20,7 +20,21 @@ function setupProfessionalAnimations() {
 }
 
 // --- Admin Panel Logic ---
-function setupAdminPanel() { /* ... (Keep existing Admin Panel code) ... */ }
+function setupAdminPanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminPanel = document.getElementById('admin-panel');
+    const editables = document.querySelectorAll('[data-editable]');
+    const adminSaveBtn = document.querySelector('#admin-panel button.cta-button');
+    if (urlParams.has('admin')) {
+        if (!adminPanel) return;
+        adminPanel.style.display = 'block';
+        editables.forEach(el => { const key = el.dataset.editable; const textarea = adminPanel.querySelector(`textarea[name="${key}"]`); if (textarea) { textarea.value = localStorage.getItem(key) || el.innerHTML.trim(); } el.style.border = '1px dashed var(--accent-primary)'; el.style.cursor = 'pointer'; el.addEventListener('click', () => { const correspondingTextarea = adminPanel.querySelector(`textarea[name="${key}"]`); if (correspondingTextarea) correspondingTextarea.focus(); }); });
+        if (adminSaveBtn) { adminSaveBtn.addEventListener('click', () => { editables.forEach(el => { const key = el.dataset.editable; const textarea = adminPanel.querySelector(`textarea[name="${key}"]`); if (textarea) { const newValue = textarea.value; el.innerHTML = newValue; localStorage.setItem(key, newValue); } }); alert('Nội dung đã được cập nhật!'); editables.forEach(el => { el.style.border = 'none'; el.style.cursor = 'default'; }); }); }
+    } else {
+        if (adminPanel) adminPanel.style.display = 'none';
+        editables.forEach(el => { const key = el.dataset.editable; const savedValue = localStorage.getItem(key); if (savedValue) { el.innerHTML = savedValue; } });
+    }
+}
 
 // --- Authentication Logic ---
 
@@ -45,7 +59,35 @@ async function handleRegisterSubmit(e) { e.preventDefault(); if (!registerForm |
 async function handleLoginSubmit(e) { e.preventDefault(); if (!loginForm || !loginMessageEl) return; const username = loginForm.username.value; const password = loginForm.password.value; displayAuthMessage(loginMessageEl, 'Logging in...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(loginMessageEl, data.message, false); localStorage.setItem('portfolioUser', JSON.stringify({ userId: data.userId, username: data.username })); loginForm.reset(); setTimeout(() => { closeAuthForms(); updateUserLoginState(); }, 1000); } catch (error) { console.error('Login fetch error:', error); displayAuthMessage(loginMessageEl, error.message || 'Login failed.', true); localStorage.removeItem('portfolioUser'); updateUserLoginState(); } }
 async function handleForgotSubmit(e) { e.preventDefault(); if (!forgotForm || !forgotMessageEl) return; const email = forgotForm.email.value; displayAuthMessage(forgotMessageEl, 'Sending reset link...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); displayAuthMessage(forgotMessageEl, data.message, !response.ok); if (response.ok) { forgotForm.reset(); } } catch (error) { console.error('Forgot Password fetch error:', error); displayAuthMessage(forgotMessageEl, 'Failed to send request. Please try again.', true); } }
 async function handleResetSubmit(e) { e.preventDefault(); if (!resetForm || !resetMessageEl) return; const token = resetForm.token.value; const password = resetForm.password.value; displayAuthMessage(resetMessageEl, 'Resetting password...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(resetMessageEl, data.message, false); resetForm.reset(); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error('Reset Password fetch error:', error); displayAuthMessage(resetMessageEl, error.message || 'Password reset failed.', true); } }
-function setupActionButtons() { const donateLink = document.querySelector('.nav-link[href="#donate"]'); authLink = document.querySelector('.nav-link.auth-link'); if(donateLink) { donateLink.addEventListener('click', (e) => { e.preventDefault(); alert('Chức năng Donate đang được phát triển!'); }); } authContainer = document.getElementById('auth-container'); loginFormWrapper = document.getElementById('login-form-wrapper'); registerFormWrapper = document.getElementById('register-form-wrapper'); forgotFormWrapper = document.getElementById('forgot-form-wrapper'); resetFormWrapper = document.getElementById('reset-form-wrapper'); loginForm = document.getElementById('login-form'); registerForm = document.getElementById('register-form'); forgotForm = document.getElementById('forgot-form'); resetForm = document.getElementById('reset-form'); loginMessageEl = document.getElementById('login-message'); registerMessageEl = document.getElementById('register-message'); forgotMessageEl = document.getElementById('forgot-message'); resetMessageEl = document.getElementById('reset-message'); if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit); else console.error("Login form not found"); if (registerForm) registerForm.addEventListener('submit', handleRegisterSubmit); else console.error("Register form not found"); if (forgotForm) forgotForm.addEventListener('submit', handleForgotSubmit); else console.error("Forgot Password form not found"); if (resetForm) resetForm.addEventListener('submit', handleResetSubmit); else console.error("Reset Password form not found"); updateUserLoginState(); if(authContainer) { authContainer.addEventListener('click', (e) => { if (e.target === authContainer) { closeAuthForms(); } }); } const urlParams = new URLSearchParams(window.location.search); const resetTokenFromUrl = urlParams.get('token'); if (resetTokenFromUrl && resetForm) { console.log("Found reset token in URL:", resetTokenFromUrl); showResetForm(); const tokenInput = document.getElementById('reset-token'); if(tokenInput) tokenInput.value = resetTokenFromUrl; window.history.replaceState({}, document.title, window.location.pathname); } }
+
+// --- Setup Action Buttons (Handles Auth Forms and Token) ---
+function setupActionButtons() {
+    const donateLink = document.querySelector('.nav-link[href="#donate"]'); authLink = document.querySelector('.nav-link.auth-link');
+    if(donateLink) { donateLink.addEventListener('click', (e) => { e.preventDefault(); alert('Chức năng Donate đang được phát triển!'); }); }
+    authContainer = document.getElementById('auth-container'); loginFormWrapper = document.getElementById('login-form-wrapper'); registerFormWrapper = document.getElementById('register-form-wrapper'); forgotFormWrapper = document.getElementById('forgot-form-wrapper'); resetFormWrapper = document.getElementById('reset-form-wrapper'); loginForm = document.getElementById('login-form'); registerForm = document.getElementById('register-form'); forgotForm = document.getElementById('forgot-form'); resetForm = document.getElementById('reset-form'); loginMessageEl = document.getElementById('login-message'); registerMessageEl = document.getElementById('register-message'); forgotMessageEl = document.getElementById('forgot-message'); resetMessageEl = document.getElementById('reset-message');
+    if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit); else console.error("Login form not found");
+    if (registerForm) registerForm.addEventListener('submit', handleRegisterSubmit); else console.error("Register form not found");
+    if (forgotForm) forgotForm.addEventListener('submit', handleForgotSubmit); else console.error("Forgot Password form not found");
+    if (resetForm) resetForm.addEventListener('submit', handleResetSubmit); else console.error("Reset Password form not found");
+    updateUserLoginState(); // Set initial link state
+    if(authContainer) { authContainer.addEventListener('click', (e) => { if (e.target === authContainer) { closeAuthForms(); } }); }
+
+    // --- Handle potential token in URL on page load ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetTokenFromUrl = urlParams.get('token');
+    if (resetTokenFromUrl && resetForm) {
+        console.log("Found reset token in URL:", resetTokenFromUrl);
+        // If token found, immediately show the reset form
+        showResetForm();
+        const tokenInput = document.getElementById('reset-token');
+        if(tokenInput) {
+            tokenInput.value = resetTokenFromUrl; // Pre-fill the token input
+        }
+        // Clean the token from the URL bar so it's not visible/bookmarkable
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
 // ----- Initialization -----
 function initializePage() { const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } updateYear(); setupHeaderScroll(); setupProfessionalAnimations(); setupAdminPanel(); setupActionButtons(); }
 document.addEventListener('DOMContentLoaded', initializePage);
