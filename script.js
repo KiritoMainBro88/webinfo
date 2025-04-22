@@ -41,17 +41,79 @@ function setupUserDropdown() {
 }
 
 // --- Theme Toggle ---
-function setupThemeToggle() { /* ... (Keep existing code) ... */ }
+function setupThemeToggle() {
+    const themeButton = document.getElementById('theme-toggle');
+    const themeIcon = themeButton?.querySelector('i');
+    if (!themeButton || !themeIcon) return; // Add check
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    if (currentTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+    } else {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+    }
+    themeButton.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark-theme');
+        if (isDark) {
+            document.body.classList.remove('dark-theme');
+            document.body.classList.add('light-theme');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-theme');
+            document.body.classList.add('dark-theme');
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+            localStorage.setItem('theme', 'dark');
+        }
+        console.log("Theme toggled");
+    });
+}
 
 // --- Language Toggle (Placeholder) ---
-function setupLanguageToggle() { /* ... (Keep existing code) ... */ }
+function setupLanguageToggle() {
+     const langButton = document.getElementById('language-toggle');
+     if(langButton) { langButton.addEventListener('click', () => { alert('Language switching coming soon!'); }); }
+}
+
 
 // --- GSAP Animations (Using window scroller) ---
 function setupProfessionalAnimations() {
-    // ... (Keep existing animation setup) ...
-
-     // Re-add Microinteractions including new buttons
-     document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn') // Added new elements
+    const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" };
+    const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']");
+    const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']");
+    const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']");
+    if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); }
+    if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); }
+    if (heroCta) { gsap.from(heroCta, { ...defaultOnLoadAnimation, delay: parseFloat(heroCta.dataset.delay) || 0.7 }); }
+    gsap.utils.toArray(document.querySelectorAll('[data-animate]:not(.hero-title):not(.hero-subtitle):not(.hero-cta)')).forEach(element => {
+        const delay = parseFloat(element.dataset.delay) || 0;
+        let staggerAmount = parseFloat(element.dataset.stagger) || 0;
+        const animType = element.dataset.animate;
+        let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay, clearProps: "opacity,transform" };
+        if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; }
+        let target = element;
+        if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid')) { // Added product-grid
+             if (element.children.length > 0) {
+                target = element.children;
+                if (staggerAmount === 0 && target !== element) staggerAmount = 0.05; // Adjusted stagger
+                if (staggerAmount > 0) animProps.stagger = staggerAmount;
+            }
+        }
+        if (target === element && animProps.stagger) delete animProps.stagger;
+        gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } });
+    });
+    gsap.utils.toArray(document.querySelectorAll('.content-row .image-card')).forEach(card => {
+        gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9 } });
+    });
+    // Microinteractions
+     document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn')
         .forEach(button => {
             button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 }));
             button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 }));
@@ -76,19 +138,15 @@ function setupDropdownActions() {
     const historyLink = document.getElementById('history-link');
     const depositLinkMobile = document.getElementById('deposit-link-mobile');
     const historyLinkMobile = document.getElementById('history-link-mobile');
-
     const handleDepositClick = (e) => { e.preventDefault(); alert('Nạp tiền function coming soon!'); };
     const handleHistoryClick = (e) => { e.preventDefault(); alert('Lịch sử mua hàng function coming soon!'); };
-
     if(depositLink) depositLink.addEventListener('click', handleDepositClick);
     if(historyLink) historyLink.addEventListener('click', handleHistoryClick);
     if(depositLinkMobile) depositLinkMobile.addEventListener('click', handleDepositClick);
     if(historyLinkMobile) historyLinkMobile.addEventListener('click', handleHistoryClick);
-
-    // --- Add listeners for elements specific to shopping.html ---
+    // Add listeners for elements specific to shopping.html
     if (document.querySelector('.product-grid-section')) {
         console.log("Setting up shopping page specific listeners...");
-        // Placeholder for category buttons
         document.querySelectorAll('.category-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -97,8 +155,6 @@ function setupDropdownActions() {
                 alert(`Category filter for "${e.currentTarget.textContent}" coming soon!`);
             });
         });
-
-         // Placeholder for product buy buttons
          document.querySelectorAll('.product-buy-btn').forEach(button => {
              button.addEventListener('click', (e) => {
                  e.preventDefault();
@@ -108,7 +164,6 @@ function setupDropdownActions() {
          });
     }
 }
-
 
 // ----- Initialization -----
 function initializePage() {
@@ -123,16 +178,12 @@ function initializePage() {
     setupAdminPanel();
     setupActionButtons();
     setupDropdownActions();
-
-    // Header Donate Button Listener
     const donateButtonHeader = document.getElementById('donate-button-header');
-    if (donateButtonHeader) {
-        donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); });
-    } else { console.warn("Header donate button (#donate-button-header) not found"); }
-
+    if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); }
+    else { console.warn("Header donate button (#donate-button-header) not found"); }
     const ageSpan = document.getElementById('age');
     if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } }
-    else { console.warn("Age span element not found."); }
+    else { /* console.warn("Age span element not found."); */ } // Hide warning if age isn't on shopping page
     console.log("Page initialization complete.");
 }
 
