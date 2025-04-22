@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KiritoMainBro - Trang Chủ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">LOGO</div>
+        <nav class="header-nav">
+            <button id="donate-btn">Donate</button>
+            <button id="auth-btn">Login / Register</button>
+            <!-- Nút Login/Register sẽ cần xử lý phức tạp hơn sau này -->
+        </nav>
+    </header>
+
+    <main>
+        <h1>Giới thiệu về tôi - KiritoMainBro (Chuong)</h1>
+
+        <section id="intro">
+            <h2>Giới thiệu chung</h2>
+            <p data-editable="intro">
+                Chào mọi người, mình là Chương (KiritoMainBro). Mình <span id="age"></span> tuổi (sinh ngày 08/08/2006) và hiện đang sinh sống tại Thành phố Hồ Chí Minh. Mình đang theo học tại Trường Đại học FPT (Campus TP.HCM - mã trường Xavalo là không chính xác, bạn nên kiểm tra lại nhé).
+            </p>
+        </section>
+
+        <section id="skills">
+            <h2>Kỹ năng</h2>
+            <p data-editable="skills">
+                Mình có kiến thức cơ bản về một số ngôn ngữ lập trình như C, Javascript, C++, Python. Mình sẽ tiếp tục cải thiện và học hỏi thêm trong tương lai.
+            </p>
+        </section>
+
+        <section id="content-creator">
+            <h2>Hành trình Sáng tạo Nội dung</h2>
+            <p data-editable="content-creator">
+                Mình bắt đầu làm YouTube/Streamer nghiệp dư từ năm 2018. Mình đã từng có 5 kênh YouTube: 2 kênh đạt 2k người đăng ký, 2 kênh đạt 1k và 1 kênh khoảng 300 người đăng ký. Kênh YouTube đầu tiên của mình đạt 2k người đăng ký nhưng không may đã bị khóa do vấn đề bản quyền.
+            </p>
+            <p>Bạn có thể tìm thấy mình trên:</p>
+            <ul>
+                <li><a href="https://www.youtube.com/@KiritoMainBro" target="_blank">Kênh YouTube hiện tại (KiritoMainBro)</a></li>
+                <li><a href="https://www.tiktok.com/@kiritomainbro" target="_blank">TikTok (@kiritomainbro)</a></li>
+                <!-- Thêm các kênh khác nếu có -->
+            </ul>
+        </section>
+
+        <section id="interests">
+            <h2>Sở thích</h2>
+            <p data-editable="food-interests">
+                Mình rất thích các món ăn Việt Nam, đặc biệt là Cơm tấm.
+            </p>
+            <p data-editable="gaming-interests">
+                Mình đã chơi khá nhiều game trên cả điện thoại và PC. Trên mobile, mình từng chơi nhiều Liên Quân Mobile và PUBG Mobile. Trên PC thì mình chơi nhiều Roblox và GTA 5.
+            </p>
+        </section>
+
+        <!-- Phần Admin Panel (Ẩn ban đầu, sẽ phát triển sau) -->
+        <section id="admin-panel" style="display: none;">
+             <h2>Admin Edit Panel (Tính năng tương lai)</h2>
+             <p>Đây là nơi bạn có thể chỉnh sửa nội dung trang web sau khi đăng nhập với quyền admin.</p>
+             <textarea id="edit-intro" rows="4" style="width: 90%;"></textarea><br>
+             <textarea id="edit-skills" rows="4" style="width: 90%;"></textarea><br>
+             <textarea id="edit-content-creator" rows="4" style="width: 90%;"></textarea><br>
+             <textarea id="edit-food-interests" rows="3" style="width: 90%;"></textarea><br>
+             <textarea id="edit-gaming-interests" rows="3" style="width: 90%;"></textarea><br>
+             <button id="save-edits-btn">Lưu thay đổi</button>
+        </section>
+
+    </main>
+
+    <footer>
+        <nav class="footer-nav">
+            <!-- Chỗ này cho "Others tab" hoặc các link khác sau này -->
+            <a href="#">Trang khác (Sắp có)</a>
+        </nav>
+        <p>Copyright by KMB <span id="year"></span></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

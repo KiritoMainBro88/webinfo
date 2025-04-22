@@ -1,0 +1,153 @@
+/* Reset cơ bản */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4; /* Màu nền nhẹ nhàng */
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between; /* Đẩy logo và nav ra hai bên */
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 1px solid #fff; /* Chỉ để thấy rõ vị trí */
+    padding: 5px 10px;
+}
+
+.header-nav button {
+    background-color: #555;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin-left: 0.5rem; /* Khoảng cách giữa các nút */
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.header-nav button:hover {
+    background-color: #777;
+}
+
+main {
+    max-width: 960px; /* Giới hạn chiều rộng nội dung */
+    margin: 2rem auto; /* Căn giữa và tạo khoảng cách trên dưới */
+    padding: 1.5rem;
+    background-color: #fff; /* Nền trắng cho nội dung chính */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Đổ bóng nhẹ */
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+h2 {
+    color: #555;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #eee; /* Đường gạch chân nhẹ */
+    padding-bottom: 0.3rem;
+}
+
+section {
+    margin-bottom: 1.5rem;
+}
+
+section p {
+    margin-bottom: 0.8rem;
+}
+
+section ul {
+    list-style: disc;
+    margin-left: 2rem;
+    margin-bottom: 0.8rem;
+}
+
+section a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+section a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #333;
+    color: #ccc;
+}
+
+footer .footer-nav {
+    margin-bottom: 0.5rem;
+}
+
+footer .footer-nav a {
+    color: #eee;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+footer .footer-nav a:hover {
+    text-decoration: underline;
+}
+
+/* Thêm style cho Admin Panel (ẩn) nếu cần */
+#admin-panel {
+    border: 1px dashed #ccc;
+    padding: 1rem;
+    margin-top: 2rem;
+    background-color: #f9f9f9;
+}
+
+#admin-panel h2 {
+    margin-top: 0;
+}
+
+#admin-panel button {
+     background-color: #28a745; /* Màu xanh lá */
+     color: white;
+     padding: 10px 15px;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+     margin-top: 10px;
+ }
+
+ #admin-panel button:hover {
+     background-color: #218838;
+ }
+
+/* Responsive cơ bản cho màn hình nhỏ */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+    .header-nav {
+        margin-top: 1rem;
+    }
+    main {
+        margin: 1rem;
+        padding: 1rem;
+    }
+}
