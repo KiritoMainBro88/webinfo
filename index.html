@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<!-- Class will be added here by JS to control sidebar state -->
+<!-- Add sidebar-collapsed class by default if desired -->
 <body class="dark-theme">
 
     <div class="page-wrapper">
@@ -18,6 +18,11 @@
         <!-- ===== Sidebar Navigation ===== -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
+                 <!-- Hamburger visible only when collapsed -->
+                 <button id="sidebar-toggle-in-header" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
+                     <i class="fas fa-bars"></i>
+                 </button>
+                 <!-- Logo link -->
                  <a href="index.html" class="logo-link">
                     <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image">
                     <span class="logo-text">KiritoMainBro</span>
@@ -38,35 +43,24 @@
             <!-- Top Bar -->
             <header class="content-header">
                  <div class="header-left">
-                     <button id="sidebar-toggle" class="icon-button" aria-label="Toggle Sidebar">
+                     <!-- Hamburger visible only when sidebar is EXPANDED -->
+                     <button id="sidebar-toggle-in-content" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
                          <i class="fas fa-bars"></i>
                      </button>
-                     <!-- Optional: Placeholder for breadcrumbs or title -->
                  </div>
 
                  <div class="header-right">
-                     <button id="language-toggle" class="icon-button" aria-label="Change Language">
-                         <i class="fas fa-globe"></i>
-                     </button>
-                     <button id="theme-toggle" class="icon-button" aria-label="Toggle Theme">
-                         <i class="fas fa-moon"></i> <!-- JS can toggle this icon -->
-                     </button>
+                     <button id="language-toggle" class="icon-button" aria-label="Change Language"> <i class="fas fa-globe"></i> </button>
+                     <button id="theme-toggle" class="icon-button" aria-label="Toggle Theme"> <i class="fas fa-moon"></i> </button>
 
-                     <!-- User Area -->
-                     <div class="user-area" id="user-area-trigger"> <!-- ID for JS click -->
+                     <div class="user-area" id="user-area-trigger">
                          <img id="user-avatar" src="images/default-avatar.png" alt="User Avatar" class="user-avatar-img">
-                         <span id="user-status">
-                             <!-- Guest icon removed, avatar is always shown -->
-                             <span id="user-name">Khách</span>
-                             <i class="fas fa-chevron-down user-area-chevron"></i>
-                         </span>
-                         <!-- Dropdown Menu -->
+                         <span id="user-status"> <span id="user-name">Khách</span> <i class="fas fa-chevron-down user-area-chevron"></i> </span>
                          <div class="user-dropdown-content" id="user-dropdown">
                              <a href="#" class="auth-link" id="auth-action-link"><i class="fas fa-sign-in-alt icon-left"></i>Đăng Nhập</a>
                              <a href="#" class="auth-link" id="register-action-link"><i class="fas fa-user-plus icon-left"></i>Tạo Tài Khoản</a>
                              <a href="#" class="auth-link" id="forgot-action-link"><i class="fas fa-key icon-left"></i>Quên Mật Khẩu?</a>
                              <a href="#" id="logout-link" style="display: none;"><i class="fas fa-sign-out-alt icon-left"></i>Đăng Xuất</a>
-                             <!-- <a href="#profile" id="profile-link" style="display:none;"><i class="fas fa-user-cog icon-left"></i>Profile</a> -->
                          </div>
                      </div>
                  </div>
@@ -76,27 +70,68 @@
             <main class="site-main">
                 <!-- Hero Section -->
                 <section class="hero-section">
-                    <!-- ... content ... -->
-                    <div class="hero-content"><h1 class="hero-title" data-animate="reveal-text"> KiritoMainBro<span class="accent-dot">.</span><br> Developer & Creator<span class="accent-dot">.</span> </h1><p class="hero-subtitle" data-animate="fade-up" data-delay="0.3"> Khám phá hành trình sáng tạo và kỹ năng của mình qua portfolio này. </p><div class="hero-cta"><a href="#intro" class="cta-button primary"> Xem thêm <i class="fas fa-arrow-right icon-right"></i> </a></div></div><div class="background-overlay-grid"></div>
+                     <div class="hero-content">
+                        <h1 class="hero-title" data-animate="reveal-text">
+                            KiritoMainBro<span class="accent-dot">.</span><br>
+                            Developer & Creator<span class="accent-dot">.</span>
+                        </h1>
+                        <p class="hero-subtitle" data-animate="fade-up" data-delay="0.3">
+                            Khám phá hành trình sáng tạo và kỹ năng của mình qua portfolio này.
+                        </p>
+                        <div class="hero-cta">
+                            <a href="#intro" class="cta-button primary">
+                                Xem thêm <i class="fas fa-arrow-right icon-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="background-overlay-grid"></div>
                 </section>
+
+                <!-- Intro Section -->
                 <section id="intro" class="content-section content-row">
-                    <!-- ... content ... -->
-                    <div class="image-col" data-animate="fade-right" data-delay="0.1"><div class="image-card shadow-lift"> <img src="images/greeting-cat.jpg" alt="Mèo chào hỏi" class="content-image"> </div></div><div class="text-col" data-animate="fade-left" data-delay="0.1"> <h2 class="section-title">Xin chào! Mình là <span class="highlight-text">Chương</span></h2> <p data-editable="intro"> Còn được biết đến là <strong>KiritoMainBro</strong>. Với <span id="age">20</span> năm trải nghiệm, mình đang là sinh viên tại <span class="highlight-text">Đại học FPT (Campus TP.HCM)</span>, nuôi dưỡng đam mê với thế giới lập trình và sáng tạo nội dung tại TP. Hồ Chí Minh. </p> <p class="text-secondary">Luôn sẵn sàng học hỏi và đối mặt thử thách mới.</p> </div>
+                    <div class="image-col" data-animate="fade-right" data-delay="0.1">
+                         <div class="image-card shadow-lift"> <img src="images/greeting-cat.jpg" alt="Mèo chào hỏi" class="content-image"> </div>
+                    </div>
+                    <div class="text-col" data-animate="fade-left" data-delay="0.1">
+                         <h2 class="section-title">Xin chào! Mình là <span class="highlight-text">Chương</span></h2>
+                         <p data-editable="intro"> Còn được biết đến là <strong>KiritoMainBro</strong>. Với <span id="age"></span> năm trải nghiệm, mình đang là sinh viên tại <span class="highlight-text">Đại học FPT (Campus TP.HCM)</span>, nuôi dưỡng đam mê với thế giới lập trình và sáng tạo nội dung tại TP. Hồ Chí Minh. </p>
+                         <p class="text-secondary">Luôn sẵn sàng học hỏi và đối mặt thử thách mới.</p>
+                    </div>
                 </section>
+
+                <!-- Skills Section -->
                 <section id="skills" class="content-section content-row alternate background-alt">
-                   <!-- ... content ... -->
-                   <div class="text-col" data-animate="fade-right"> <h2 class="section-title">Công nghệ & <span class="highlight-text">Kỹ năng</span></h2> <p data-editable="skills"> Mình đang xây dựng nền tảng với <span class="code-text">C</span>, <span class="code-text">Javascript</span>, <span class="code-text">C++</span>, và <span class="code-text">Python</span>. Mục tiêu là tạo ra những sản phẩm có giá trị và giải quyết vấn đề thực tế. </p> <div class="skills-grid" data-animate="fade-up" data-stagger="0.08"> <div class="skill-item"><i class="fas fa-code"></i> Web Dev Basics</div> <div class="skill-item"><i class="fas fa-terminal"></i> C/C++</div> <div class="skill-item"><i class="fab fa-python"></i> Python</div> <div class="skill-item"><i class="fas fa-brain"></i> Problem Solving</div> <div class="skill-item"><i class="fas fa-comments"></i> Communication</div> </div> </div> <div class="image-col" data-animate="fade-left"> <div class="image-card shadow-lift"> <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image"> </div> </div>
+                   <div class="text-col" data-animate="fade-right">
+                         <h2 class="section-title">Công nghệ & <span class="highlight-text">Kỹ năng</span></h2>
+                         <p data-editable="skills"> Mình đang xây dựng nền tảng với <span class="code-text">C</span>, <span class="code-text">Javascript</span>, <span class="code-text">C++</span>, và <span class="code-text">Python</span>. Mục tiêu là tạo ra những sản phẩm có giá trị và giải quyết vấn đề thực tế. </p>
+                         <div class="skills-grid" data-animate="fade-up" data-stagger="0.08"> <div class="skill-item"><i class="fas fa-code"></i> Web Dev Basics</div> <div class="skill-item"><i class="fas fa-terminal"></i> C/C++</div> <div class="skill-item"><i class="fab fa-python"></i> Python</div> <div class="skill-item"><i class="fas fa-brain"></i> Problem Solving</div> <div class="skill-item"><i class="fas fa-comments"></i> Communication</div> </div>
+                    </div>
+                     <div class="image-col" data-animate="fade-left">
+                         <div class="image-card shadow-lift"> <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image"> </div>
+                    </div>
                 </section>
+
+                <!-- Content Creator Section -->
                 <section id="content-creator" class="content-section text-center-section">
-                   <!-- ... content ... -->
-                   <h2 class="section-title" data-animate="fade-up">Hành trình <span class="highlight-text">Sáng tạo</span></h2> <p data-editable="content-creator" class="content-narrow" data-animate="fade-up" data-delay="0.1"> Từ 2018, mình đã bắt đầu chia sẻ qua video. Dù có lúc thăng trầm, đam mê này vẫn tiếp tục trên: </p> <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08"> <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube"> <i class="fab fa-youtube"></i> YouTube </a> <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" class="social-button tiktok"> <i class="fab fa-tiktok"></i> TikTok </a> <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="social-button discord"> <i class="fab fa-discord"></i> Discord </a> <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" class="social-button github"> <i class="fab fa-github"></i> GitHub </a> <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="social-button facebook"> <i class="fab fa-facebook"></i> Facebook </a> </div>
+                   <h2 class="section-title" data-animate="fade-up">Hành trình <span class="highlight-text">Sáng tạo</span></h2>
+                   <p data-editable="content-creator" class="content-narrow" data-animate="fade-up" data-delay="0.1"> Từ 2018, mình đã bắt đầu chia sẻ qua video. Dù có lúc thăng trầm, đam mê này vẫn tiếp tục trên: </p>
+                   <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08"> <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube"> <i class="fab fa-youtube"></i> YouTube </a> <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" class="social-button tiktok"> <i class="fab fa-tiktok"></i> TikTok </a> <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="social-button discord"> <i class="fab fa-discord"></i> Discord </a> <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" class="social-button github"> <i class="fab fa-github"></i> GitHub </a> <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="social-button facebook"> <i class="fab fa-facebook"></i> Facebook </a> </div>
                 </section>
+
+                <!-- Interests Section -->
                 <section id="interests" class="content-section background-alt">
-                    <!-- ... content ... -->
-                    <h2 class="section-title text-center" data-animate="fade-up">Ngoài lề: <span class="highlight-text">Đam mê khác</span></h2> <div class="interests-carousel" data-animate="fade-up" data-delay="0.1" data-stagger="0.1"> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-utensils"></i></div> <h3 class="interest-title">Ẩm thực Việt</h3> <p data-editable="food-interests">Đặc biệt mê <strong>Cơm tấm Sài Gòn</strong>!</p> </div> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-gamepad"></i></div> <h3 class="interest-title">Gaming</h3> <p data-editable="gaming-interests">Mobile & PC (Roblox, GTA 5,...).</p> </div> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-headphones-alt"></i></div> <h3 class="interest-title">Âm nhạc</h3> <p>Chill với nhiều thể loại, từ V-Pop đến nhạc game.</p> </div> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-film"></i></div> <h3 class="interest-title">Phim ảnh</h3> <p>Fan của phim khoa học viễn tưởng và hành động.</p> </div> </div>
+                    <h2 class="section-title text-center" data-animate="fade-up">Ngoài lề: <span class="highlight-text">Đam mê khác</span></h2>
+                    <div class="interests-carousel" data-animate="fade-up" data-delay="0.1" data-stagger="0.1"> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-utensils"></i></div> <h3 class="interest-title">Ẩm thực Việt</h3> <p data-editable="food-interests">Đặc biệt mê <strong>Cơm tấm Sài Gòn</strong>!</p> </div> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-gamepad"></i></div> <h3 class="interest-title">Gaming</h3> <p data-editable="gaming-interests">Mobile & PC (Roblox, GTA 5,...).</p> </div> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-headphones-alt"></i></div> <h3 class="interest-title">Âm nhạc</h3> <p>Chill với nhiều thể loại, từ V-Pop đến nhạc game.</p> </div> <div class="interest-card"> <div class="interest-icon"><i class="fas fa-film"></i></div> <h3 class="interest-title">Phim ảnh</h3> <p>Fan của phim khoa học viễn tưởng và hành động.</p> </div> </div>
                 </section>
+
                  <section id="admin-panel" style="display: none;">
-                      <!-- ... content ... -->
+                      <h2>Admin Panel - Chỉnh sửa nội dung</h2>
+                      <label for="edit-intro">Giới thiệu:</label> <textarea name="intro" id="edit-intro"></textarea>
+                      <label for="edit-skills">Kỹ năng:</label> <textarea name="skills" id="edit-skills"></textarea>
+                      <label for="edit-content-creator">Sáng tạo nội dung:</label> <textarea name="content-creator" id="edit-content-creator"></textarea>
+                      <label for="edit-food-interests">Sở thích ẩm thực:</label> <textarea name="food-interests" id="edit-food-interests"></textarea>
+                      <label for="edit-gaming-interests">Sở thích gaming:</label> <textarea name="gaming-interests" id="edit-gaming-interests"></textarea>
+                      <button class="cta-button">Lưu thay đổi</button>
                  </section>
             </main>
 
@@ -109,9 +144,9 @@
         </div><!-- End Main Content Area -->
     </div> <!-- End Page Wrapper -->
 
-    <!-- Login/Register Forms Modal (Keep this outside main layout, style like example) -->
+    <!-- Login/Register Forms Modal -->
     <div id="auth-container" style="display: none;">
-        <!-- Login Form (Style like skyunrb) -->
+        <!-- Login Form -->
         <div id="login-form-wrapper" class="auth-form-wrapper sky-form"> <button class="close-auth-btn" onclick="closeAuthForms()">×</button> <h3>Đăng Nhập</h3> <p class="auth-subtext">Đăng Nhập Vào Hệ Thống</p> <form id="login-form"> <div class="form-group"> <label for="login-username">Tài Khoản</label> <input type="text" id="login-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="login-password">Mật Khẩu</label> <input type="password" id="login-password" name="password" required placeholder="Nhập Mật Khẩu Của Bạn"> </div> <div class="form-group remember-forgot"> <label class="remember-me"><input type="checkbox" name="remember"> Ghi Nhớ Tài Khoản</label> <a href="#" onclick="showForgotForm()" class="forgot-link">Bạn Quên Mật Khẩu?</a> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Nhập</button> <p id="login-message" class="auth-message"></p> </form> <p class="switch-form-link">BẠN CHƯA CÓ TÀI KHOẢN? <a href="#" onclick="showRegisterForm()">ĐĂNG KÝ NGAY</a></p> </div>
         <!-- Register Form -->
         <div id="register-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()">×</button> <h3>Đăng Ký</h3> <p class="auth-subtext">Đăng Ký Tài Khoản Mới</p> <form id="register-form"> <div class="form-group"> <label for="register-username">Tài Khoản</label> <input type="text" id="register-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="register-email">Địa Chỉ Email</label> <input type="email" id="register-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <div class="form-group"> <label for="register-password">Mật Khẩu</label> <input type="password" id="register-password" name="password" required minlength="6" placeholder="Ít nhất 6 ký tự, gồm chữ hoa, số, ký tự đặc biệt"> </div> <div class="form-group"> <label for="register-confirm-password">Nhập Lại Mật Khẩu</label> <input type="password" id="register-confirm-password" name="confirmPassword" required placeholder="Nhập Lại Mật Khẩu"> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Ký</button> <p id="register-message" class="auth-message"></p> </form> <p class="switch-form-link">ĐÃ CÓ TÀI KHOẢN? <a href="#" onclick="showLoginForm()">ĐĂNG NHẬP NGAY</a></p> </div>
