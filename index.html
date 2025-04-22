@@ -28,13 +28,23 @@
                     <span class="logo-text">KiritoMainBro</span>
                 </a>
             </div>
+
+            <!-- === ADD HORIZONTAL RULE HERE === -->
+            <hr class="sidebar-divider">
+
             <nav class="sidebar-nav">
                 <a href="#intro" class="sidebar-link"><i class="fas fa-user fa-fw icon-left"></i><span class="link-text">Về tôi</span></a>
                 <a href="#skills" class="sidebar-link"><i class="fas fa-code fa-fw icon-left"></i><span class="link-text">Kỹ năng</span></a>
                 <a href="#content-creator" class="sidebar-link"><i class="fas fa-video fa-fw icon-left"></i><span class="link-text">Sáng tạo</span></a>
                 <a href="#interests" class="sidebar-link"><i class="fas fa-star fa-fw icon-left"></i><span class="link-text">Sở thích</span></a>
-                <a href="#donate" class="sidebar-link donate-link"><i class="fas fa-donate fa-fw icon-left"></i><span class="link-text">Donate</span></a>
+                <!-- Donate link is removed from here -->
             </nav>
+
+            <!-- === MOVE DONATE LINK HERE (Outside nav, inside aside) === -->
+            <a href="#donate" class="sidebar-link donate-link">
+                <i class="fas fa-donate fa-fw icon-left"></i><span class="link-text">Donate</span>
+            </a>
+
         </aside>
 
         <!-- ===== Main Content Area ===== -->
@@ -54,9 +64,8 @@
                      <button id="theme-toggle" class="icon-button" aria-label="Toggle Theme"> <i class="fas fa-moon"></i> </button>
 
                      <div class="user-area" id="user-area-trigger">
-                         <!-- === AVATAR CHANGE HERE === -->
+                         <!-- Default avatar -->
                          <img id="user-avatar" src="images/cat-avatar-default.jpg" alt="User Avatar" class="user-avatar-img">
-                         <!-- === END AVATAR CHANGE === -->
                          <span id="user-status"> <span id="user-name">Khách</span> <i class="fas fa-chevron-down user-area-chevron"></i> </span>
                          <div class="user-dropdown-content" id="user-dropdown">
                              <a href="#" class="auth-link" id="auth-action-link"><i class="fas fa-sign-in-alt icon-left"></i>Đăng Nhập</a>
