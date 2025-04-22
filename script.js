@@ -31,7 +31,6 @@ function setupHeaderScroll() {
             else header.classList.remove('scrolled');
         }
     });
-    // Initial check in case the page loads already scrolled
     if (window.scrollY > 20) header.classList.add('scrolled');
 }
 
@@ -40,98 +39,99 @@ function setupProfessionalAnimations() {
 
     // Default animation settings for elements fading in ON LOAD
     const defaultOnLoadAnimation = {
-        opacity: 0,
+        opacity: 0, // Start state for GSAP animation logic
         y: 20,
         duration: 0.6,
         ease: "power2.out",
     };
 
-    // 1. Animate Hero Content (Visible on Load)
+    // 1. Animate Hero Content (Visible on Load) - EXCLUDING the button now
     const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']");
     const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']");
-    const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']"); // Target the container
+    // NOTE: Hero button is NOT animated by JS because it has no data-animate
 
     if (heroTitle) {
         gsap.from(heroTitle, {
-            opacity: 0,
+            opacity: 0, // Start hidden for this specific animation effect
             y: 40,
             duration: 1,
             ease: "expo.out",
-            delay: 0.3 // Keep original delay
+            delay: 0.3
         });
     }
     if (heroSubtitle) {
         gsap.from(heroSubtitle, {
-            ...defaultOnLoadAnimation,
-            delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 // Use data-delay or default
+            ...defaultOnLoadAnimation, // Uses opacity: 0 start state
+            delay: parseFloat(heroSubtitle.dataset.delay) || 0.5
         });
     }
-     if (heroCta) {
-         // Animate the button *inside* the CTA container
-         gsap.from(heroCta.children, { // Target the child (the <a> tag)
-             ...defaultOnLoadAnimation,
-             delay: parseFloat(heroCta.dataset.delay) || 0.7 // Use data-delay or default
-         });
-     }
-
 
     // 2. General Fade/Slide In Animations ON SCROLL for other sections
-    //    Target elements NOT inside the hero section
-    gsap.utils.toArray('[data-animate]:not(.hero-title):not(.hero-subtitle):not(.hero-cta)').forEach(element => {
-        const delay = parseFloat(element.dataset.delay) || 0; // Keep individual delays if needed
-        const staggerAmount = parseFloat(element.dataset.stagger) || 0.08; // Keep stagger
+    // Selects elements with data-animate, excluding hero title/subtitle
+    gsap.utils.toArray('[data-animate]:not(.hero-title):not(.hero-subtitle)').forEach(element => {
+        const delay = parseFloat(element.dataset.delay) || 0;
+        let staggerAmount = parseFloat(element.dataset.stagger) || 0;
         const animType = element.dataset.animate;
 
-        let animProps = { // Base scroll animation props
-             opacity: 0,
+        // Base properties for scroll animations (NO opacity: 0 here)
+        let animProps = {
              duration: 0.6,
              ease: "power2.out",
-             delay: delay, // Apply delay relative to trigger
-             stagger: staggerAmount
+             delay: delay,
+             // Add clearProps to reset any inline styles GSAP might have added previously
+             // specifically opacity, since it's not part of the 'from' vars now
+             clearProps: "opacity,transform" // Reset both just to be safe
         };
 
-        // Add direction
+        // Set starting position based on animation type
         if (animType === 'fade-left') { animProps.x = -30; }
         else if (animType === 'fade-right') { animProps.x = 30; }
-        else { animProps.y = 20; } // Default to fade-up if not left/right
+        else { animProps.y = 20; } // Default to fade-up
 
-
-        // Check if the element itself should be animated or its children (for lists/grids)
+        // Handle children/staggering for containers
         let target = element;
          if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline')) {
-             // Only animate children if they exist
              if (element.children.length > 0) {
                 target = element.children;
+                // Only apply stagger if not explicitly set to 0 and we are targeting children
+                if (staggerAmount === 0 && target !== element) staggerAmount = 0.08;
+                if (staggerAmount > 0) {
+                    animProps.stagger = staggerAmount;
+                }
              }
          }
+         // Ensure stagger isn't applied when target is the element itself
+         if (target === element && animProps.stagger) {
+             delete animProps.stagger;
+         }
 
-
+        // Animate FROM the offset position TO the default state (opacity 1, x:0, y:0)
         gsap.from(target, {
-            ...animProps,
+            ...animProps, // Contains starting x/y and duration/ease/delay/stagger
             scrollTrigger: {
-                trigger: element, // Trigger based on the container element
-                start: "top 88%", // Trigger when element is 88% from top of viewport
+                trigger: element,
+                start: "top 88%",
                 toggleActions: "play none none none",
-                once: true // Animate only once
+                once: true
             }
         });
     });
 
-    // 3. Parallax for Images (Subtle - Keep As Is)
+    // 3. Parallax for Images (Keep As Is)
      gsap.utils.toArray('.content-row .image-card').forEach(card => {
          gsap.to(card, {
-             yPercent: -5, // Parallax rất nhẹ
+             yPercent: -5,
              ease: "none",
              scrollTrigger: {
                  trigger: card.closest('.content-row'),
                  start: "top bottom", end: "bottom top",
-                 scrub: 1.9, // Mượt
+                 scrub: 1.9,
              }
          });
      });
 
      // 4. Button Hover Microinteraction (Keep As Is)
-     document.querySelectorAll('.cta-button, .nav-button, .social-button').forEach(button => {
+     document.querySelectorAll('.cta-button, .nav-link, .social-button').forEach(button => {
          button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.95, duration: 0.1 }));
          button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 }));
          button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 }));
@@ -144,7 +144,7 @@ function setupAdminPanel() {
     const urlParams = new URLSearchParams(window.location.search);
     const adminPanel = document.getElementById('admin-panel');
     const editables = document.querySelectorAll('[data-editable]');
-    const adminSaveBtn = document.querySelector('#admin-panel .cta-button');
+    const adminSaveBtn = document.querySelector('#admin-panel button.cta-button');
 
     if (urlParams.has('admin')) {
         if (!adminPanel) return;
@@ -170,12 +170,16 @@ function setupAdminPanel() {
                     const key = el.dataset.editable;
                     const textarea = adminPanel.querySelector(`textarea[name="${key}"]`);
                     if (textarea) {
-                        const newValue = textarea.value.trim();
+                        const newValue = textarea.value;
                         el.innerHTML = newValue;
                         localStorage.setItem(key, newValue);
                     }
                 });
                 alert('Nội dung đã được cập nhật!');
+                 editables.forEach(el => {
+                    el.style.border = 'none';
+                    el.style.cursor = 'default';
+                 });
             });
         }
 
@@ -222,7 +226,7 @@ function initializePage() {
     }
     updateYear();
     setupHeaderScroll();
-    setupProfessionalAnimations(); // Call the revised animation function
+    setupProfessionalAnimations();
     setupAdminPanel();
     setupActionButtons();
 }

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KiritoMainBro - Developer & Creator</title> <!-- Title mới -->
-    <!-- Google Font: Inter (Phù hợp phong cách GitHub/Netflix) -->
+    <title>KiritoMainBro - Developer & Creator</title>
+    <!-- Google Font: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,44 +13,46 @@
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="dark-theme"> <!-- Giữ dark theme -->
+<body class="dark-theme">
 
-    <!-- Header với hiệu ứng tách phông -->
+    <!-- Header -->
     <header class="site-header">
         <a href="index.html" class="logo-link">
-            <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image">
+            <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image"> <!-- Make sure path is correct -->
             <span class="logo-text">KiritoMainBro</span>
         </a>
         <nav class="header-nav">
-            <a href="#donate" class="nav-link">Donate</a> <!-- Đổi button thành link style -->
+            <a href="#donate" class="nav-link">Donate</a>
             <a href="#auth" class="nav-link auth-link">Login / Register</a>
         </nav>
     </header>
 
     <main class="site-main">
-        <!-- Hero Section - Phong cách tối giản, mạnh mẽ -->
+        <!-- Hero Section -->
         <section class="hero-section">
              <div class="hero-content">
-                <h1 class="hero-title" data-animate="reveal-text">
+                <h1 class="hero-title" data-animate="reveal-text"> <!-- Keep animation -->
                     KiritoMainBro<span class="accent-dot">.</span><br>
                     Developer & Creator<span class="accent-dot">.</span>
                 </h1>
-                <p class="hero-subtitle" data-animate="fade-up" data-delay="0.3">
+                <p class="hero-subtitle" data-animate="fade-up" data-delay="0.3"> <!-- Keep animation -->
                     Khám phá hành trình sáng tạo và kỹ năng của mình qua portfolio này.
                 </p>
-                <div class="hero-cta" data-animate="fade-up" data-delay="0.5">
-                    <a href="#intro" class="cta-button primary">Xem thêm <i class="fas fa-arrow-right icon-right"></i></a>
+                <div class="hero-cta">
+                    <!-- REMOVED data-animate and data-delay from this button -->
+                    <a href="#intro" class="cta-button primary">
+                        Xem thêm <i class="fas fa-arrow-right icon-right"></i>
+                    </a>
                 </div>
             </div>
-            <!-- Hiệu ứng nền tinh tế -->
             <div class="background-overlay-grid"></div>
         </section>
 
         <!-- Intro Section -->
         <section id="intro" class="content-section content-row">
             <div class="image-col" data-animate="fade-right" data-delay="0.1">
-                <div class="image-card shadow-lift"> <!-- Thêm hiệu ứng shadow -->
-                    <img src="images/greeting-cat.jpg" alt="Mèo chào hỏi" class="content-image">
+                <div class="image-card shadow-lift">
+                    <img src="images/greeting-cat.jpg" alt="Mèo chào hỏi" class="content-image"> <!-- Make sure path is correct -->
                  </div>
             </div>
             <div class="text-col" data-animate="fade-left" data-delay="0.1">
@@ -62,24 +64,25 @@
             </div>
         </section>
 
-        <!-- Skills Section - Alternate -->
+        <!-- Skills Section -->
         <section id="skills" class="content-section content-row alternate background-alt">
             <div class="text-col" data-animate="fade-right">
                  <h2 class="section-title">Công nghệ & <span class="highlight-text">Kỹ năng</span></h2>
                 <p data-editable="skills">
                     Mình đang xây dựng nền tảng với <span class="code-text">C</span>, <span class="code-text">Javascript</span>, <span class="code-text">C++</span>, và <span class="code-text">Python</span>. Mục tiêu là tạo ra những sản phẩm có giá trị và giải quyết vấn đề thực tế.
                 </p>
-                <div class="skills-grid"> <!-- Grid cho skills -->
-                    <div class="skill-item" data-animate="fade-up" data-stagger="0.05"><i class="fas fa-code"></i> Web Dev Basics</div>
-                    <div class="skill-item" data-animate="fade-up" data-stagger="0.05" data-delay="0.05"><i class="fas fa-terminal"></i> C/C++</div>
-                    <div class="skill-item" data-animate="fade-up" data-stagger="0.05" data-delay="0.1"><i class="fab fa-python"></i> Python</div>
-                     <div class="skill-item" data-animate="fade-up" data-stagger="0.05" data-delay="0.15"><i class="fas fa-brain"></i> Problem Solving</div>
-                     <div class="skill-item" data-animate="fade-up" data-stagger="0.05" data-delay="0.2"><i class="fas fa-comments"></i> Communication</div>
+                <!-- Added data-animate to container, stagger will apply to children -->
+                <div class="skills-grid" data-animate="fade-up" data-stagger="0.08">
+                    <div class="skill-item"><i class="fas fa-code"></i> Web Dev Basics</div>
+                    <div class="skill-item"><i class="fas fa-terminal"></i> C/C++</div>
+                    <div class="skill-item"><i class="fab fa-python"></i> Python</div>
+                    <div class="skill-item"><i class="fas fa-brain"></i> Problem Solving</div>
+                    <div class="skill-item"><i class="fas fa-comments"></i> Communication</div>
                 </div>
             </div>
              <div class="image-col" data-animate="fade-left">
                 <div class="image-card shadow-lift">
-                    <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image">
+                    <img src="images/coding-cat.jpg" alt="Mèo lập trình" class="content-image"> <!-- Make sure path is correct -->
                  </div>
             </div>
         </section>
@@ -90,12 +93,22 @@
             <p data-editable="content-creator" class="content-narrow" data-animate="fade-up" data-delay="0.1">
                 Từ 2018, mình đã bắt đầu chia sẻ qua video. Dù có lúc thăng trầm, đam mê này vẫn tiếp tục trên:
             </p>
-            <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2">
-                <a href="https://www.youtube.com/@KiritoMainBro" target="_blank" rel="noopener noreferrer" class="social-button youtube">
+            <!-- Container for social buttons -->
+            <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08"> <!-- Adjusted stagger -->
+                <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube"> <!-- Updated YT Link -->
                     <i class="fab fa-youtube"></i> YouTube
                 </a>
                 <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" class="social-button tiktok">
                     <i class="fab fa-tiktok"></i> TikTok
+                </a>
+                <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="social-button discord">
+                    <i class="fab fa-discord"></i> Discord
+                </a>
+                 <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" class="social-button github">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                 <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="social-button facebook">
+                    <i class="fab fa-facebook"></i> Facebook
                 </a>
             </div>
         </section>
@@ -103,7 +116,8 @@
         <!-- Interests Section -->
         <section id="interests" class="content-section background-alt">
             <h2 class="section-title text-center" data-animate="fade-up">Ngoài lề: <span class="highlight-text">Đam mê khác</span></h2>
-            <div class="interests-carousel" data-animate="fade-up" data-delay="0.1"> <!-- Carousel thay grid -->
+            <!-- Added data-animate to container, stagger will apply to children -->
+            <div class="interests-carousel" data-animate="fade-up" data-delay="0.1" data-stagger="0.1">
                 <div class="interest-card">
                     <div class="interest-icon"><i class="fas fa-utensils"></i></div>
                     <h3 class="interest-title">Ẩm thực Việt</h3>
@@ -124,15 +138,28 @@
                      <h3 class="interest-title">Phim ảnh</h3>
                     <p>Fan của phim khoa học viễn tưởng và hành động.</p>
                 </div>
-                <!-- Thêm card nếu cần -->
             </div>
         </section>
 
-        <!-- Admin Panel (Giữ nguyên cấu trúc) -->
-        <section id="admin-panel" style="display: none;"> /* ... */ </section>
+        <!-- Admin Panel -->
+        <section id="admin-panel" style="display: none;">
+             <h2>Admin Panel - Chỉnh sửa nội dung</h2>
+             <label for="edit-intro">Giới thiệu:</label>
+             <textarea name="intro" id="edit-intro"></textarea>
+             <label for="edit-skills">Kỹ năng:</label>
+             <textarea name="skills" id="edit-skills"></textarea>
+             <label for="edit-content-creator">Sáng tạo nội dung:</label>
+             <textarea name="content-creator" id="edit-content-creator"></textarea>
+             <label for="edit-food-interests">Sở thích ẩm thực:</label>
+             <textarea name="food-interests" id="edit-food-interests"></textarea>
+             <label for="edit-gaming-interests">Sở thích gaming:</label>
+             <textarea name="gaming-interests" id="edit-gaming-interests"></textarea>
+             <button class="cta-button">Lưu thay đổi</button>
+        </section>
 
     </main>
 
+    <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-main">
@@ -147,14 +174,16 @@
                     <a href="#interests">Sở thích</a>
                 </nav>
                  <div class="footer-social">
-                     <a href="https://www.youtube.com/@KiritoMainBro" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                     <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                      <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
-                     <a href="#" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                     <a href="mailto:your.email@example.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                     <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                     <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                     <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                     <a href="mailto:your.email@example.com" aria-label="Email"><i class="fas fa-envelope"></i></a> <!-- Add your email here -->
                  </div>
             </div>
             <div class="footer-bottom">
-                <p>© <span id="year">2025</span> KiritoMainBro. Inspired by the best.</p>
+                <p>© <span id="year">2024</span> KiritoMainBro. Inspired by the best.</p> <!-- Year updated by JS -->
             </div>
         </div>
     </footer>
