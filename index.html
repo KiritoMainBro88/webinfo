@@ -23,7 +23,7 @@
         </a>
         <nav class="header-nav">
             <a href="#donate" class="nav-link">Donate</a>
-            <a href="#auth" class="nav-link auth-link">Login / Register</a>
+            <a href="#auth" class="nav-link auth-link">Login / Register</a> <!-- JS will handle this click -->
         </nav>
     </header>
 
@@ -39,7 +39,7 @@
                     Khám phá hành trình sáng tạo và kỹ năng của mình qua portfolio này.
                 </p>
                 <div class="hero-cta">
-                    <!-- REMOVED data-animate and data-delay from this button -->
+                    <!-- Removed data-animate from button, it appears statically -->
                     <a href="#intro" class="cta-button primary">
                         Xem thêm <i class="fas fa-arrow-right icon-right"></i>
                     </a>
@@ -94,8 +94,8 @@
                 Từ 2018, mình đã bắt đầu chia sẻ qua video. Dù có lúc thăng trầm, đam mê này vẫn tiếp tục trên:
             </p>
             <!-- Container for social buttons -->
-            <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08"> <!-- Adjusted stagger -->
-                <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube"> <!-- Updated YT Link -->
+            <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08">
+                <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube">
                     <i class="fab fa-youtube"></i> YouTube
                 </a>
                 <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" class="social-button tiktok">
@@ -157,7 +157,52 @@
              <button class="cta-button">Lưu thay đổi</button>
         </section>
 
-    </main>
+    </main> <!-- End of main content -->
+
+    <!-- Login/Register Forms (Initially Hidden) -->
+    <div id="auth-container" style="display: none;"> <!-- Start hidden, JS controls visibility -->
+
+        <!-- Login Form -->
+        <div id="login-form-wrapper" class="auth-form-wrapper">
+            <button class="close-auth-btn" onclick="closeAuthForms()">×</button>
+            <h3>Login</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <button type="submit" class="cta-button">Login</button>
+                <p id="login-message" class="auth-message"></p>
+            </form>
+            <p class="switch-form-link">Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a></p>
+        </div>
+
+        <!-- Registration Form (Initially Hidden within container) -->
+        <div id="register-form-wrapper" class="auth-form-wrapper" style="display: none;">
+             <button class="close-auth-btn" onclick="closeAuthForms()">×</button>
+            <h3>Register</h3>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password (min 6 chars)</label>
+                    <input type="password" id="register-password" name="password" required minlength="6">
+                </div>
+                <button type="submit" class="cta-button">Register</button>
+                <p id="register-message" class="auth-message"></p>
+            </form>
+             <p class="switch-form-link">Already have an account? <a href="#" onclick="showLoginForm()">Login here</a></p>
+        </div>
+
+    </div>
+    <!-- End Login/Register Forms -->
+
 
     <!-- Footer -->
     <footer class="site-footer">
