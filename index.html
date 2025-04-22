@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<!-- Dark theme is default -->
 <body class="dark-theme">
 
     <div class="page-wrapper">
@@ -18,10 +17,7 @@
         <!-- ===== Sidebar Navigation ===== -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
-                 <!-- Hamburger visible only when collapsed -->
-                 <button id="sidebar-toggle-in-header" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
-                     <i class="fas fa-bars"></i>
-                 </button>
+                 <!-- Hamburger button REMOVED from here -->
                  <!-- Logo link -->
                  <a href="index.html" class="logo-link">
                     <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image">
@@ -29,18 +25,24 @@
                 </a>
             </div>
 
-            <!-- === ADD HORIZONTAL RULE HERE === -->
+            <!-- === HAMBURGER BUTTON MOVED HERE === -->
+            <button id="sidebar-toggle-in-header" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+
             <hr class="sidebar-divider">
 
             <nav class="sidebar-nav">
+                <!-- === NAVIGATION LINKS REMOVED/COMMENTED OUT === -->
+                <!--
                 <a href="#intro" class="sidebar-link"><i class="fas fa-user fa-fw icon-left"></i><span class="link-text">Về tôi</span></a>
                 <a href="#skills" class="sidebar-link"><i class="fas fa-code fa-fw icon-left"></i><span class="link-text">Kỹ năng</span></a>
                 <a href="#content-creator" class="sidebar-link"><i class="fas fa-video fa-fw icon-left"></i><span class="link-text">Sáng tạo</span></a>
                 <a href="#interests" class="sidebar-link"><i class="fas fa-star fa-fw icon-left"></i><span class="link-text">Sở thích</span></a>
-                <!-- Donate link is removed from here -->
+                -->
             </nav>
 
-            <!-- === MOVE DONATE LINK HERE (Outside nav, inside aside) === -->
+            <!-- Donate link remains at the bottom -->
             <a href="#donate" class="sidebar-link donate-link">
                 <i class="fas fa-donate fa-fw icon-left"></i><span class="link-text">Donate</span>
             </a>
@@ -53,7 +55,7 @@
             <!-- Top Bar -->
             <header class="content-header">
                  <div class="header-left">
-                     <!-- Hamburger visible only when sidebar is EXPANDED -->
+                     <!-- This toggle button remains for the expanded sidebar -->
                      <button id="sidebar-toggle-in-content" class="icon-button sidebar-toggle-btn" aria-label="Toggle Sidebar">
                          <i class="fas fa-bars"></i>
                      </button>
@@ -64,7 +66,6 @@
                      <button id="theme-toggle" class="icon-button" aria-label="Toggle Theme"> <i class="fas fa-moon"></i> </button>
 
                      <div class="user-area" id="user-area-trigger">
-                         <!-- Default avatar -->
                          <img id="user-avatar" src="images/cat-avatar-default.jpg" alt="User Avatar" class="user-avatar-img">
                          <span id="user-status"> <span id="user-name">Khách</span> <i class="fas fa-chevron-down user-area-chevron"></i> </span>
                          <div class="user-dropdown-content" id="user-dropdown">
@@ -89,7 +90,7 @@
                         <p class="hero-subtitle" data-animate="fade-up" data-delay="0.3">
                             Khám phá hành trình sáng tạo và kỹ năng của mình qua portfolio này.
                         </p>
-                        <div class="hero-cta" data-animate="fade-up" data-delay="0.5"> <!-- Added animation -->
+                        <div class="hero-cta" data-animate="fade-up" data-delay="0.5">
                             <a href="#intro" class="cta-button primary">
                                 Xem thêm <i class="fas fa-arrow-right icon-right"></i>
                             </a>
@@ -111,8 +112,8 @@
                 </section>
 
                 <!-- Skills Section -->
-                <section id="skills" class="content-section background-alt"> <!-- Removed content-row, added background-alt -->
-                   <div class="content-row alternate"> <!-- Added inner content-row -->
+                <section id="skills" class="content-section background-alt">
+                   <div class="content-row alternate">
                        <div class="text-col" data-animate="fade-right">
                              <h2 class="section-title">Công nghệ & <span class="highlight-text">Kỹ năng</span></h2>
                              <p data-editable="skills"> Mình đang xây dựng nền tảng với <span class="code-text">C</span>, <span class="code-text">Javascript</span>, <span class="code-text">C++</span>, và <span class="code-text">Python</span>. Mục tiêu là tạo ra những sản phẩm có giá trị và giải quyết vấn đề thực tế. </p>
