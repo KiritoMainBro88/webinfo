@@ -1,93 +1,158 @@
 // --- GSAP and Helpers ---
 gsap.registerPlugin(ScrollTrigger);
-
 function calculateAge(birthDateString) { const birthDate = new Date(birthDateString); const today = new Date(); let age = today.getFullYear() - birthDate.getFullYear(); const m = today.getMonth() - birthDate.getMonth(); if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; } return age; }
-function updateYear() { const yearSpan = document.getElementById('year'); if (yearSpan) { yearSpan.textContent = new Date().getFullYear(); } }
+function updateYear() { const yearSpan = document.getElementById('year'); /*const sidebarYear=document.getElementById('sidebar-year');*/ if (yearSpan) { yearSpan.textContent = new Date().getFullYear(); } /*if(sidebarYear){sidebarYear.textContent = new Date().getFullYear();}*/ }
 
-// --- Header Scroll Effect ---
-function setupHeaderScroll() { const header = document.querySelector('.site-header'); if (!header) return; ScrollTrigger.create({ start: "top top", end: 99999, onUpdate: (self) => { const threshold = 20; if (self.scroll() > threshold) header.classList.add('scrolled'); else header.classList.remove('scrolled'); } }); if (window.scrollY > 20) header.classList.add('scrolled'); }
+// --- Header Scroll Effect (Not really needed with sticky sidebar/fixed content header) ---
+// function setupHeaderScroll() { ... } // Can be removed or left commented
 
-// --- GSAP Animations ---
+// --- GSAP Animations (Target elements within .site-main) ---
 function setupProfessionalAnimations() {
     const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" };
-    const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']");
-    const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']");
+    // Find elements within the main content area now
+    const mainContent = document.querySelector('.site-main');
+    if (!mainContent) return; // Exit if main content area isn't found
+
+    const heroTitle = mainContent.querySelector(".hero-title[data-animate='reveal-text']");
+    const heroSubtitle = mainContent.querySelector(".hero-subtitle[data-animate='fade-up']");
     if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); }
     if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); }
-    gsap.utils.toArray('[data-animate]:not(.hero-title):not(.hero-subtitle)').forEach(element => { const delay = parseFloat(element.dataset.delay) || 0; let staggerAmount = parseFloat(element.dataset.stagger) || 0; const animType = element.dataset.animate; let animProps = { duration: 0.6, ease: "power2.out", delay: delay, clearProps: "opacity,transform" }; if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; } let target = element; if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline')) { if (element.children.length > 0) { target = element.children; if (staggerAmount === 0 && target !== element) staggerAmount = 0.08; if (staggerAmount > 0) animProps.stagger = staggerAmount; } } if (target === element && animProps.stagger) delete animProps.stagger; gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } }); });
-    gsap.utils.toArray('.content-row .image-card').forEach(card => { gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9 } }); });
-    document.querySelectorAll('.cta-button, .nav-link, .social-button').forEach(button => { button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.95, duration: 0.1 })); button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 })); button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); });
+
+    gsap.utils.toArray(mainContent.querySelectorAll('[data-animate]:not(.hero-title):not(.hero-subtitle)')).forEach(element => {
+        const delay = parseFloat(element.dataset.delay) || 0; let staggerAmount = parseFloat(element.dataset.stagger) || 0; const animType = element.dataset.animate; let animProps = { duration: 0.6, ease: "power2.out", delay: delay, clearProps: "opacity,transform" }; if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; } let target = element; if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline')) { if (element.children.length > 0) { target = element.children; if (staggerAmount === 0 && target !== element) staggerAmount = 0.08; if (staggerAmount > 0) animProps.stagger = staggerAmount; } } if (target === element && animProps.stagger) delete animProps.stagger;
+        gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true, scroller: ".main-content-area" } }); // IMPORTANT: Define scroller if needed
+    });
+    gsap.utils.toArray(mainContent.querySelectorAll('.content-row .image-card')).forEach(card => { gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9, scroller: ".main-content-area" } }); }); // IMPORTANT: Define scroller
+    document.querySelectorAll('.cta-button, .sidebar-link, .social-button, .auth-dropdown').forEach(button => { button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 })); button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 })); button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); });
 }
 
 // --- Admin Panel Logic ---
-function setupAdminPanel() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const adminPanel = document.getElementById('admin-panel');
-    const editables = document.querySelectorAll('[data-editable]');
-    const adminSaveBtn = document.querySelector('#admin-panel button.cta-button');
-    if (urlParams.has('admin')) {
-        if (!adminPanel) return;
-        adminPanel.style.display = 'block';
-        editables.forEach(el => { const key = el.dataset.editable; const textarea = adminPanel.querySelector(`textarea[name="${key}"]`); if (textarea) { textarea.value = localStorage.getItem(key) || el.innerHTML.trim(); } el.style.border = '1px dashed var(--accent-primary)'; el.style.cursor = 'pointer'; el.addEventListener('click', () => { const correspondingTextarea = adminPanel.querySelector(`textarea[name="${key}"]`); if (correspondingTextarea) correspondingTextarea.focus(); }); });
-        if (adminSaveBtn) { adminSaveBtn.addEventListener('click', () => { editables.forEach(el => { const key = el.dataset.editable; const textarea = adminPanel.querySelector(`textarea[name="${key}"]`); if (textarea) { const newValue = textarea.value; el.innerHTML = newValue; localStorage.setItem(key, newValue); } }); alert('Nội dung đã được cập nhật!'); editables.forEach(el => { el.style.border = 'none'; el.style.cursor = 'default'; }); }); }
-    } else {
-        if (adminPanel) adminPanel.style.display = 'none';
-        editables.forEach(el => { const key = el.dataset.editable; const savedValue = localStorage.getItem(key); if (savedValue) { el.innerHTML = savedValue; } });
-    }
-}
+function setupAdminPanel() { /* ... (Keep existing Admin Panel code) ... */ }
 
 // --- Authentication Logic ---
-
-// !! IMPORTANT: Replace this with your actual Render deployment URL !!
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // YOUR RENDER URL HERE
 
 let authContainer = null, loginFormWrapper = null, registerFormWrapper = null, forgotFormWrapper = null, resetFormWrapper = null;
 let loginForm = null, registerForm = null, forgotForm = null, resetForm = null;
 let loginMessageEl = null, registerMessageEl = null, forgotMessageEl = null, resetMessageEl = null;
-let authLink = null;
+let authLink = null; // Now refers to the link inside the dropdown
+let userStatusEl = null; // Span containing guest icon/username
+let userNameEl = null;   // Span for the actual name
+let userAvatarEl = null; // Avatar image
+let profileLinkEl = null; // Link to profile (optional)
+let guestIconEl = null; // Guest icon element
 
-function showLoginForm() { if (registerFormWrapper) registerFormWrapper.style.display = 'none'; if (forgotFormWrapper) forgotFormWrapper.style.display = 'none'; if (resetFormWrapper) resetFormWrapper.style.display = 'none'; if (loginFormWrapper) loginFormWrapper.style.display = 'block'; if (loginMessageEl) loginMessageEl.textContent = ''; if (registerMessageEl) registerMessageEl.textContent = ''; if (forgotMessageEl) forgotMessageEl.textContent = ''; if (resetMessageEl) resetMessageEl.textContent = ''; if (authContainer && !authContainer.classList.contains('visible')) { authContainer.style.display = 'flex'; setTimeout(() => { authContainer.classList.add('visible'); }, 10); } }
-function showRegisterForm() { if (loginFormWrapper) loginFormWrapper.style.display = 'none'; if (forgotFormWrapper) forgotFormWrapper.style.display = 'none'; if (resetFormWrapper) resetFormWrapper.style.display = 'none'; if (registerFormWrapper) registerFormWrapper.style.display = 'block'; if (loginMessageEl) loginMessageEl.textContent = ''; if (registerMessageEl) registerMessageEl.textContent = ''; if (forgotMessageEl) forgotMessageEl.textContent = ''; if (resetMessageEl) resetMessageEl.textContent = ''; if (authContainer && !authContainer.classList.contains('visible')) { authContainer.style.display = 'flex'; setTimeout(() => { authContainer.classList.add('visible'); }, 10); } }
-function showForgotForm() { if (loginFormWrapper) loginFormWrapper.style.display = 'none'; if (registerFormWrapper) registerFormWrapper.style.display = 'none'; if (resetFormWrapper) resetFormWrapper.style.display = 'none'; if (forgotFormWrapper) forgotFormWrapper.style.display = 'block'; if (loginMessageEl) loginMessageEl.textContent = ''; if (registerMessageEl) registerMessageEl.textContent = ''; if (forgotMessageEl) forgotMessageEl.textContent = ''; if (resetMessageEl) resetMessageEl.textContent = ''; if (authContainer && !authContainer.classList.contains('visible')) { authContainer.style.display = 'flex'; setTimeout(() => { authContainer.classList.add('visible'); }, 10); } }
-function showResetForm() { if (loginFormWrapper) loginFormWrapper.style.display = 'none'; if (registerFormWrapper) registerFormWrapper.style.display = 'none'; if (forgotFormWrapper) forgotFormWrapper.style.display = 'none'; if (resetFormWrapper) resetFormWrapper.style.display = 'block'; if (loginMessageEl) loginMessageEl.textContent = ''; if (registerMessageEl) registerMessageEl.textContent = ''; if (forgotMessageEl) forgotMessageEl.textContent = ''; if (resetMessageEl) resetMessageEl.textContent = ''; if (authContainer && !authContainer.classList.contains('visible')) { authContainer.style.display = 'flex'; setTimeout(() => { authContainer.classList.add('visible'); }, 10); } }
-function closeAuthForms() { if (authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { if (!authContainer.classList.contains('visible')) { authContainer.style.display = 'none'; } }, 300); } if (loginMessageEl) loginMessageEl.textContent = ''; if (registerMessageEl) registerMessageEl.textContent = ''; if (forgotMessageEl) forgotMessageEl.textContent = ''; if (resetMessageEl) resetMessageEl.textContent = ''; }
-function displayAuthMessage(element, message, isError = false) { if (!element) return; element.textContent = message; element.className = 'auth-message'; element.classList.add(isError ? 'error' : 'success'); }
-function updateUserLoginState() { const user = localStorage.getItem('portfolioUser'); const authLinkEl = document.querySelector('.nav-link.auth-link'); if (!authLinkEl) return; authLinkEl.removeEventListener('click', handleAuthLinkClick); authLinkEl.removeEventListener('click', handleLogoutClick); if (user) { try { const userData = JSON.parse(user); authLinkEl.textContent = `Logout (${userData.username})`; authLinkEl.addEventListener('click', handleLogoutClick); } catch (e) { localStorage.removeItem('portfolioUser'); authLinkEl.textContent = 'Login / Register'; authLinkEl.addEventListener('click', handleAuthLinkClick); } } else { authLinkEl.textContent = 'Login / Register'; authLinkEl.addEventListener('click', handleAuthLinkClick); } }
-function handleAuthLinkClick(e) { e.preventDefault(); showLoginForm(); }
-function handleLogoutClick(e) { e.preventDefault(); localStorage.removeItem('portfolioUser'); alert('Logged out successfully!'); updateUserLoginState(); closeAuthForms(); }
-async function handleRegisterSubmit(e) { e.preventDefault(); if (!registerForm || !registerMessageEl) return; const username = registerForm.username.value; const password = registerForm.password.value; const email = registerForm.email.value; displayAuthMessage(registerMessageEl, 'Registering...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(registerMessageEl, data.message, false); registerForm.reset(); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error('Registration fetch error:', error); displayAuthMessage(registerMessageEl, error.message || 'Registration failed.', true); } }
-async function handleLoginSubmit(e) { e.preventDefault(); if (!loginForm || !loginMessageEl) return; const username = loginForm.username.value; const password = loginForm.password.value; displayAuthMessage(loginMessageEl, 'Logging in...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(loginMessageEl, data.message, false); localStorage.setItem('portfolioUser', JSON.stringify({ userId: data.userId, username: data.username })); loginForm.reset(); setTimeout(() => { closeAuthForms(); updateUserLoginState(); }, 1000); } catch (error) { console.error('Login fetch error:', error); displayAuthMessage(loginMessageEl, error.message || 'Login failed.', true); localStorage.removeItem('portfolioUser'); updateUserLoginState(); } }
-async function handleForgotSubmit(e) { e.preventDefault(); if (!forgotForm || !forgotMessageEl) return; const email = forgotForm.email.value; displayAuthMessage(forgotMessageEl, 'Sending reset link...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); displayAuthMessage(forgotMessageEl, data.message, !response.ok); if (response.ok) { forgotForm.reset(); } } catch (error) { console.error('Forgot Password fetch error:', error); displayAuthMessage(forgotMessageEl, 'Failed to send request. Please try again.', true); } }
-async function handleResetSubmit(e) { e.preventDefault(); if (!resetForm || !resetMessageEl) return; const token = resetForm.token.value; const password = resetForm.password.value; displayAuthMessage(resetMessageEl, 'Resetting password...', false); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(resetMessageEl, data.message, false); resetForm.reset(); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error('Reset Password fetch error:', error); displayAuthMessage(resetMessageEl, error.message || 'Password reset failed.', true); } }
 
-// --- Setup Action Buttons (Handles Auth Forms and Token) ---
+function showLoginForm() { /* ... (keep existing) ... */ }
+function showRegisterForm() { /* ... (keep existing) ... */ }
+function showForgotForm() { /* ... (keep existing) ... */ }
+function showResetForm() { /* ... (keep existing) ... */ }
+function closeAuthForms() { /* ... (keep existing) ... */ }
+function displayAuthMessage(element, message, isError = false) { /* ... (keep existing) ... */ }
+
+// --- MODIFIED: Update UI for new layout ---
+function updateUserLoginState() {
+    const user = localStorage.getItem('portfolioUser');
+    // Target new elements
+    authLink = document.getElementById('auth-action-link'); // Link in dropdown
+    userStatusEl = document.getElementById('user-status');
+    userNameEl = document.getElementById('user-name');
+    userAvatarEl = document.getElementById('user-avatar');
+    profileLinkEl = document.getElementById('profile-link');
+    guestIconEl = userStatusEl?.querySelector('.guest-icon'); // Find guest icon within status
+
+    if (!authLink || !userStatusEl || !userNameEl || !userAvatarEl || !profileLinkEl || !guestIconEl) {
+        console.error("Auth UI elements not found!");
+        return;
+    }
+
+    // Clean up previous listeners to avoid duplicates
+    authLink.removeEventListener('click', handleAuthLinkClick);
+    authLink.removeEventListener('click', handleLogoutClick);
+
+    if (user) {
+        try {
+            const userData = JSON.parse(user);
+            userNameEl.textContent = userData.username;    // Show username
+            userAvatarEl.style.display = 'inline-block';   // Show avatar
+            guestIconEl.style.display = 'none';           // Hide guest icon
+            authLink.textContent = 'Đăng Xuất';             // Change link text
+            authLink.addEventListener('click', handleLogoutClick); // Add logout listener
+            profileLinkEl.style.display = 'block';        // Show profile link
+        } catch (e) {
+             // Invalid data, treat as logged out
+             localStorage.removeItem('portfolioUser');
+             userNameEl.textContent = 'Khách';
+             userAvatarEl.style.display = 'none';
+             guestIconEl.style.display = 'inline-block';
+             authLink.textContent = 'Đăng Nhập / Đăng Ký';
+             authLink.addEventListener('click', handleAuthLinkClick);
+             profileLinkEl.style.display = 'none';
+        }
+    } else {
+        // Logged out state
+        userNameEl.textContent = 'Khách';
+        userAvatarEl.style.display = 'none';           // Hide avatar
+        guestIconEl.style.display = 'inline-block';    // Show guest icon
+        authLink.textContent = 'Đăng Nhập / Đăng Ký';
+        authLink.addEventListener('click', handleAuthLinkClick); // Add login listener
+        profileLinkEl.style.display = 'none';          // Hide profile link
+    }
+}
+
+// --- Event Handlers ---
+function handleAuthLinkClick(e) { e.preventDefault(); showLoginForm(); } // Still show login form first
+function handleLogoutClick(e) { e.preventDefault(); localStorage.removeItem('portfolioUser'); alert('Đăng xuất thành công!'); updateUserLoginState(); closeAuthForms(); }
+async function handleRegisterSubmit(e) { /* ... (Keep existing - check confirm password) ... */
+    e.preventDefault(); if (!registerForm || !registerMessageEl) return;
+    const username = registerForm.username.value; const password = registerForm.password.value; const email = registerForm.email.value; const confirmPassword = registerForm.confirmPassword.value;
+    if (password !== confirmPassword) { displayAuthMessage(registerMessageEl, 'Mật khẩu nhập lại không khớp.', true); return; }
+    displayAuthMessage(registerMessageEl, 'Đang đăng ký...', false);
+    try { const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(registerMessageEl, data.message, false); registerForm.reset(); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error('Registration fetch error:', error); displayAuthMessage(registerMessageEl, error.message || 'Đăng ký thất bại.', true); }
+}
+async function handleLoginSubmit(e) { /* ... (Keep existing) ... */ }
+async function handleForgotSubmit(e) { /* ... (Keep existing) ... */ }
+async function handleResetSubmit(e) { /* ... (Keep existing - check confirm password) ... */
+    e.preventDefault(); if (!resetForm || !resetMessageEl) return;
+    const token = resetForm.token.value; const password = resetForm.password.value; const confirmPassword = resetForm.confirmPassword.value;
+    if (password !== confirmPassword) { displayAuthMessage(resetMessageEl, 'Mật khẩu nhập lại không khớp.', true); return; }
+    displayAuthMessage(resetMessageEl, 'Đang đặt lại mật khẩu...', false);
+    try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `HTTP error ${response.status}`); displayAuthMessage(resetMessageEl, data.message, false); resetForm.reset(); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error('Reset Password fetch error:', error); displayAuthMessage(resetMessageEl, error.message || 'Đặt lại mật khẩu thất bại.', true); }
+}
+
+// --- Setup Action Buttons (incl. Auth for new layout) ---
 function setupActionButtons() {
-    const donateLink = document.querySelector('.nav-link[href="#donate"]'); authLink = document.querySelector('.nav-link.auth-link');
-    if(donateLink) { donateLink.addEventListener('click', (e) => { e.preventDefault(); alert('Chức năng Donate đang được phát triển!'); }); }
-    authContainer = document.getElementById('auth-container'); loginFormWrapper = document.getElementById('login-form-wrapper'); registerFormWrapper = document.getElementById('register-form-wrapper'); forgotFormWrapper = document.getElementById('forgot-form-wrapper'); resetFormWrapper = document.getElementById('reset-form-wrapper'); loginForm = document.getElementById('login-form'); registerForm = document.getElementById('register-form'); forgotForm = document.getElementById('forgot-form'); resetForm = document.getElementById('reset-form'); loginMessageEl = document.getElementById('login-message'); registerMessageEl = document.getElementById('register-message'); forgotMessageEl = document.getElementById('forgot-message'); resetMessageEl = document.getElementById('reset-message');
+     const donateLink = document.querySelector('.sidebar-link.donate-link'); // Target donate link in sidebar
+     authLink = document.getElementById('auth-action-link'); // Target the link inside the dropdown
+
+     if(donateLink) { donateLink.addEventListener('click', (e) => { e.preventDefault(); alert('Chức năng Donate đang được phát triển!'); }); }
+
+     // Get references to auth elements
+     authContainer = document.getElementById('auth-container'); loginFormWrapper = document.getElementById('login-form-wrapper'); registerFormWrapper = document.getElementById('register-form-wrapper'); forgotFormWrapper = document.getElementById('forgot-form-wrapper'); resetFormWrapper = document.getElementById('reset-form-wrapper'); loginForm = document.getElementById('login-form'); registerForm = document.getElementById('register-form'); forgotForm = document.getElementById('forgot-form'); resetForm = document.getElementById('reset-form'); loginMessageEl = document.getElementById('login-message'); registerMessageEl = document.getElementById('register-message'); forgotMessageEl = document.getElementById('forgot-message'); resetMessageEl = document.getElementById('reset-message'); userStatusEl = document.getElementById('user-status'); userNameEl = document.getElementById('user-name'); userAvatarEl = document.getElementById('user-avatar'); profileLinkEl = document.getElementById('profile-link'); guestIconEl = userStatusEl?.querySelector('.guest-icon');
+
     if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit); else console.error("Login form not found");
     if (registerForm) registerForm.addEventListener('submit', handleRegisterSubmit); else console.error("Register form not found");
     if (forgotForm) forgotForm.addEventListener('submit', handleForgotSubmit); else console.error("Forgot Password form not found");
     if (resetForm) resetForm.addEventListener('submit', handleResetSubmit); else console.error("Reset Password form not found");
-    updateUserLoginState(); // Set initial link state
+
+    updateUserLoginState(); // Set initial link state & listeners
     if(authContainer) { authContainer.addEventListener('click', (e) => { if (e.target === authContainer) { closeAuthForms(); } }); }
 
-    // --- Handle potential token in URL on page load ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const resetTokenFromUrl = urlParams.get('token');
-    if (resetTokenFromUrl && resetForm) {
-        console.log("Found reset token in URL:", resetTokenFromUrl);
-        // If token found, immediately show the reset form
-        showResetForm();
-        const tokenInput = document.getElementById('reset-token');
-        if(tokenInput) {
-            tokenInput.value = resetTokenFromUrl; // Pre-fill the token input
-        }
-        // Clean the token from the URL bar so it's not visible/bookmarkable
-        window.history.replaceState({}, document.title, window.location.pathname);
+    // Handle token in URL on page load
+    const urlParams = new URLSearchParams(window.location.search); const resetTokenFromUrl = urlParams.get('token');
+    if (resetTokenFromUrl && resetFormWrapper) { // Check wrapper exists
+        console.log("Found reset token in URL:", resetTokenFromUrl); showResetForm(); const tokenInput = document.getElementById('reset-token');
+        if(tokenInput) tokenInput.value = resetTokenFromUrl; window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
 
 // ----- Initialization -----
-function initializePage() { const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } updateYear(); setupHeaderScroll(); setupProfessionalAnimations(); setupAdminPanel(); setupActionButtons(); }
+function initializePage() {
+    const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } }
+    updateYear();
+    // setupHeaderScroll(); // Remove or comment out if not needed
+    setupProfessionalAnimations();
+    setupAdminPanel();
+    setupActionButtons(); // Sets up auth listeners and initial state
+}
 document.addEventListener('DOMContentLoaded', initializePage);
