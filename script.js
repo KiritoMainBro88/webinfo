@@ -7,8 +7,6 @@ function updateYear() { const yearSpan = document.getElementById('year'); if (ye
 function setupHeaderScrollEffect() {
     const header = document.querySelector('.content-header');
     if (!header) return;
-    const supportsBackdropFilter = CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)');
-    if (!supportsBackdropFilter) { console.log("Backdrop-filter not supported."); }
     const scrollThreshold = 10;
     const checkScroll = () => {
         if (window.getComputedStyle(header).position === 'fixed') {
@@ -49,7 +47,19 @@ function setupThemeToggle() { /* ... (Keep existing code) ... */ }
 function setupLanguageToggle() { /* ... (Keep existing code) ... */ }
 
 // --- GSAP Animations (Using window scroller) ---
-function setupProfessionalAnimations() { /* ... (Keep existing code) ... */ }
+function setupProfessionalAnimations() {
+    // ... (Keep existing animation setup) ...
+
+     // Re-add Microinteractions including new buttons
+     document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn') // Added new elements
+        .forEach(button => {
+            button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 }));
+            button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 }));
+            if (!button.matches('#donate-button-header') && !button.matches('.header-nav-link')) {
+                 button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 }));
+            }
+    });
+}
 
 // --- Admin Panel Logic ---
 function setupAdminPanel() { /* ... (Keep existing code) ... */ }
@@ -61,16 +71,12 @@ function setupActionButtons() { /* ... (Keep existing auth setup logic) ... */ }
 
 // --- Setup Dropdown Link Actions ---
 function setupDropdownActions() {
-    // const shoppingLink = document.getElementById('shopping-link'); // Not needed if href is set
+    // Shopping links now use href="shopping.html"
     const depositLink = document.getElementById('deposit-link');
     const historyLink = document.getElementById('history-link');
-    // const shoppingLinkMobile = document.getElementById('shopping-link-mobile'); // Not needed
     const depositLinkMobile = document.getElementById('deposit-link-mobile');
     const historyLinkMobile = document.getElementById('history-link-mobile');
 
-    // Shopping link now uses href="shopping.html", no JS needed unless for SPA routing
-
-    // Placeholder Links
     const handleDepositClick = (e) => { e.preventDefault(); alert('Nạp tiền function coming soon!'); };
     const handleHistoryClick = (e) => { e.preventDefault(); alert('Lịch sử mua hàng function coming soon!'); };
 
@@ -78,6 +84,29 @@ function setupDropdownActions() {
     if(historyLink) historyLink.addEventListener('click', handleHistoryClick);
     if(depositLinkMobile) depositLinkMobile.addEventListener('click', handleDepositClick);
     if(historyLinkMobile) historyLinkMobile.addEventListener('click', handleHistoryClick);
+
+    // --- Add listeners for elements specific to shopping.html ---
+    if (document.querySelector('.product-grid-section')) {
+        console.log("Setting up shopping page specific listeners...");
+        // Placeholder for category buttons
+        document.querySelectorAll('.category-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                alert(`Category filter for "${e.currentTarget.textContent}" coming soon!`);
+            });
+        });
+
+         // Placeholder for product buy buttons
+         document.querySelectorAll('.product-buy-btn').forEach(button => {
+             button.addEventListener('click', (e) => {
+                 e.preventDefault();
+                 const productTitle = e.target.closest('.product-card')?.querySelector('.product-title')?.textContent || 'Sản phẩm';
+                 alert(`Chức năng mua "${productTitle}" coming soon!`);
+             });
+         });
+    }
 }
 
 
@@ -93,15 +122,16 @@ function initializePage() {
     setupProfessionalAnimations();
     setupAdminPanel();
     setupActionButtons();
-    setupDropdownActions(); // Setup dropdown links
+    setupDropdownActions();
 
     // Header Donate Button Listener
     const donateButtonHeader = document.getElementById('donate-button-header');
-    if (donateButtonHeader) { /* ... keep listener ... */ }
-    else { console.warn("Header donate button (#donate-button-header) not found"); }
+    if (donateButtonHeader) {
+        donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); });
+    } else { console.warn("Header donate button (#donate-button-header) not found"); }
 
     const ageSpan = document.getElementById('age');
-    if (ageSpan) { /* ... calculate age ... */ }
+    if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } }
     else { console.warn("Age span element not found."); }
     console.log("Page initialization complete.");
 }

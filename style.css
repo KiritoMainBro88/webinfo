@@ -65,6 +65,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     padding-left: 0;
+    /* Padding top = header height only */
     padding-top: var(--header-height);
 }
 img { max-width: 100%; height: auto; display: block; }
@@ -101,12 +102,49 @@ input { font-family: inherit; }
 .main-content-area { flex-grow: 1; display: flex; flex-direction: column; width: 100%; background-color: var(--bg-primary); position: relative; }
 
 /* --- Content Header (Outer Container - Full Width, Transparent) --- */
-.content-header { height: var(--header-height); display: flex; align-items: center; padding: 0; background-color: transparent; border-bottom: 1px solid transparent; flex-shrink: 0; position: fixed; top: 0; left: 0; right: 0; z-index: 90; transition: border-color 0.3s ease; will-change: border-color; pointer-events: none; }
-.content-header.header-scrolled { border-bottom-color: var(--border-header-scrolled); }
+.content-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0; /* Padding is handled by inner */
+    background-color: transparent; /* Outer is transparent */
+    border-bottom: 1px solid transparent; /* Gets color on scroll */
+    flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 90;
+    transition: border-color 0.3s ease;
+    will-change: border-color;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+/* Style for when scrolled */
+.content-header.header-scrolled {
+    border-bottom-color: var(--border-header-scrolled);
+}
 
 /* --- Header Inner Card (The Floating Element) --- */
-.header-inner { display: flex; align-items: center; justify-content: space-between; width: calc(100% - 2rem); max-width: 1450px; height: calc(var(--header-height) - 1.2rem); margin: 0.6rem auto; padding: 0 1.2rem; background-color: var(--bg-header-inner); border-radius: var(--border-radius-md); box-shadow: var(--header-shadow); backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; will-change: background-color, box-shadow, border-color; pointer-events: auto; border: 1px solid var(--border-header-inner); }
-.content-header.header-scrolled .header-inner { background-color: var(--bg-header-inner-scrolled); border-color: transparent; }
+.header-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    width: calc(100% - 2rem); /* Adjust width as needed, e.g., calc(100% - 4rem) for more margin */
+    max-width: 1450px; /* Optional: Max width for the card */
+    height: calc(var(--header-height) - 1.2rem); /* Adjust height for floating effect */
+    margin: 0.6rem auto; /* Vertical margin (top/bottom) + auto horizontal centering */
+    padding: 0 1.2rem; /* Internal padding */
+    background-color: var(--bg-header-inner); /* Semi-transparent background */
+    border-radius: var(--border-radius-md); /* Rounded corners */
+    box-shadow: var(--header-shadow); /* Floating shadow */
+    backdrop-filter: blur(var(--blur-amount)); /* Blur background */
+    -webkit-backdrop-filter: blur(var(--blur-amount));
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    will-change: background-color, box-shadow, border-color;
+    pointer-events: auto; /* Enable clicks on the inner card */
+    border: 1px solid var(--border-header-inner); /* Inner card border */
+}
+/* Scrolled state for inner card */
+.content-header.header-scrolled .header-inner {
+     background-color: var(--bg-header-inner-scrolled); /* More opaque background */
+     border-color: transparent; /* Hide inner border when outer shows */
+}
 
 
 /* --- Header Content (.header-left, .header-nav, .header-right) --- */
@@ -132,6 +170,7 @@ input { font-family: inherit; }
 .dropdown-link { display: flex; align-items: center; padding: 0.7rem 1.2rem; color: var(--text-secondary); font-size: 0.9rem; white-space: nowrap; transition: background-color var(--transition-fast), color var(--transition-fast); }
 .dropdown-link .icon-left { width: 20px; margin-right: 0.8rem; text-align: center; font-size: 1rem; }
 .dropdown-link:hover { background-color: var(--dropdown-link-hover-bg); color: var(--text-primary); }
+.dropdown-link.active { background-color: var(--dropdown-link-hover-bg); color: var(--text-primary); }
 
 .header-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0;}
 #mobile-menu-toggle { display: none; font-size: 1.2rem; padding: 0.4rem; }
@@ -141,6 +180,8 @@ input { font-family: inherit; }
 .mobile-nav-link i { width: 20px; text-align: center; color: var(--text-secondary); transition: color var(--transition-fast); }
 .mobile-nav-link:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
 .mobile-nav-link:hover i { color: var(--text-primary); }
+.mobile-nav-link.active { background-color: var(--bg-tertiary); color: var(--text-primary); }
+
 #donate-button-header.donate-header-button { display: inline-flex; align-items: center; justify-content: center; background-color: var(--accent-primary); color: #fff; border: none; border-radius: 50px; height: 32px; box-sizing: border-box; font-weight: 600; font-size: 0.85rem; cursor: pointer; overflow: hidden; white-space: nowrap; padding: 0 0.5rem; width: 32px; transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color var(--transition-fast); will-change: width, padding; }
 #donate-button-header.donate-header-button .icon-left { margin-right: 0; width: auto; font-size: 0.9rem; flex-shrink: 0; transition: margin-right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 #donate-button-header.donate-header-button .donate-text { display: inline-block; line-height: 1; opacity: 0; max-width: 0; margin-left: 0; vertical-align: middle; transition: opacity 0.2s ease-out 0.05s, max-width 0.2s ease-out 0.05s; will-change: opacity, max-width; }
@@ -190,7 +231,6 @@ body.light-theme {
     --text-secondary: #6c757d;
     --text-link: #0d6efd;
     --text-link-hover: #0a58ca;
-    /* ... keep other light theme color vars ... */
     --header-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
     --dropdown-bg: #ffffff;
     --dropdown-border: var(--border-primary);
@@ -251,3 +291,6 @@ body.light-theme #mobile-nav.mobile-nav-menu { background-color: var(--bg-second
 [data-animate] { will-change: opacity, transform; }
 .content-header { will-change: border-color; }
 .header-inner { will-change: background-color, box-shadow, border-color; }
+
+/* Shopping Page Specific Styles */
+/* ... keep existing shopping page styles ... */
