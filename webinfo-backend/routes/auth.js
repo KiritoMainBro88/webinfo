@@ -5,6 +5,10 @@ const { Resend } = require('resend');
 
 const router = express.Router();
 
+// === ADD JSON PARSER FOR THIS ROUTER ===
+router.use(express.json()); 
+// ======================================
+
 // --- Instantiate Resend ---
 let resend;
 if (process.env.RESEND_API_KEY) {

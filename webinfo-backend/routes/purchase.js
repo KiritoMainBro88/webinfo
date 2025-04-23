@@ -7,6 +7,10 @@ const authUser = require('../middleware/authUser'); // USE A REAL USER AUTH MIDD
 
 const router = express.Router();
 
+// === ADD JSON PARSER FOR THIS ROUTER ===
+router.use(express.json()); 
+// ======================================
+
 // POST /api/purchase/confirm - Confirm and process a purchase
 // PROTECTED: Requires user authentication
 router.post('/confirm', authUser, async (req, res) => { // Use authUser middleware

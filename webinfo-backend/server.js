@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3001;
 if (!mongoURI) { console.error("FATAL ERROR: MONGODB_URI is not defined."); process.exit(1); }
 
 app.use(cors());
-app.use(express.json());
+// app.use(express.json()); // <-- REMOVE OR COMMENT OUT GLOBAL JSON PARSER
 
 mongoose.connect(mongoURI)
  .then(() => console.log("Successfully connected to MongoDB Atlas!"))

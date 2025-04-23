@@ -4,6 +4,10 @@ const User = require('../models/User');
 const authAdmin = require('../middleware/authAdmin');
 const router = express.Router();
 
+// === ADD JSON PARSER FOR THIS ROUTER ===
+router.use(express.json()); 
+// ======================================
+
 // Helper function
 function formatPrice(price) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
