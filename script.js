@@ -1,9 +1,7 @@
-console.log("Script version 1.9.11 - Handle Product API Object Response"); // Increment version
+console.log("Script version 1.9.10 - Category Page Logic"); // Increment version
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
-let currentCategoryProducts = [];
-let currentCategorySlug = null;
 
 // --- Global DOM Element References ---
 let userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection;
@@ -192,28 +190,23 @@ async function loadAndDisplayShoppingData() {
 
     try {
         console.log("Fetching categories and products...");
-        const [categories, productsData] = await Promise.all([
+        const [categories, products] = await Promise.all([
             fetchData('/categories'),
             fetchData('/products')
         ]);
 
         console.log("Fetched Categories:", categories);
-        console.log("Fetched Products Data:", productsData);
+        console.log("Fetched Products:", products);
 
         dynamicProductArea.innerHTML = ''; // Clear loading message
-
-        // --- Extract products array from the response object ---
-        const products = productsData?.products; // Get the nested array
 
         if (!categories || !Array.isArray(categories)) { // Add check for array type
              console.error("Received invalid data for categories:", categories);
              throw new Error("Invalid category data received from server.");
         }
-         
-        // --- Check if the extracted products variable is an array ---
-        if (!products || !Array.isArray(products)) { 
-             console.error("Received invalid data for products:", productsData);
-             throw new Error("Invalid product data structure received from server.");
+         if (!products || !Array.isArray(products)) { // Add check for array type
+             console.error("Received invalid data for products:", products);
+             throw new Error("Invalid product data received from server.");
          }
 
 
@@ -544,7 +537,7 @@ function setupPurchaseModalListeners() {
     });
 }
 
-// --- MODIFIED: Category Detail Page Logic ---
+// --- NEW: Category Detail Page Logic ---
 async function loadCategoryPageData() {
     if (!document.body.classList.contains('category-detail-page') || !categoryProductGrid || !categoryPageTitle) {
         // console.log("Not on category detail page or elements missing."); // Less verbose
@@ -552,56 +545,45 @@ async function loadCategoryPageData() {
     }
     console.log("Loading data for category detail page...");
 
-    currentCategorySlug = new URLSearchParams(window.location.search).get('slug');
+    const urlParams = new URLSearchParams(window.location.search);
+    const categorySlug = urlParams.get('slug');
 
-    if (!currentCategorySlug) {
+    if (!categorySlug) {
         categoryPageTitle.textContent = "Lỗi";
         categoryProductGrid.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Không tìm thấy mã danh mục (slug) trong URL.</p>';
         return;
     }
 
-    // Use the modified fetchAndRenderCategoryProducts function for initial load
-    await fetchAndRenderCategoryProducts();
-}
-
-// --- MODIFIED: Fetch and Render Products for Category Page ---
-async function fetchAndRenderCategoryProducts() {
-    if (!currentCategorySlug || !categoryProductGrid || !categoryPageTitle) return;
-    
-    categoryPageTitle.textContent = `Đang tải danh mục '${currentCategorySlug}'...`;
+    categoryPageTitle.textContent = `Đang tải danh mục '${categorySlug}'...`;
     categoryProductGrid.innerHTML = `<p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải sản phẩm...</p>`;
 
     try {
         // Fetch products specifically for this category using the slug
-        console.log(`Fetching products for slug: ${currentCategorySlug}`);
-        const data = await fetchData(`/products?categorySlug=${currentCategorySlug}`);
-        console.log(`Fetched data for this category:`, data);
-
-        // --- Extract products array and other data ---
-        if (!data || !data.products) {
-            throw new Error("Invalid data structure received from product API.");
-        }
-        
-        const { products, categoryName, minPrice, maxPrice } = data;
-        currentCategoryProducts = products; // Store for potential client-side filtering later
+        // The backend route '/api/products' now supports ?categorySlug=...
+        console.log(`Fetching products for slug: ${categorySlug}`);
+        const products = await fetchData(`/products?categorySlug=${categorySlug}`);
+        console.log(`Fetched ${products.length} products for this category.`);
 
         categoryProductGrid.innerHTML = ''; // Clear loading message
 
-        // Update Page Title
-        if (categoryName) {
-            categoryPageTitle.textContent = categoryName;
-            document.title = `${categoryName} - KiritoMainBro`; // Update browser tab title
-        } else {
-            categoryPageTitle.textContent = `Danh mục: ${currentCategorySlug}`; // Fallback title
-        }
-
-        if (!Array.isArray(products)) {
-            throw new Error("Product data is not an array after extraction.");
+        if (!products || !Array.isArray(products)) {
+             throw new Error("Invalid product data received for category.");
         }
 
         if (products.length === 0) {
             categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào trong danh mục này.</p>';
+            // Try to set category name from the first product's category if possible (though unlikely if no products)
+            // Or fetch category details separately if needed
+            categoryPageTitle.textContent = `Danh mục: ${categorySlug} (Trống)`; // Placeholder title
         } else {
+            // Set page title from the first product's category name (assuming all products belong to the same fetched category)
+            if (products[0].category && products[0].category.name) {
+                categoryPageTitle.textContent = products[0].category.name;
+                document.title = `${products[0].category.name} - KiritoMainBro`; // Update browser tab title
+            } else {
+                categoryPageTitle.textContent = `Danh mục: ${categorySlug}`; // Fallback title
+            }
+
             // Render product cards WITH buy buttons
             products.forEach(product => {
                 try {
@@ -634,7 +616,7 @@ async function fetchAndRenderCategoryProducts() {
         }, 150);
 
     } catch (error) {
-        console.error(`Error loading category page data for slug ${currentCategorySlug}:`, error);
+        console.error(`Error loading category page data for slug ${categorySlug}:`, error);
         categoryPageTitle.textContent = "Lỗi tải danh mục";
         categoryProductGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không thể tải sản phẩm: ${error.message}</p>`;
     }
