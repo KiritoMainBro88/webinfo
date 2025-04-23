@@ -303,20 +303,24 @@ async function handleProductActions(e) {
          if (confirm(`DELETE Product "${prodName}"?`)) { try { await fetchData(`/products/${prodId}`, { method: 'DELETE' }); displayMessage('product-message', 'Product deleted.', true); loadProducts(); } catch (error) { displayMessage('product-message', `Error deleting: ${error.message}`, false); } }
      }
      else if (target.classList.contains('edit-btn') && prodId) {
-         try {
-             const product = await fetchData(`/products/${prodId}`); if (!product) throw new Error('Product data not found');
-             editProductIdField.value = product._id;
-             document.getElementById('product-name').value = product.name || '';
-             document.getElementById('product-brand').value = product.brand || ''; // Populate brand
-             document.getElementById('product-category').value = product.category?._id || '';
-             document.getElementById('product-price').value = product.price ?? '';
-             document.getElementById('product-original-price').value = product.originalPrice ?? '';
-             document.getElementById('product-image').value = product.imageUrl || '';
-             document.getElementById('product-tags').value = product.tags?.join(', ') || '';
-             document.getElementById('product-stock').value = product.stockStatus || 'in_stock';
-             document.getElementById('product-order').value = product.displayOrder ?? 0;
-             document.getElementById('product-description').value = product.description || '';
-             addProductForm.querySelector('h3').textContent = 'Edit Product'; cancelEditProductBtn.style.display = 'inline-block'; addProductForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-         } catch (error) { displayMessage('product-message', `Error loading product for edit: ${error.message}`, false); }
+        console.log(`Attempting to edit product ID: ${prodId}`); // Log the ID being edited
+        try {
+            const product = await fetchData(`/products/${prodId}`); 
+            console.log("Fetched product data for edit:", product); // Log the fetched data
+            if (!product) throw new Error('Product data not found or invalid structure');
+            
+            editProductIdField.value = product._id;
+            document.getElementById('product-name').value = product.name || '';
+            document.getElementById('product-brand').value = product.brand || ''; // Populate brand
+            document.getElementById('product-category').value = product.category?._id || '';
+            document.getElementById('product-price').value = product.price ?? '';
+            document.getElementById('product-original-price').value = product.originalPrice ?? '';
+            document.getElementById('product-image').value = product.imageUrl || '';
+            document.getElementById('product-tags').value = product.tags?.join(', ') || '';
+            document.getElementById('product-stock').value = product.stockStatus || 'in_stock';
+            document.getElementById('product-order').value = product.displayOrder ?? 0;
+            document.getElementById('product-description').value = product.description || '';
+            addProductForm.querySelector('h3').textContent = 'Edit Product'; cancelEditProductBtn.style.display = 'inline-block'; addProductForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (error) { displayMessage('product-message', `Error loading product for edit: ${error.message}`, false); }
      }
 }
