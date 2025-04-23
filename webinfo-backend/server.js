@@ -16,7 +16,31 @@ const PORT = process.env.PORT || 3001;
 
 if (!mongoURI) { console.error("FATAL ERROR: MONGODB_URI is not defined."); process.exit(1); }
 
-app.use(cors());
+// --- CORS Configuration ---
+const allowedOrigins = [
+    'http://localhost:5500', // Your local dev environment (adjust port if needed)
+    'http://127.0.0.1:5500',
+    'https://kiritomainbro88.github.io' // Your deployed frontend
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true, // Allow cookies/headers if needed later
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    optionsSuccessStatus: 204 // For legacy browser compatibility
+};
+
+app.use(cors(corsOptions));
+// =======================
+
 // app.use(express.json()); // <-- REMOVE OR COMMENT OUT GLOBAL JSON PARSER
 
 mongoose.connect(mongoURI)
