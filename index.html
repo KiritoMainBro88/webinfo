@@ -15,7 +15,7 @@
     <div class="page-wrapper">
 
         <!-- ===== Main Content Area ===== -->
-        <div class="main-content-area" id="main-content">
+        <div class="main-content-area" id="main-content"> <!-- Added ID for back-to-top scroll target -->
 
             <!-- Top Bar / Header Navigation -->
             <header class="content-header">
@@ -147,7 +147,7 @@
                 <section id="content-creator" class="content-section text-center-section">
                    <h2 class="section-title" data-animate="fade-up">Hành trình <span class="highlight-text">Sáng tạo</span></h2>
                    <p data-editable="content-creator" class="content-narrow" data-animate="fade-up" data-delay="0.1"> Từ 2018, mình đã bắt đầu chia sẻ qua video. Dù có lúc thăng trầm, đam mê này vẫn tiếp tục trên: </p>
-                   <!-- ADDED BACK Social Buttons Block -->
+                   <!-- VERIFIED Social Buttons Block is included -->
                    <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08">
                        <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube">
                            <i class="fab fa-youtube"></i> YouTube
@@ -206,7 +206,7 @@
                  </section>
             </main>
 
-            <!-- Content Footer (New Shyunrb Style) -->
+            <!-- Content Footer -->
             <footer class="content-footer">
                 <div class="footer-main">
                     <div class="footer-left">
@@ -215,7 +215,6 @@
                             <span class="footer-site-name">KiritoMainBro</span>
                         </a>
                         <p>Developer & Creator</p>
-                         <!-- Add other text if desired -->
                     </div>
                     <div class="footer-center">
                         <h4>THÔNG TIN CHUNG</h4>
@@ -232,17 +231,17 @@
                         <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="footer-link-button">
                             <i class="fab fa-discord"></i> Discord
                         </a>
-                        <!-- Add Mail button if needed -->
-                        <!-- <a href="mailto:your.email@example.com" class="footer-link-button">
-                            <i class="fas fa-envelope"></i> Email
-                        </a> -->
                     </div>
                 </div>
                 <div class="footer-bottom">
                     <p>© <span id="year">2024</span> KiritoMainBro. All Rights Reserved.</p>
                 </div>
+
+                 <!-- Back to Top Button -->
+                 <button id="back-to-top-btn" aria-label="Back to top">
+                     <i class="fas fa-arrow-up"></i>
+                 </button>
             </footer>
-            <!-- End New Footer -->
 
         </div><!-- End Main Content Area -->
     </div> <!-- End Page Wrapper -->
