@@ -20,12 +20,31 @@ const parseTags = (tagsInput) => {
 // GET all products (Public) - optionally filter by category, sorted
 router.get('/', async (req, res) => {
     const filter = {};
-    if (req.query.category && mongoose.Types.ObjectId.isValid(req.query.category)) { // Validate category ID
-        filter.category = req.query.category;
-    }
+    const { category, categorySlug } = req.query; // Get both potential filters
+
     try {
+        // Prioritize filtering by slug if provided
+        if (categorySlug) {
+            console.log(`Filtering products by category slug: ${categorySlug}`);
+            const categoryObj = await Category.findOne({ slug: categorySlug });
+            if (categoryObj) {
+                filter.category = categoryObj._id; // Filter by the found category's ID
+            } else {
+                // If slug doesn't match any category, return empty array
+                console.log(`No category found for slug: ${categorySlug}. Returning empty product list.`);
+                return res.json([]);
+            }
+        }
+        // Fallback to category ID if slug wasn't provided or didn't match
+        else if (category && mongoose.Types.ObjectId.isValid(category)) {
+            console.log(`Filtering products by category ID: ${category}`);
+            filter.category = category;
+        } else {
+            console.log("Fetching all products (no valid category filter).");
+        }
+
         const products = await Product.find(filter)
-            .populate('category', 'name iconClass') // Populate category name and icon
+            .populate('category', 'name iconClass slug') // Added slug to populated fields
             .sort({ displayOrder: 1, name: 1 });
         res.json(products);
     } catch (err) {

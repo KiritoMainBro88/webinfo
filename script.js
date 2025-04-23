@@ -1,4 +1,4 @@
-console.log("Script version 1.9.9 - Category Title Links"); // Increment version
+console.log("Script version 1.9.10 - Category Page Logic"); // Increment version
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
@@ -6,7 +6,7 @@ const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
 // --- Global DOM Element References ---
 let userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection;
 let sidebarUserInfoDiv, sidebarLoginBtn, sidebarRegisterBtn, sidebarDepositBtn, sidebarLogoutBtn, sidebarUsernameSpan, sidebarBalanceSpan;
-let dynamicProductArea;
+let dynamicProductArea, categoryProductGrid, categoryPageTitle, categoryPageDescription; // Added elements for category page
 let purchaseModal, purchaseForm, purchaseItemId, purchaseItemName, purchaseTotalPrice, purchaseMessage, purchaseCloseBtn, purchaseCancelBtn, purchaseItemPriceInput;
 let authContainer, loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper;
 
@@ -24,6 +24,10 @@ function initializeDOMElements() {
     if (purchaseModal) { purchaseCloseBtn = purchaseModal.querySelector('.modal-close-btn'); purchaseCancelBtn = purchaseModal.querySelector('.modal-cancel-btn'); }
     // Auth Modal Wrappers
     authContainer = document.getElementById('auth-container'); loginFormWrapper = document.getElementById('login-form-wrapper'); registerFormWrapper = document.getElementById('register-form-wrapper'); forgotFormWrapper = document.getElementById('forgot-form-wrapper'); resetFormWrapper = document.getElementById('reset-form-wrapper');
+    // --- ADDED: Category Page Elements ---
+    categoryProductGrid = document.getElementById('category-product-grid');
+    categoryPageTitle = document.getElementById('category-page-title');
+    categoryPageDescription = document.getElementById('category-page-description'); // Optional description element
 }
 
 // --- fetchData Utility Function ---
@@ -225,7 +229,7 @@ async function loadAndDisplayShoppingData() {
             if (categoryProducts.length > 0) {
                 categoryProducts.forEach(product => {
                     try {
-                        const productCard = createProductCardElement(product);
+                        const productCard = createProductCardElement(product, false);
                         productGrid.appendChild(productCard);
                     } catch (cardError) { console.error(`Error creating product card for ${product.name}:`, cardError); }
                 });
@@ -240,8 +244,8 @@ async function loadAndDisplayShoppingData() {
         setTimeout(() => {
             gsap.utils.toArray('[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
             setupProfessionalAnimations();
-            setupShoppingPageBuyListeners();
-            console.log("Animations and listeners re-applied.");
+            // No buy listeners needed here since buttons are not included
+            console.log("Animations re-applied.");
         }, 150);
 
     } catch (error) {
@@ -258,21 +262,18 @@ function createCategorySectionElement(category) {
 
     // --- Create Link (<a>) element ---
     const titleLink = document.createElement('a');
-    // *** IMPORTANT: Define your URL structure here ***
-    // Option 1: Using slug directly (e.g., /account-roblox.html or just /account-roblox if using routing)
-    // titleLink.href = `/${category.slug || 'category'}.html`;
-    // Option 2: Using a generic page with query parameter (e.g., /category.html?slug=account-roblox)
-    titleLink.href = `category-page.html?slug=${category.slug || 'unknown'}`; // Using Option 2 for now
-    titleLink.classList.add('category-title-link'); // Add class for styling
+    // Modified to use category.html instead of category-page.html
+    titleLink.href = `category.html?slug=${category.slug || 'unknown'}`;
+    titleLink.classList.add('category-title-link');
 
     // --- Create Heading (<h2>) inside the link ---
     const titleHeading = document.createElement('h2');
-    titleHeading.classList.add('category-title'); // Keep original class for styling consistency if needed
+    titleHeading.classList.add('category-title');
     titleHeading.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`;
 
     // Append heading to link, and link to section
     titleLink.appendChild(titleHeading);
-    section.appendChild(titleLink); // Add the link (containing the h2)
+    section.appendChild(titleLink);
 
     const grid = document.createElement('div');
     grid.classList.add('product-grid');
@@ -280,10 +281,10 @@ function createCategorySectionElement(category) {
     return section;
 }
 
-function createProductCardElement(product) {
+// --- MODIFIED: Create Product Card Element ---
+function createProductCardElement(product, includeBuyButton = false) {
     const card = document.createElement('div');
     card.classList.add('product-card');
-    // No data-animate needed here if grid container handles stagger
 
     const originalPriceHTML = product.originalPrice && product.originalPrice > product.price
         ? `<span class="original-price">${formatPrice(product.originalPrice)}</span>`
@@ -299,25 +300,42 @@ function createProductCardElement(product) {
         tagHTML = '<span class="product-tag sale-tag">Sale</span>';
     }
 
-     let buttonText = 'Mua ngay';
-     let buttonDisabled = false;
-     let priceDisplay = `${originalPriceHTML} ${salePriceHTML}`;
+    let buttonText = 'Mua ngay';
+    let buttonDisabled = false;
+    let priceDisplay = `${originalPriceHTML} ${salePriceHTML}`;
+    let buyButtonHTML = ''; // Default to no button
 
-     switch (product.stockStatus) {
-         case 'out_of_stock':
-             buttonText = 'Hết hàng';
-             buttonDisabled = true;
-             break;
-         case 'contact':
-             buttonText = 'Liên hệ';
-             priceDisplay = `<span class="sale-price">Liên hệ</span>`;
-             break;
-         case 'check_price':
-              buttonText = 'Xem bảng giá';
-              priceDisplay = `<span class="sale-price">Giá tốt</span>`;
-              break;
-         // default: 'in_stock'
-     }
+    // Only include button HTML if requested
+    if (includeBuyButton) {
+        switch (product.stockStatus) {
+            case 'out_of_stock':
+                buttonText = 'Hết hàng';
+                buttonDisabled = true;
+                break;
+            case 'contact':
+                buttonText = 'Liên hệ';
+                priceDisplay = `<span class="sale-price">Liên hệ</span>`;
+                break;
+            case 'check_price':
+                buttonText = 'Xem bảng giá';
+                priceDisplay = `<span class="sale-price">Giá tốt</span>`;
+                break;
+            // default: 'in_stock'
+        }
+        buyButtonHTML = `<button class="cta-button product-buy-btn" data-product-id="${product._id}" ${buttonDisabled ? 'disabled' : ''}>
+            ${buttonText}
+        </button>`;
+    } else {
+        // If not including buy button, ensure price still shows correctly for special statuses
+        switch (product.stockStatus) {
+            case 'contact':
+                priceDisplay = `<span class="sale-price">Liên hệ</span>`;
+                break;
+            case 'check_price':
+                priceDisplay = `<span class="sale-price">Giá tốt</span>`;
+                break;
+        }
+    }
 
     card.innerHTML = `
         <div class="product-image-placeholder">
@@ -330,9 +348,7 @@ function createProductCardElement(product) {
             <p class="product-price">
                 ${priceDisplay}
             </p>
-            <button class="cta-button product-buy-btn" data-product-id="${product._id}" ${buttonDisabled ? 'disabled' : ''}>
-                ${buttonText}
-            </button>
+            ${buyButtonHTML}
         </div>`;
     return card;
 }
@@ -521,8 +537,153 @@ function setupPurchaseModalListeners() {
     });
 }
 
+// --- NEW: Category Detail Page Logic ---
+async function loadCategoryPageData() {
+    if (!document.body.classList.contains('category-detail-page') || !categoryProductGrid || !categoryPageTitle) {
+        // console.log("Not on category detail page or elements missing."); // Less verbose
+        return;
+    }
+    console.log("Loading data for category detail page...");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const categorySlug = urlParams.get('slug');
+
+    if (!categorySlug) {
+        categoryPageTitle.textContent = "Lỗi";
+        categoryProductGrid.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Không tìm thấy mã danh mục (slug) trong URL.</p>';
+        return;
+    }
+
+    categoryPageTitle.textContent = `Đang tải danh mục '${categorySlug}'...`;
+    categoryProductGrid.innerHTML = `<p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải sản phẩm...</p>`;
+
+    try {
+        // Fetch products specifically for this category using the slug
+        // The backend route '/api/products' now supports ?categorySlug=...
+        console.log(`Fetching products for slug: ${categorySlug}`);
+        const products = await fetchData(`/products?categorySlug=${categorySlug}`);
+        console.log(`Fetched ${products.length} products for this category.`);
+
+        categoryProductGrid.innerHTML = ''; // Clear loading message
+
+        if (!products || !Array.isArray(products)) {
+             throw new Error("Invalid product data received for category.");
+        }
+
+        if (products.length === 0) {
+            categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào trong danh mục này.</p>';
+            // Try to set category name from the first product's category if possible (though unlikely if no products)
+            // Or fetch category details separately if needed
+            categoryPageTitle.textContent = `Danh mục: ${categorySlug} (Trống)`; // Placeholder title
+        } else {
+            // Set page title from the first product's category name (assuming all products belong to the same fetched category)
+            if (products[0].category && products[0].category.name) {
+                categoryPageTitle.textContent = products[0].category.name;
+                document.title = `${products[0].category.name} - KiritoMainBro`; // Update browser tab title
+            } else {
+                categoryPageTitle.textContent = `Danh mục: ${categorySlug}`; // Fallback title
+            }
+
+            // Render product cards WITH buy buttons
+            products.forEach(product => {
+                try {
+                    categoryProductGrid.appendChild(createProductCardElement(product, true)); // Pass true to include button
+                } catch (cardError) {
+                    console.error(`Error creating product card on category page for ${product.name}:`, cardError);
+                }
+            });
+
+             // --- Setup Listeners specifically for this page's grid ---
+             setupCategoryPageBuyListeners();
+        }
+
+        // --- Re-apply animations to the new grid ---
+        console.log("Re-applying animations for category page...");
+        setTimeout(() => {
+            gsap.utils.toArray('#category-product-grid-container [data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
+             // Animate filter bar and grid container
+             gsap.utils.toArray('.category-detail-layout [data-animate]:not(.gsap-initiated)').forEach(element => {
+                 element.classList.add('gsap-initiated');
+                 const delay = parseFloat(element.dataset.delay) || 0;
+                 gsap.from(element, { opacity: 0, y: 20, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 90%", toggleActions: "play none none none", once: true } });
+             });
+             // Animate product cards within the grid
+             const productCards = categoryProductGrid.querySelectorAll('.product-card');
+             if (productCards.length > 0) {
+                  gsap.from(productCards, { opacity: 0, y: 20, duration: 0.5, ease: "power2.out", stagger: 0.07, scrollTrigger: { trigger: categoryProductGrid, start: "top 85%", toggleActions: "play none none none", once: true } });
+             }
+             console.log("Category page animations applied.");
+        }, 150);
+
+    } catch (error) {
+        console.error(`Error loading category page data for slug ${categorySlug}:`, error);
+        categoryPageTitle.textContent = "Lỗi tải danh mục";
+        categoryProductGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không thể tải sản phẩm: ${error.message}</p>`;
+    }
+}
+
+// --- NEW: Setup listeners specific to category page grid ---
+function setupCategoryPageBuyListeners() {
+    if (!document.body.classList.contains('category-detail-page')) return;
+    const productGrid = document.getElementById('category-product-grid');
+    if (!productGrid) return;
+    console.log("Setting up buy listeners for category page grid...");
+    productGrid.removeEventListener('click', handleBuyButtonClick); // Prevent duplicates if called multiple times
+    productGrid.addEventListener('click', handleBuyButtonClick); // Use event delegation
+}
+
 // ----- Initialization Function -----
-function initializePage() { const scriptTag = document.querySelector('script[src*="script.js"]'); const version = scriptTag ? scriptTag.src.split('v=')[1] : 'unknown'; console.log(`Initializing page (v${version})...`); initializeDOMElements(); updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModalListeners(); setupActionButtons(); setupDropdownActions(); if (document.body.classList.contains('shopping-page')) { loadAndDisplayShoppingData(); } else if (document.body.classList.contains('history-page')) { console.log("History page detected."); setupProfessionalAnimations(); } else { setupProfessionalAnimations(); } const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete."); }
+function initializePage() {
+    const scriptTag = document.querySelector('script[src*="script.js"]');
+    const version = scriptTag ? scriptTag.src.split('v=')[1] : 'unknown';
+    console.log(`Initializing page (v${version})...`);
+
+    initializeDOMElements();
+    updateYear();
+    setupHeaderScrollEffect();
+    setupMobileMenuToggle();
+    setupUserDropdown();
+    setupThemeToggle();
+    setupLanguageToggle();
+    setupClickDropdowns();
+    setupBackToTopButton();
+    setupPurchaseModalListeners();
+    setupActionButtons();
+    setupDropdownActions();
+
+    // --- Page-Specific Logic ---
+    if (document.body.classList.contains('shopping-page')) {
+        console.log("Shopping page detected. Loading overview data...");
+        loadAndDisplayShoppingData();
+    } else if (document.body.classList.contains('category-detail-page')) {
+        console.log("Category detail page detected. Loading specific data...");
+        loadCategoryPageData(); // New: Load category-specific products WITH buy buttons
+    } else if (document.body.classList.contains('history-page')) {
+        console.log("History page detected.");
+        setupProfessionalAnimations();
+    } else {
+        setupProfessionalAnimations();
+    }
+
+    const donateButtonHeader = document.getElementById('donate-button-header');
+    if (donateButtonHeader) {
+        donateButtonHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Donate function coming soon!');
+        });
+    }
+
+    const ageSpan = document.getElementById('age');
+    if (ageSpan) {
+        try {
+            ageSpan.textContent = calculateAge('2006-08-08');
+        } catch (e) {
+            console.error("Error calculating age:", e);
+            ageSpan.textContent = "??";
+        }
+    }
+    console.log("Page initialization complete.");
+}
 
 // --- Run Initialization on DOM Ready ---
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initializePage); } else { initializePage(); }
