@@ -361,17 +361,23 @@ function createCategorySectionElement(categoryData) {
     }
 
     const sectionElement = document.createElement('section');
-    sectionElement.className = 'category-section';
+    sectionElement.className = 'product-category-section';
     sectionElement.dataset.categoryId = categoryData._id || categoryData.id || '';
     sectionElement.dataset.categorySlug = categoryData.slug || '';
+    sectionElement.dataset.animate = "fade-up";
 
-    // Create the header with category name (non-clickable)
+    // Create the header with category name and make it a link to category.html
     const headerElement = document.createElement('div');
-    headerElement.className = 'category-header';
+    headerElement.className = 'category-title-wrapper';
     
-    // Remove any link from the category title - make it a simple heading
+    // Create a link for the category title
     headerElement.innerHTML = `
-        <h2 class="category-title">${escapeHtml(categoryData.name)}</h2>
+        <a href="category.html?slug=${categoryData.slug || ''}" class="category-title-link">
+            <h2 class="category-title">
+                <i class="${categoryData.iconClass || 'fas fa-tag'} icon-left"></i>
+                ${escapeHtml(categoryData.name)}
+            </h2>
+        </a>
     `;
     
     // Create products container (grid)
