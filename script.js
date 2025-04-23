@@ -298,30 +298,36 @@ async function loadAndDisplayShoppingData() {
 }
 
 // --- MODIFIED: Create Category Section Element ---
-function createCategorySectionElement(category) {
-    const section = document.createElement('section');
-    section.classList.add('product-category-section');
-    section.dataset.animate = "fade-up";
+function createCategorySectionElement(categoryData) {
+    if (!categoryData || !categoryData.name) {
+        console.error('Invalid category data');
+        return null;
+    }
 
-    // --- Create Link (<a>) element ---
-    const titleLink = document.createElement('a');
-    // Modified to use category.html instead of category-page.html
-    titleLink.href = `category.html?slug=${category.slug || 'unknown'}`;
-    titleLink.classList.add('category-title-link');
+    const sectionElement = document.createElement('section');
+    sectionElement.className = 'category-section';
+    sectionElement.dataset.categoryId = categoryData._id || categoryData.id || '';
+    sectionElement.dataset.categorySlug = categoryData.slug || '';
 
-    // --- Create Heading (<h2>) inside the link ---
-    const titleHeading = document.createElement('h2');
-    titleHeading.classList.add('category-title');
-    titleHeading.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`;
-
-    // Append heading to link, and link to section
-    titleLink.appendChild(titleHeading);
-    section.appendChild(titleLink);
-
-    const grid = document.createElement('div');
-    grid.classList.add('product-grid');
-    section.appendChild(grid);
-    return section;
+    // Create the header with category name (non-clickable)
+    const headerElement = document.createElement('div');
+    headerElement.className = 'category-header';
+    
+    // Remove any link from the category title - make it a simple heading
+    headerElement.innerHTML = `
+        <h2 class="category-title">${escapeHtml(categoryData.name)}</h2>
+    `;
+    
+    // Create products container (grid)
+    const productsContainer = document.createElement('div');
+    productsContainer.className = 'product-grid';
+    productsContainer.id = `products-${categoryData.slug || 'default'}`;
+    
+    // Append elements to section
+    sectionElement.appendChild(headerElement);
+    sectionElement.appendChild(productsContainer);
+    
+    return sectionElement;
 }
 
 // --- NEW: Create Category Summary Card Element (for main shopping page) ---
@@ -363,125 +369,83 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
 
 // --- MODIFIED: Create Product Card Element ---
 function createProductCardElement(product, includeBuyButton = false) {
-    // Determine the wrapper element: <a> if linking, <div> otherwise
-    const categorySlug = product.category?.slug;
-    // --- DEBUG LOG --- 
-    console.log(`Product: ${product.name}, Category:`, product.category, `Slug: ${categorySlug}, IncludeButton: ${includeBuyButton}`);
-    // --------------- 
-
-    // MODIFIED: Explicit check for valid slug before deciding to link
-    const canLink = !includeBuyButton && typeof categorySlug === 'string' && categorySlug.length > 0;
+    if (!product || (!product.id && !product._id)) {
+        console.error('Invalid product data:', product);
+        return document.createElement('div'); // Return empty div to prevent errors
+    }
     
-    console.log(`  Resulting canLink: ${canLink}`); // Log canLink status
-    const wrapperElement = canLink ? document.createElement('a') : document.createElement('div');
-
-    // Add base class to the wrapper
-    wrapperElement.classList.add('product-card');
-
-    // Set link properties if applicable
-    if (canLink) {
-        wrapperElement.href = `category.html?slug=${categorySlug}`;
-        wrapperElement.classList.add('product-card-link'); // Optional class for linked cards
-    }
-
-    const originalPriceHTML = product.originalPrice && product.originalPrice > product.price
-        ? `<span class="original-price">${formatPrice(product.originalPrice)}</span>`
-        : '';
-    const salePriceFormatted = formatPrice(product.price);
-    const salePriceHTML = `<span class="sale-price">${salePriceFormatted}</span>`;
-
-    let tagHTML = '';
-    if (product.tags?.includes('hot')) {
-        tagHTML = '<span class="product-tag hot-tag">Hot</span>';
-    } else if (product.tags?.includes('sale') || (product.originalPrice && product.originalPrice > product.price)) {
-        tagHTML = '<span class="product-tag sale-tag">Sale</span>';
-    }
-
-    // --- MODIFIED: Only add Brand/Category Tag if buy button is included --- 
-    let brandTagHTML = '';
-    if (includeBuyButton) { // Only add this tag on pages like category.html
-        const categoryName = product.category?.name;
-        const brandName = product.brand;
-        if (categoryName && brandName) {
-            brandTagHTML = `<span class="product-tag brand-tag">${categoryName} - ${brandName}</span>`;
-        } else if (categoryName) {
-            brandTagHTML = `<span class="product-tag brand-tag">${categoryName}</span>`;
-        }
-    }
-    // --- END MODIFICATION ---
-
-    let buttonText = 'Mua ngay';
-    let buttonDisabled = false;
-    let priceDisplay = ''; // Initialize price display
-    let buyButtonHTML = ''; // Initialize button HTML
-
-    // --- Image Placeholder Logic ---
-    let imageHTML = '';
-    if (product.imageUrl) {
-        imageHTML = `<img src="${product.imageUrl}" alt="${product.name || 'Product Image'}" loading="lazy">`;
-    } else {
-        // Optionally add a CSS class or content for an empty state placeholder
-        // imageHTML = '<span class="empty-image-placeholder">No Image</span>'; 
-    }
-    // --- End Image Placeholder Logic ---
-
-    if (includeBuyButton) {
-        // Logic for when the buy button IS included (e.g., on category.html)
-        priceDisplay = `${originalPriceHTML} ${salePriceHTML}`; // Show normal price
-        switch (product.stockStatus) {
-            case 'out_of_stock':
-                buttonText = 'Hết hàng';
-                buttonDisabled = true;
-                break;
-            case 'contact':
-                buttonText = 'Liên hệ';
-                priceDisplay = `<span class="sale-price">Liên hệ</span>`;
-                break;
-            case 'check_price':
-                buttonText = 'Xem bảng giá';
-                priceDisplay = `<span class="sale-price">Giá tốt</span>`;
-                break;
-            // default: 'in_stock'
-        }
-        buyButtonHTML = `<button class="cta-button product-buy-btn" data-product-id="${product._id}" ${buttonDisabled ? 'disabled' : ''}>
-            ${buttonText}
-        </button>`;
-    } else {
-        // Logic for when the buy button is NOT included (e.g., on shopping.html previews)
-        // Show Min-Max price range IF product.minPrice and product.maxPrice exist
-        if (typeof product.minPrice === 'number' && typeof product.maxPrice === 'number') {
-            if (product.minPrice === product.maxPrice) {
-                 priceDisplay = `<span class="price-range">Giá: ${formatPrice(product.minPrice)}</span>`;
-            } else {
-                priceDisplay = `<span class="price-range">Bắt đầu từ: ${formatPrice(product.minPrice)} - ${formatPrice(product.maxPrice)}</span>`;
-            }
-        } else {
-             // Fallback if min/max prices aren't available - show standard price or placeholder
-            priceDisplay = `${originalPriceHTML} ${salePriceHTML}`; 
-            // Or maybe a different placeholder:
-            // priceDisplay = `<span class="price-range">Xem chi tiết</span>`; 
-        }
-        // buyButtonHTML remains empty
-    }
-
-    // Set the inner HTML of the wrapper element (<a> or <div>)
-    wrapperElement.innerHTML = `
-        <div class="product-image-placeholder">
-            ${imageHTML} 
-            ${tagHTML}
-            ${brandTagHTML}
+    const productId = product._id || product.id;
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.dataset.productId = productId;
+    
+    // Format the price with commas for thousands
+    const formattedPrice = formatCurrency(product.price);
+    
+    // Generate stars HTML based on rating
+    const rating = product.rating || 0;
+    const starsHtml = generateStarRating(rating);
+    
+    const discountBadge = product.discounted ? 
+        `<span class="discount-badge">-${product.discountPercent || 10}%</span>` : '';
+        
+    const oldPrice = product.discounted ? 
+        `<span class="old-price">${formatCurrency(product.oldPrice)}</span>` : '';
+    
+    // Check if the product is out of stock
+    const isOutOfStock = product.stock <= 0;
+    const stockBadge = isOutOfStock ? 
+        '<span class="stock-badge out-of-stock">Hết hàng</span>' : 
+        (product.stock < 5 ? `<span class="stock-badge low-stock">Còn ${product.stock}</span>` : '');
+    
+    // Create the card content
+    card.innerHTML = `
+        <div class="product-card-inner">
+            <div class="product-image">
+                <img src="${product.image || 'images/product-placeholder.jpg'}" alt="${product.name}">
+                ${discountBadge}
+                ${stockBadge}
+            </div>
+            <div class="product-details">
+                <h3 class="product-name">${product.name}</h3>
+                <div class="product-meta">
+                    <div class="product-rating">
+                        ${starsHtml}
+                        <span class="rating-count">(${product.reviewCount || 0})</span>
+                    </div>
+                </div>
+                <div class="product-price">
+                    ${oldPrice}
+                    <span class="current-price">${formattedPrice}</span>
+                </div>
+                ${includeBuyButton ? `
+                <button class="cta-button primary buy-now-btn" data-product-id="${productId}" ${isOutOfStock ? 'disabled' : ''}>
+                    <i class="fas fa-shopping-cart icon-left"></i>${isOutOfStock ? 'Hết hàng' : 'Mua ngay'}
+                </button>` : ''}
+            </div>
         </div>
-        <div class="product-info">
-            <h3 class="product-title">${product.name || 'Unnamed Product'}</h3>
-            <p class="product-meta">Đã bán: ${product.purchaseCount || 0}</p>
-            <p class="product-price">
-                ${priceDisplay}
-            </p>
-            ${buyButtonHTML} 
-        </div>`;
-
-    // Return the wrapper element
-    return wrapperElement;
+    `;
+    
+    // Make the product card clickable - redirect to category page when clicked
+    card.addEventListener('click', (e) => {
+        // Don't navigate if clicked on the buy button
+        if (e.target.closest('.buy-now-btn')) {
+            return;
+        }
+        
+        // Get the category slug from the product
+        const categorySlug = product.category?.slug;
+        
+        if (categorySlug) {
+            // Navigate to category page
+            window.location.href = `category.html?slug=${categorySlug}`;
+        } else {
+            // Fallback to product detail page if no category slug is available
+            window.location.href = `product.html?id=${productId}`;
+        }
+    });
+    
+    return card;
 }
 
 function handleBuyButtonClick(event) {
@@ -672,35 +636,79 @@ function setupPurchaseModalListeners() {
 let originalCategoryProducts = []; // Store the initial list of products
 let categoryControlListenersAdded = false; // Flag to prevent adding listeners multiple times
 
-// Function to render products in the category grid
-function renderCategoryProducts(productsToRender) {
-    if (!categoryProductGrid) return;
-    categoryProductGrid.innerHTML = ''; // Clear existing products
+// Add helper function for getting category icons
+function getCategoryIcon(slug) {
+    const iconMap = {
+        'chuot': 'fas fa-mouse',
+        'ban-phim': 'fas fa-keyboard',
+        'tai-nghe': 'fas fa-headphones',
+        'man-hinh': 'fas fa-desktop',
+        'loa': 'fas fa-volume-up',
+        'ghế-gaming': 'fas fa-chair',
+        'pc-gaming': 'fas fa-server',
+        'laptop': 'fas fa-laptop',
+        'phu-kien': 'fas fa-plug',
+        'unknown': 'fas fa-question-circle'
+    };
+    
+    return iconMap[slug] || 'fas fa-tag';
+}
 
-    if (productsToRender.length === 0) {
-        categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào phù hợp.</p>';
+// Function to render products for a category section
+function renderCategoryProducts(categoryData, targetElement, limit = 6) {
+    // Validate inputs
+    if (!categoryData || !targetElement) {
+        console.error('Missing required parameters for renderCategoryProducts:', { categoryData, targetElement });
         return;
     }
-
-    productsToRender.forEach(product => {
-        try {
-            categoryProductGrid.appendChild(createProductCardElement(product, true)); // includeBuyButton is true
-        } catch (cardError) {
-            console.error(`Error creating product card on category page for ${product.name}:`, cardError);
-        }
+    
+    // Clear existing content if needed
+    let productsContainer = targetElement.querySelector('.products-grid');
+    if (!productsContainer) {
+        productsContainer = document.createElement('div');
+        productsContainer.className = 'products-grid';
+        targetElement.appendChild(productsContainer);
+    } else {
+        productsContainer.innerHTML = '';
+    }
+    
+    // Get products to display
+    const products = Array.isArray(categoryData.products) ? categoryData.products : [];
+    
+    // Show empty state if no products
+    if (products.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-products-message';
+        emptyState.innerHTML = `
+            <i class="fas fa-box-open"></i>
+            <p>Không tìm thấy sản phẩm nào phù hợp</p>
+        `;
+        productsContainer.appendChild(emptyState);
+        return;
+    }
+    
+    // Limit the number of products to show
+    const productsToShow = limit > 0 ? products.slice(0, limit) : products;
+    
+    // Create and append product cards
+    productsToShow.forEach(product => {
+        const productCard = createProductCardElement(product);
+        productsContainer.appendChild(productCard);
     });
-
-    // Re-apply animations to the newly rendered cards (optional, can be adjusted)
-    setTimeout(() => {
-        const productCards = categoryProductGrid.querySelectorAll('.product-card.gsap-initiated');
-        productCards.forEach(card => card.classList.remove('gsap-initiated')); // Reset animation state
-
-        const newCards = categoryProductGrid.querySelectorAll('.product-card:not(.gsap-initiated)');
-        if (newCards.length > 0) {
-            newCards.forEach(card => card.classList.add('gsap-initiated')); // Mark as initiated
-            gsap.from(newCards, { opacity: 0, y: 15, duration: 0.4, ease: "power1.out", stagger: 0.05 });
-        }
-    }, 50); // Short delay to allow DOM update
+    
+    // Add "view all" button if there are more products than the limit
+    if (limit > 0 && products.length > limit && categoryData.slug) {
+        const viewAllContainer = document.createElement('div');
+        viewAllContainer.className = 'view-all-container';
+        
+        const viewAllButton = document.createElement('a');
+        viewAllButton.className = 'view-all-button';
+        viewAllButton.href = `category.html?slug=${categoryData.slug}`;
+        viewAllButton.innerHTML = `<i class="fas fa-chevron-right"></i> Xem tất cả ${products.length} sản phẩm`;
+        
+        viewAllContainer.appendChild(viewAllButton);
+        targetElement.appendChild(viewAllContainer);
+    }
 }
 
 // Function to apply filters and sorting
@@ -773,119 +781,123 @@ function applyCategoryFilters() {
 
 // --- MODIFIED loadCategoryPageData to ensure listeners are correctly set --- 
 async function loadCategoryPageData() {
-    // Ensure necessary elements exist
-     const categoryGrid = document.getElementById('category-product-grid');
-     const categoryTitleDisplay = document.getElementById('category-name-display'); // The span for the name
-     const categoryBreadcrumb = document.getElementById('category-breadcrumb'); // The span for "Vật Phẩm"
-     const filterBar = document.querySelector('.filter-bar');
-
-    if (!categoryGrid || !categoryTitleDisplay || !categoryBreadcrumb) {
-        console.error("Required category page elements not found for loading data.");
-        return;
-    }
-    console.log("Loading data for category detail page...");
-
-    // Reset state
-    originalCategoryProducts = [];
-    if (filterBar) filterBar.style.display = 'none'; // Hide filters initially
-    categoryGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải sản phẩm...</p>`;
-    categoryTitleDisplay.textContent = 'Đang tải...';
-    categoryBreadcrumb.textContent = 'Vật Phẩm';
-
     const urlParams = new URLSearchParams(window.location.search);
     const categorySlug = urlParams.get('slug');
-
+    
     if (!categorySlug) {
-        categoryTitleDisplay.textContent = "Lỗi";
-        categoryGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không tìm thấy mã danh mục (slug) trong URL.</p>';
+        console.error('No category slug provided in URL');
+        window.location.href = 'shopping.html';
         return;
     }
-
+    
     try {
-        console.log(`Fetching products for slug: ${categorySlug}`);
-        const response = await fetchData(`/products?categorySlug=${categorySlug}`);
-        console.log("Raw response for category:", response);
-
-        if (typeof response !== 'object' || response === null || !Array.isArray(response.products)) {
-             console.error("Invalid data structure received for category.", response);
-             throw new Error("Dữ liệu sản phẩm không hợp lệ từ máy chủ.");
-        }
-
-        originalCategoryProducts = response.products;
-        const categoryName = response.categoryName || categorySlug;
-
-        console.log(`Fetched ${originalCategoryProducts.length} products for category '${categoryName}'.`);
-
-        categoryTitleDisplay.textContent = categoryName;
-        document.title = `${categoryName} - Sản phẩm - KiritoMainBro`;
-
-        // Initial Render
-        renderCategoryProducts(originalCategoryProducts);
-
-        // Show filters only if products were found
-        if (originalCategoryProducts.length > 0 && filterBar) {
-             filterBar.style.display = 'flex';
-        }
-
-        // Setup Listeners (Ensure this runs only once per full page load)
-        if (!categoryControlListenersAdded) {
-            console.log("Attempting to add category control listeners...");
-            const sortSelect = document.getElementById('filter-sort');
-            const priceSelect = document.getElementById('filter-price');
-            const searchInput = document.getElementById('filter-search-input');
-            const searchButton = document.getElementById('filter-search-btn');
-            const resetButton = document.getElementById('filter-reset-btn');
-
-            // Add checks to ensure elements exist before adding listeners
-            if (sortSelect) {
-                sortSelect.addEventListener('change', applyCategoryFilters);
-                console.log("Added listener to sort select.");
-            } else { console.warn("Sort select not found"); }
-
-            if (priceSelect) {
-                priceSelect.addEventListener('change', applyCategoryFilters);
-                 console.log("Added listener to price select.");
-            } else { console.warn("Price select not found"); }
-
-            if (searchButton) {
-                searchButton.addEventListener('click', applyCategoryFilters);
-                 console.log("Added listener to search button.");
-            } else { console.warn("Search button not found"); }
-
-            if (searchInput) {
-                 searchInput.addEventListener('keypress', (e) => { 
-                     if (e.key === 'Enter') {
-                         e.preventDefault(); // Prevent potential form submission
-                         applyCategoryFilters(); 
-                     }
-                 });
-                 console.log("Added keypress listener to search input.");
-            } else { console.warn("Search input not found"); }
-
-            if (resetButton) {
-                resetButton.addEventListener('click', () => {
-                    if(sortSelect) sortSelect.value = 'default';
-                    if(priceSelect) priceSelect.value = 'all';
-                    if(searchInput) searchInput.value = '';
-                    console.log("Resetting filters.");
-                    renderCategoryProducts(originalCategoryProducts); // Render the original list
-                });
-                 console.log("Added listener to reset button.");
-            } else { console.warn("Reset button not found"); }
-
-            categoryControlListenersAdded = true; // Set flag
-            console.log("Category control listeners setup complete.");
+        console.log('Loading category data for slug:', categorySlug);
+        
+        // Create a loading indicator
+        const contentArea = document.getElementById('dynamic-product-area');
+        contentArea.innerHTML = `
+            <p style="text-align: center; padding: 3rem 1rem;">
+                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                Đang tải danh mục...
+            </p>
+        `;
+        
+        // Fetch category data
+        const data = await fetchData(`/categories/${categorySlug}`);
+        console.log('Category detail page loaded - DOM ready.', data);
+        
+        // Update document title
+        document.title = `${data.categoryName || 'Unknown Category'} - KiritoMainBro`;
+        
+        // Create category section
+        const categoryData = {
+            name: data.categoryName || 'Unknown Category',
+            slug: categorySlug
+        };
+        
+        const categorySection = createCategorySectionElement(categoryData);
+        
+        // Create filter bar
+        const filterBar = document.createElement('div');
+        filterBar.className = 'filter-bar';
+        filterBar.innerHTML = `
+            <div class="filter-group">
+                <label for="sort-select">Sắp xếp</label>
+                <select id="sort-select">
+                    <option value="all">Mặc định</option>
+                    <option value="price-asc">Giá tăng dần</option>
+                    <option value="price-desc">Giá giảm dần</option>
+                    <option value="name-asc">Tên A-Z</option>
+                    <option value="name-desc">Tên Z-A</option>
+                    <option value="bestseller">Bán chạy nhất</option>
+                    <option value="newest">Mới nhất</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="price-select">Giá</label>
+                <select id="price-select">
+                    <option value="all">Tất cả</option>
+                    <option value="0-50000">Dưới 50K</option>
+                    <option value="50000-200000">50K - 200K</option>
+                    <option value="200000-500000">200K - 500K</option>
+                    <option value="500000-1000000">500K - 1M</option>
+                    <option value="1000000-2000000">1M - 2M</option>
+                    <option value="2000000-5000000">2M - 5M</option>
+                    <option value="5000000-10000000">5M - 10M</option>
+                    <option value="10000000-999999999">Trên 10M</option>
+                </select>
+            </div>
+            <div class="filter-group filter-search">
+                <label for="search-input">Tìm kiếm</label>
+                <input type="text" id="search-input" placeholder="Tên sản phẩm...">
+            </div>
+            <div class="filter-actions">
+                <button class="cta-button secondary" id="reset-filter">
+                    <i class="fas fa-sync-alt icon-left"></i>Đặt lại
+                </button>
+            </div>
+        `;
+        
+        // Create product grid (empty at this point)
+        const productGrid = document.createElement('div');
+        productGrid.className = 'product-grid';
+        
+        // Append all elements
+        categorySection.appendChild(filterBar);
+        categorySection.appendChild(productGrid);
+        
+        // Clear content area and append the new section
+        contentArea.innerHTML = '';
+        contentArea.appendChild(categorySection);
+        
+        // Set up filter listeners
+        setupCategoryFilters();
+        
+        // Render products
+        if (data.products && Array.isArray(data.products)) {
+            console.log(`Fetched ${data.products.length} products for category '${data.categoryName}'`);
+            renderCategoryProducts(data.products);
         } else {
-            console.log("Category control listeners already added.");
+            console.error('Invalid products data:', data.products);
+            renderCategoryProducts([]);
         }
-
-        // Setup Buy Button Listeners for the grid
+        
+        // Set up buy button listeners
         setupCategoryPageBuyListeners();
-
+        
     } catch (error) {
-        console.error(`Error loading category page data for slug ${categorySlug}:`, error);
-        categoryTitleDisplay.textContent = "Lỗi tải danh mục";
-        categoryGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không thể tải sản phẩm: ${error.message}</p>`;
+        console.error('Error loading category page data:', error);
+        const contentArea = document.getElementById('dynamic-product-area');
+        contentArea.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--warning-color); margin-bottom: 1rem;"></i>
+                <h2>Không tìm thấy danh mục</h2>
+                <p>Danh mục bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+                <a href="shopping.html" class="cta-button primary" style="margin-top: 1rem;">
+                    <i class="fas fa-arrow-left icon-left"></i>Quay lại cửa hàng
+                </a>
+            </div>
+        `;
     }
 }
 
@@ -897,6 +909,60 @@ function setupCategoryPageBuyListeners() {
     console.log("Setting up buy listeners for category page grid...");
     productGrid.removeEventListener('click', handleBuyButtonClick); // Prevent duplicates if called multiple times
     productGrid.addEventListener('click', handleBuyButtonClick); // Use event delegation
+}
+
+// Function to load and display categories on the home page
+function loadHomePageCategories() {
+    const categoriesContainer = document.getElementById('categories-container');
+    if (!categoriesContainer) {
+        console.error('Categories container not found');
+        return;
+    }
+
+    // Clear any existing content
+    categoriesContainer.innerHTML = '';
+    
+    // Show loading state
+    const loadingElement = document.createElement('div');
+    loadingElement.className = 'loading-indicator';
+    loadingElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải danh mục sản phẩm...';
+    categoriesContainer.appendChild(loadingElement);
+
+    // Fetch the categories data
+    fetch('api/categories-with-products.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Remove loading indicator
+            categoriesContainer.innerHTML = '';
+            
+            // Process each category
+            if (Array.isArray(data) && data.length > 0) {
+                data.forEach(category => {
+                    // Create the category section element
+                    const categorySection = createCategorySectionElement(category);
+                    categoriesContainer.appendChild(categorySection);
+                    
+                    // Render products for this category (limit to 6 for home page)
+                    renderCategoryProducts(category, categorySection, 6);
+                });
+            } else {
+                throw new Error('No categories data received');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading categories:', error);
+            categoriesContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Không thể tải danh mục sản phẩm. Vui lòng thử lại sau.</p>
+                </div>
+            `;
+        });
 }
 
 // ----- Initialization Function -----

@@ -126,4 +126,49 @@ router.delete('/:id', authAdmin, async (req, res) => {
     }
 });
 
+// GET category by slug with its products (Public)
+router.get('/:slug', async (req, res) => {
+    try {
+        console.log(`Fetching category by slug: ${req.params.slug}`);
+        const category = await Category.findOne({ slug: req.params.slug });
+        
+        if (!category) {
+            console.warn(`Category not found for slug: ${req.params.slug}`);
+            return res.status(404).json({ message: 'Category not found' });
+        }
+        
+        // Fetch products for this category
+        const products = await Product.find({ category: category._id })
+            .sort({ displayOrder: 1, name: 1 })
+            .populate('category', 'name slug iconClass');
+        
+        // Calculate min and max prices
+        let minPrice = 0;
+        let maxPrice = 0;
+        if (products.length > 0) {
+            const numericPrices = products.map(p => p.price).filter(p => typeof p === 'number');
+            if (numericPrices.length > 0) {
+                minPrice = Math.min(...numericPrices);
+                maxPrice = Math.max(...numericPrices);
+            }
+        }
+        
+        // Return combined data
+        res.json({
+            categoryId: category._id,
+            categoryName: category.name,
+            slug: category.slug,
+            iconClass: category.iconClass || 'fas fa-tag',
+            iconImageUrl: category.iconImageUrl,
+            displayOrder: category.displayOrder,
+            products: products,
+            minPrice: minPrice,
+            maxPrice: maxPrice
+        });
+    } catch (err) {
+        console.error(`Error fetching category by slug ${req.params.slug}:`, err);
+        res.status(500).json({ message: `Server error fetching category: ${err.message}` });
+    }
+});
+
 module.exports = router;
