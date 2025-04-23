@@ -120,5 +120,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <!-- === UPDATE SCRIPT VERSION === -->
     <script src="script.js?v=1.9.5"></script> <!-- Version Bump -->
+    <script>
+    function initializePage() {
+        // ... initialization code ...
+        
+        // Page-Specific Logic
+        if (document.body.classList.contains('shopping-page')) {
+            console.log("Shopping page detected. Loading overview data...");
+            loadAndDisplayShoppingData();
+        } else if (document.body.classList.contains('category-detail-page')) {
+            console.log("Category detail page detected. Loading specific data...");
+            loadCategoryPageData(); // Load category-specific products WITH buy buttons
+        } else if (document.body.classList.contains('history-page')) {
+            console.log("History page detected.");
+            setupProfessionalAnimations();
+        } else {
+            setupProfessionalAnimations();
+        }
+        // ... more initialization ...
+    }
+    </script>
 </body>
 </html>
