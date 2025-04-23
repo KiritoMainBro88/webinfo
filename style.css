@@ -212,7 +212,7 @@ input { font-family: inherit; }
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, rgba(13, 17, 23, 0.85), rgba(22, 27, 34, 0.92)), /* Slightly less opaque overlay */
-                url('images/cat-staring.jpg') no-repeat center center; /* <<< NEW FILENAME */
+                url('images/cat-staring.jpg') no-repeat center center; /* <<< CORRECT FILENAME */
     background-size: cover;
 }
 .hero-content { z-index: 2; position: relative; max-width: 700px; }
@@ -250,7 +250,7 @@ input { font-family: inherit; }
 /* --- Skills --- */
 .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin-top: 1.5rem; }
 .skill-item { background-color: var(--bg-tertiary); padding: 0.8rem 1rem; border-radius: var(--border-radius-sm); display: flex; align-items: center; gap: 0.7rem; font-size: 0.9rem; border: 1px solid var(--border-primary); transition: transform 0.2s ease; }
-.skill-item:hover { transform: scale(1.03); } /* Animation should work */
+.skill-item:hover { transform: scale(1.04); } /* Increased scale slightly */
 .skill-item i { color: var(--accent-primary); width: 18px; text-align: center; }
 
 /* --- Social Buttons --- */
@@ -267,7 +267,7 @@ input { font-family: inherit; }
 /* --- Interests --- */
 .interests-carousel { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
 .interest-card { background-color: var(--bg-primary); padding: 1.5rem; border-radius: var(--border-radius-lg); text-align: center; border: 1px solid var(--border-primary); transition: transform var(--transition-main), box-shadow var(--transition-main); }
-.interest-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); } /* Animation should work */
+.interest-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); } /* Increased translateY slightly */
 .interest-icon { font-size: 2rem; color: var(--accent-secondary); margin-bottom: 1rem; display: inline-block; }
 .interest-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
 .interest-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0; }
@@ -279,6 +279,7 @@ input { font-family: inherit; }
     border-top: 1px solid var(--border-footer);
     flex-shrink: 0;
     margin-top: auto; /* Pushes footer down */
+    position: relative; /* Needed for back-to-top positioning */
 }
 
 .footer-main {
@@ -396,11 +397,6 @@ input { font-family: inherit; }
 }
 
 
-/* REMOVED OLD .footer-social styles as they are replaced by the new structure */
-/* .footer-social { margin-bottom: 1rem; } */
-/* .footer-social a { color: var(--text-secondary); font-size: 1.4rem; margin: 0 0.7rem; transition: color var(--transition-fast), transform var(--transition-fast); display: inline-block; } */
-/* .footer-social a:hover { color: var(--text-link-hover); transform: translateY(-2px); } */
-
 .footer-bottom {
     border-top: 1px solid var(--border-footer);
     padding-top: 1.5rem;
@@ -413,6 +409,50 @@ input { font-family: inherit; }
     color: var(--text-secondary);
     margin: 0;
 }
+
+/* --- Back to Top Button --- */
+#back-to-top-btn {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: var(--accent-primary);
+    color: white;
+    cursor: pointer;
+    padding: 10px 12px; /* Slightly adjusted padding */
+    border-radius: 50%; /* Make it circular */
+    font-size: 1.1rem; /* Icon size */
+    line-height: 1;
+    box-shadow: var(--shadow-md);
+    transition: background-color var(--transition-fast), opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#back-to-top-btn.visible {
+    display: inline-flex; /* Use flex to center icon */
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+}
+
+#back-to-top-btn:hover {
+    background-color: var(--accent-primary-hover);
+}
+
+body.light-theme #back-to-top-btn {
+    /* Optional: Adjust light theme colors if needed */
+    background-color: var(--accent-primary);
+    color: white;
+}
+body.light-theme #back-to-top-btn:hover {
+    background-color: var(--accent-primary-hover);
+}
+
 
 /* --- Auth Modal --- */
 #auth-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
@@ -847,7 +887,7 @@ body.light-theme .shopping-sidebar {
 [data-animate="reveal-text"], [data-animate="fade-up"], [data-animate="fade-left"], [data-animate="fade-right"] {
     /*opacity: 0; /* Start hidden for GSAP animations */
 }
-.image-card, .cta-button, .social-button, .interest-card, .icon-button, .user-area, #donate-button-header, .header-nav-link, .mobile-nav-link, .dropdown-link, .category-button, .product-buy-btn, .sidebar-widget, .footer-link-button { will-change: transform, box-shadow, background-color, color, opacity, width, padding; } /* Added footer-link-button */
+.image-card, .cta-button, .social-button, .interest-card, .icon-button, .user-area, #donate-button-header, .header-nav-link, .mobile-nav-link, .dropdown-link, .category-button, .product-buy-btn, .sidebar-widget, .footer-link-button, #back-to-top-btn { will-change: transform, box-shadow, background-color, color, opacity, width, padding; } /* Added back-to-top */
 [data-animate] { will-change: opacity, transform; }
 .content-header { will-change: border-color; }
 .header-inner { will-change: background-color, box-shadow, border-color; }

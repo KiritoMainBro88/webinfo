@@ -208,7 +208,7 @@ function setupProfessionalAnimations() {
     });
 
     // Microinteractions for buttons/links
-     document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn')
+     document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn, .footer-link-button, #back-to-top-btn') // Added footer/back-to-top
         .forEach(button => {
             button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 }));
             button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 }));
@@ -347,9 +347,10 @@ function setupActionButtons() {
 
     // Function to show specific form
     function showForm(formToShow) {
+        if (!authContainer) return; // Prevent errors if modal isn't on page
         authContainer.style.display = 'flex';
         [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => {
-            form.style.display = form === formToShow ? 'block' : 'none';
+           if(form) form.style.display = form === formToShow ? 'block' : 'none';
         });
          // Clear messages when switching forms
         [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => showMessage(msg, ''));
@@ -360,7 +361,7 @@ function setupActionButtons() {
     window.showRegisterForm = () => showForm(registerFormWrapper);
     window.showForgotForm = () => showForm(forgotFormWrapper);
     window.showResetForm = () => showForm(resetFormWrapper); // Called potentially after email link click
-    window.closeAuthForms = () => authContainer.style.display = 'none';
+    window.closeAuthForms = () => { if(authContainer) authContainer.style.display = 'none'; }
 
     // Attach listeners to triggers
     if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
@@ -513,16 +514,16 @@ function setupActionButtons() {
         }
         if (isLoggedIn) {
             userNameSpan.textContent = username;
-            authActionLink.style.display = 'none';
-            registerActionLink.style.display = 'none';
-            forgotActionLink.style.display = 'none';
-            logoutLink.style.display = 'flex'; // Use flex as it's an anchor with icon
+            if(authActionLink) authActionLink.style.display = 'none';
+            if(registerActionLink) registerActionLink.style.display = 'none';
+            if(forgotActionLink) forgotActionLink.style.display = 'none';
+            if(logoutLink) logoutLink.style.display = 'flex'; // Use flex as it's an anchor with icon
         } else {
             userNameSpan.textContent = 'Khách';
-            authActionLink.style.display = 'flex';
-            registerActionLink.style.display = 'flex';
-            forgotActionLink.style.display = 'flex';
-            logoutLink.style.display = 'none';
+            if(authActionLink) authActionLink.style.display = 'flex';
+            if(registerActionLink) registerActionLink.style.display = 'flex';
+            if(forgotActionLink) forgotActionLink.style.display = 'flex';
+            if(logoutLink) logoutLink.style.display = 'none';
         }
     }
 
@@ -548,6 +549,8 @@ function setupActionButtons() {
              const tokenInput = document.getElementById('reset-token');
              if (tokenInput) {
                  tokenInput.value = resetToken; // Pre-fill token input
+             } else {
+                 console.warn("Reset token input field not found.");
              }
              // Clean the token from the URL visually
              window.history.replaceState({}, document.title, window.location.pathname);
@@ -575,20 +578,9 @@ function setupDropdownActions() {
     if(depositLinkMobile) depositLinkMobile.addEventListener('click', handleDepositClick);
     if(historyLinkMobile) historyLinkMobile.addEventListener('click', handleHistoryClick);
 
-    // Add listeners for elements specific to shopping.html (category buttons removed, product buttons kept)
+    // Add listeners for elements specific to shopping.html (product buttons)
     if (document.querySelector('.shopping-layout')) { // Check if on shopping page layout
         console.log("Setting up shopping page specific listeners...");
-        // Category buttons were removed, so commenting out/removing this block:
-        /*
-        document.querySelectorAll('.category-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                alert(`Category filter for "${e.currentTarget.textContent}" coming soon!`);
-            });
-        });
-        */
          document.querySelectorAll('.product-buy-btn').forEach(button => {
              button.addEventListener('click', (e) => {
                  e.preventDefault();
@@ -596,7 +588,12 @@ function setupDropdownActions() {
                  // Check login status before allowing purchase?
                  if (!localStorage.getItem('userId')) {
                     alert('Vui lòng đăng nhập để mua hàng!');
-                    showLoginForm(); // Show login modal
+                    // Ensure showLoginForm is accessible (it's global in setupActionButtons)
+                    if (typeof showLoginForm === 'function') {
+                        showLoginForm(); // Show login modal
+                    } else {
+                        console.error("showLoginForm function not found");
+                    }
                  } else {
                     alert(`Chức năng mua "${productTitle}" coming soon!`);
                  }
@@ -604,6 +601,39 @@ function setupDropdownActions() {
          });
     }
 }
+
+// --- Back to Top Button Logic ---
+function setupBackToTopButton() {
+    const backToTopButton = document.getElementById("back-to-top-btn");
+    if (!backToTopButton) {
+        console.warn("Back to top button not found.");
+        return;
+    }
+
+    const scrollThreshold = 200; // Pixels to scroll before button appears
+
+    const checkScroll = () => {
+        if (window.scrollY > scrollThreshold) {
+            backToTopButton.classList.add("visible");
+        } else {
+            backToTopButton.classList.remove("visible");
+        }
+    };
+
+    // Check scroll position on load and scroll
+    window.addEventListener("scroll", checkScroll, { passive: true });
+    checkScroll(); // Initial check
+
+    // Scroll to top on click
+    backToTopButton.addEventListener("click", (e) => {
+        e.preventDefault(); // Prevent default anchor behavior if it were an anchor
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
+}
+
 
 // ----- Initialization -----
 function initializePage() {
@@ -619,6 +649,7 @@ function initializePage() {
     setupActionButtons(); // Handles login/register/logout/token check
     setupDropdownActions(); // Handles deposit/history placeholders + product buttons
     setupClickDropdowns(); // Handles the new click-based 'Dịch vụ' dropdown
+    setupBackToTopButton(); // Add this line
 
     // Donate Button Listener
     const donateButtonHeader = document.getElementById('donate-button-header');
