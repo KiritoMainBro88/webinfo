@@ -705,177 +705,187 @@ function renderCategoryProducts(productsToRender) {
 
 // Function to apply filters and sorting
 function applyCategoryFilters() {
-    const sortValue = document.getElementById('sort-select')?.value || 'default';
-    const searchValue = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
+    const sortValue = document.getElementById('filter-sort')?.value || 'default';
+    const priceValue = document.getElementById('filter-price')?.value || 'all';
+    const searchValue = document.getElementById('filter-search-input')?.value.toLowerCase().trim() || '';
+
+    console.log(`Applying filters: Sort=${sortValue}, Price=${priceValue}, Search=${searchValue}`);
 
     let filteredProducts = [...originalCategoryProducts]; // Start with the original list
 
-    // 1. Apply Search Filter
-    if (searchValue) {
-        filteredProducts = filteredProducts.filter(product =>
-            (product.name?.toLowerCase().includes(searchValue)) ||
-            (product.brand?.toLowerCase().includes(searchValue)) // Also search brand if it exists
-            // Add more fields to search if needed (e.g., description)
-        );
+    // 1. Apply Price Filter (Example - needs better parsing)
+    if (priceValue !== 'all') {
+        try {
+            const [minStr, maxStr] = priceValue.split('-');
+            const min = parseInt(minStr, 10);
+            const max = parseInt(maxStr, 10);
+
+            filteredProducts = filteredProducts.filter(product => {
+                if (typeof product.price !== 'number') return false; // Exclude non-numeric prices
+                const price = product.price;
+                let match = true;
+                if (!isNaN(min)) {
+                    match = match && price >= min;
+                }
+                if (!isNaN(max) && max > 0) { // Max 0 usually means 'and above'
+                    match = match && price <= max;
+                }
+                return match;
+            });
+        } catch (e) {
+            console.error("Error parsing price filter value:", priceValue, e);
+        }
     }
 
-    // 2. Apply Sorting
+    // 2. Apply Search Filter (Search name, brand, and maybe category name)
+    if (searchValue) {
+        filteredProducts = filteredProducts.filter(product => {
+            const nameMatch = product.name?.toLowerCase().includes(searchValue);
+            const brandMatch = product.brand?.toLowerCase().includes(searchValue);
+            // Optional: Search category name as well
+            // const categoryMatch = product.category?.name?.toLowerCase().includes(searchValue);
+            return nameMatch || brandMatch; // || categoryMatch;
+        });
+    }
+
+    // 3. Apply Sorting
     switch (sortValue) {
         case 'price-asc':
-            // Sort by price, handling non-numeric prices (placing them potentially last)
-            filteredProducts.sort((a, b) => {
-                const priceA = typeof a.price === 'number' ? a.price : Infinity;
-                const priceB = typeof b.price === 'number' ? b.price : Infinity;
-                return priceA - priceB;
-            });
+            filteredProducts.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
             break;
         case 'price-desc':
-            filteredProducts.sort((a, b) => {
-                const priceA = typeof a.price === 'number' ? a.price : -Infinity;
-                const priceB = typeof b.price === 'number' ? b.price : -Infinity;
-                return priceB - priceA;
-            });
+            filteredProducts.sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
             break;
         case 'best-seller':
-            // Assuming purchaseCount exists
             filteredProducts.sort((a, b) => (b.purchaseCount || 0) - (a.purchaseCount || 0));
             break;
         case 'newest':
-            // Assuming createdAt exists (or updatedAt)
             filteredProducts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
             break;
-        case 'oldest':
-            filteredProducts.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-            break;
-        // 'default' case requires no sorting, keeps original fetched order (or search filtered order)
+         case 'oldest':
+             filteredProducts.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+             break;
+        // 'default' case uses the order from previous filters
     }
 
-    console.log(`Applied filters: sort=${sortValue}, search=${searchValue}. Rendering ${filteredProducts.length} products.`);
-    renderCategoryProducts(filteredProducts);
+    renderCategoryProducts(filteredProducts); // Re-render the grid with filtered/sorted products
 }
 
-// --- MODIFIED loadCategoryPageData --- 
+// --- MODIFIED loadCategoryPageData to ensure listeners are correctly set --- 
 async function loadCategoryPageData() {
-    if (!document.body.classList.contains('category-detail-page') || !categoryProductGrid || !categoryPageTitle) {
+    // Ensure necessary elements exist
+     const categoryGrid = document.getElementById('category-product-grid');
+     const categoryTitleDisplay = document.getElementById('category-name-display'); // The span for the name
+     const categoryBreadcrumb = document.getElementById('category-breadcrumb'); // The span for "Vật Phẩm"
+     const filterBar = document.querySelector('.filter-bar');
+
+    if (!categoryGrid || !categoryTitleDisplay || !categoryBreadcrumb) {
+        console.error("Required category page elements not found for loading data.");
         return;
     }
     console.log("Loading data for category detail page...");
 
-    // --- Reset state for potential reloads --- 
+    // Reset state
     originalCategoryProducts = [];
-    const controls = document.querySelector('.category-controls');
-    if (controls) controls.style.display = 'none'; // Hide controls initially
-    // ----------------------------------------
+    if (filterBar) filterBar.style.display = 'none'; // Hide filters initially
+    categoryGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải sản phẩm...</p>`;
+    categoryTitleDisplay.textContent = 'Đang tải...';
+    categoryBreadcrumb.textContent = 'Vật Phẩm';
 
     const urlParams = new URLSearchParams(window.location.search);
     const categorySlug = urlParams.get('slug');
 
     if (!categorySlug) {
-        categoryPageTitle.textContent = "Lỗi";
-        categoryProductGrid.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Không tìm thấy mã danh mục (slug) trong URL.</p>';
+        categoryTitleDisplay.textContent = "Lỗi";
+        categoryGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không tìm thấy mã danh mục (slug) trong URL.</p>';
         return;
     }
-
-    categoryPageTitle.textContent = `Đang tải danh mục '${categorySlug}'...`;
-    categoryProductGrid.innerHTML = `<p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải sản phẩm...</p>`;
 
     try {
         console.log(`Fetching products for slug: ${categorySlug}`);
         const response = await fetchData(`/products?categorySlug=${categorySlug}`);
-        // --- ADDED: Log the raw response --- 
         console.log("Raw response for category:", response);
-        // --- END LOGGING --- 
 
-        // --- MODIFIED: Handle array OR object response --- 
-        let productsArray = [];
-        let categoryNameFromResponse = null;
-
-        if (Array.isArray(response)) {
-            // If the response itself is the array
-            console.log("Received direct array of products.");
-            productsArray = response;
-        } else if (typeof response === 'object' && response !== null && response.hasOwnProperty('products') && Array.isArray(response.products)) {
-            // If the response is an object containing the products array
-            console.log("Received object containing products array.");
-            productsArray = response.products;
-            categoryNameFromResponse = response.categoryName; 
-        } else {
-            // If it's neither a direct array nor the expected object structure
-             console.error("Invalid product data received for category. Expected array or object with 'products' array property:", response);
-             throw new Error("Invalid product data structure received for category.");
+        if (typeof response !== 'object' || response === null || !Array.isArray(response.products)) {
+             console.error("Invalid data structure received for category.", response);
+             throw new Error("Dữ liệu sản phẩm không hợp lệ từ máy chủ.");
         }
-        
-        originalCategoryProducts = productsArray; // Store the correctly identified products array
-        
-        console.log(`Fetched and stored ${originalCategoryProducts.length} original products for this category.`);
-        // --- END MODIFICATION ---
 
-        // Initial render
+        originalCategoryProducts = response.products;
+        const categoryName = response.categoryName || categorySlug;
+
+        console.log(`Fetched ${originalCategoryProducts.length} products for category '${categoryName}'.`);
+
+        categoryTitleDisplay.textContent = categoryName;
+        document.title = `${categoryName} - Sản phẩm - KiritoMainBro`;
+
+        // Initial Render
         renderCategoryProducts(originalCategoryProducts);
 
-        // Set page title (only if products exist)
-        if (originalCategoryProducts.length > 0) {
-            // Use category name from response if available, otherwise fallback
-            const titleToSet = categoryNameFromResponse || (originalCategoryProducts[0]?.category?.name);
-            if (titleToSet) {
-                categoryPageTitle.textContent = titleToSet;
-                document.title = `${titleToSet} - KiritoMainBro`;
-            } else {
-                categoryPageTitle.textContent = `Danh mục: ${categorySlug}`;
-            }
-            // Show controls only if products exist
-            if (controls) controls.style.display = 'block';
-        } else {
-            categoryPageTitle.textContent = `Danh mục: ${categorySlug} (Trống)`;
+        // Show filters only if products were found
+        if (originalCategoryProducts.length > 0 && filterBar) {
+             filterBar.style.display = 'flex';
         }
 
-        // --- Setup Listeners (only once) ---
+        // Setup Listeners (Ensure this runs only once per full page load)
         if (!categoryControlListenersAdded) {
-            const sortSelect = document.getElementById('sort-select');
-            const searchInput = document.getElementById('search-input');
+            console.log("Attempting to add category control listeners...");
+            const sortSelect = document.getElementById('filter-sort');
+            const priceSelect = document.getElementById('filter-price');
+            const searchInput = document.getElementById('filter-search-input');
+            const searchButton = document.getElementById('filter-search-btn');
             const resetButton = document.getElementById('filter-reset-btn');
 
+            // Add checks to ensure elements exist before adding listeners
             if (sortSelect) {
                 sortSelect.addEventListener('change', applyCategoryFilters);
-            }
+                console.log("Added listener to sort select.");
+            } else { console.warn("Sort select not found"); }
+
+            if (priceSelect) {
+                priceSelect.addEventListener('change', applyCategoryFilters);
+                 console.log("Added listener to price select.");
+            } else { console.warn("Price select not found"); }
+
+            if (searchButton) {
+                searchButton.addEventListener('click', applyCategoryFilters);
+                 console.log("Added listener to search button.");
+            } else { console.warn("Search button not found"); }
+
             if (searchInput) {
-                // Basic immediate filtering on input
-                searchInput.addEventListener('input', applyCategoryFilters); 
-                // TODO: Add debouncing for better performance on rapid typing
-            }
+                 searchInput.addEventListener('keypress', (e) => { 
+                     if (e.key === 'Enter') {
+                         e.preventDefault(); // Prevent potential form submission
+                         applyCategoryFilters(); 
+                     }
+                 });
+                 console.log("Added keypress listener to search input.");
+            } else { console.warn("Search input not found"); }
+
             if (resetButton) {
                 resetButton.addEventListener('click', () => {
                     if(sortSelect) sortSelect.value = 'default';
+                    if(priceSelect) priceSelect.value = 'all';
                     if(searchInput) searchInput.value = '';
                     console.log("Resetting filters.");
                     renderCategoryProducts(originalCategoryProducts); // Render the original list
                 });
-            }
-            categoryControlListenersAdded = true;
-            console.log("Category control listeners added.");
+                 console.log("Added listener to reset button.");
+            } else { console.warn("Reset button not found"); }
+
+            categoryControlListenersAdded = true; // Set flag
+            console.log("Category control listeners setup complete.");
+        } else {
+            console.log("Category control listeners already added.");
         }
-        // ---------------------------------
 
-        // --- Setup Buy Button Listeners for the grid ---
+        // Setup Buy Button Listeners for the grid
         setupCategoryPageBuyListeners();
-
-        // --- Initial Animations (apply AFTER controls are potentially shown) ---
-        console.log("Applying initial animations for category page...");
-        setTimeout(() => {
-             gsap.utils.toArray('.category-detail-layout [data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
-             gsap.utils.toArray('.category-detail-layout [data-animate]:not(.gsap-initiated)').forEach(element => {
-                 element.classList.add('gsap-initiated');
-                 const delay = parseFloat(element.dataset.delay) || (element.classList.contains('category-controls') ? 0.1 : 0.2); // Delay controls slightly less
-                 gsap.from(element, { opacity: 0, y: 20, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 90%", toggleActions: "play none none none", once: true } });
-             });
-            // Note: Card animation is now handled within renderCategoryProducts
-             console.log("Category page initial animations applied.");
-        }, 100); // Slight delay
 
     } catch (error) {
         console.error(`Error loading category page data for slug ${categorySlug}:`, error);
-        categoryPageTitle.textContent = "Lỗi tải danh mục";
-        categoryProductGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không thể tải sản phẩm: ${error.message}</p>`;
+        categoryTitleDisplay.textContent = "Lỗi tải danh mục";
+        categoryGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không thể tải sản phẩm: ${error.message}</p>`;
     }
 }
 
