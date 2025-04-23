@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Server Edit - KMB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=1.9"> <!-- Updated CSS version -->
-    <link rel="stylesheet" href="admin-style.css?v=1.1">
+    <!-- === UPDATE CSS VERSION === -->
+    <link rel="stylesheet" href="style.css?v=1.9.2">
+    <link rel="stylesheet" href="admin-style.css?v=1.1"> <!-- Keep admin style version if unchanged -->
 </head>
 <body class="dark-theme">
 
@@ -47,27 +48,30 @@
     </div>
 
     <!-- Load main script first -->
-    <script src="script.js?v=1.9"></script> <!-- Updated script version -->
+     <!-- === UPDATE SCRIPT VERSION === -->
+    <script src="script.js?v=1.9.2"></script>
     <!-- Load admin script (contains balance logic) -->
-    <script src="admin.js?v=1.2"></script>
+    <script src="admin.js?v=1.2.1"></script> <!-- Updated admin script version -->
      <script>
-         // Basic auth check for this page (Can be kept or rely solely on admin.js check)
+         // This inline script can be simplified or removed as admin.js now handles the check
+         // Keeping it doesn't hurt, but the check in admin.js is primary
          document.addEventListener('DOMContentLoaded', () => {
             const adminContent = document.getElementById('admin-content');
             const authCheckDiv = document.getElementById('admin-auth-check');
             const userId = localStorage.getItem('userId');
-            const isAdmin = localStorage.getItem('isAdmin') === 'true'; // Check admin flag too
+            const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
-            // Replace with real check later
-             if (!userId || !isAdmin) { // Check both login and admin status
-                authCheckDiv.innerHTML = '<p class="error">Access Denied. Admin privileges required.</p>';
-                if (adminContent) adminContent.style.display = 'none';
+             if (!userId || !isAdmin) {
+                // Auth check already done in admin.js's initializeAdminPanel
+                // This just ensures the message shows if that fails early
+                 if (authCheckDiv.style.display !== 'none') { // Only update if admin.js didn't hide it
+                    authCheckDiv.innerHTML = '<p class="error">Access Denied. Admin privileges required.</p>';
+                 }
+                 if (adminContent) adminContent.style.display = 'none';
             } else {
-                 console.warn("SECURITY RISK: Displaying admin page based only on insecure flags.");
-                 authCheckDiv.style.display = 'none';
-                 adminContent.style.display = 'block';
-                 // Initialize forms specific to this page via admin.js if needed
-                 // (admin.js already handles the balance form setup if present)
+                 // Content display is handled by admin.js now
+                 // authCheckDiv.style.display = 'none';
+                 // adminContent.style.display = 'block';
             }
          });
      </script>
