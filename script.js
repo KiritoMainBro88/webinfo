@@ -168,6 +168,62 @@ function updateYear() {
     }
 }
 
+// Escape HTML to prevent XSS attacks
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Format currency (different from formatPrice - this is used in product cards)
+function formatCurrency(price) {
+    if (price === null || price === undefined || isNaN(price)) {
+        return 'N/A';
+    }
+    // Use thousand separators (dots for VND) and add đ symbol
+    return new Intl.NumberFormat('vi-VN', { 
+        style: 'currency', 
+        currency: 'VND' 
+    }).format(price);
+}
+
+// Generate star rating HTML
+function generateStarRating(rating) {
+    if (typeof rating !== 'number' || isNaN(rating)) {
+        rating = 0;
+    }
+    
+    // Clamp rating between 0 and 5
+    rating = Math.max(0, Math.min(5, rating));
+    
+    // Round to nearest half star
+    const roundedRating = Math.round(rating * 2) / 2;
+    
+    let starsHtml = '';
+    
+    // Add full stars
+    for (let i = 1; i <= Math.floor(roundedRating); i++) {
+        starsHtml += '<i class="fas fa-star"></i>';
+    }
+    
+    // Add half star if needed
+    if (roundedRating % 1 !== 0) {
+        starsHtml += '<i class="fas fa-star-half-alt"></i>';
+    }
+    
+    // Add empty stars
+    const emptyStars = 5 - Math.ceil(roundedRating);
+    for (let i = 1; i <= emptyStars; i++) {
+        starsHtml += '<i class="far fa-star"></i>';
+    }
+    
+    return starsHtml;
+}
+
 // --- Auth Form Display Functions (Global Scope) ---
 function showForm(formToShow) {
     if (!authContainer || !loginFormWrapper || !registerFormWrapper || !forgotFormWrapper || !resetFormWrapper) {
