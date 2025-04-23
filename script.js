@@ -411,6 +411,16 @@ function createProductCardElement(product, includeBuyButton = false) {
     let priceDisplay = ''; // Initialize price display
     let buyButtonHTML = ''; // Initialize button HTML
 
+    // --- Image Placeholder Logic ---
+    let imageHTML = '';
+    if (product.imageUrl) {
+        imageHTML = `<img src="${product.imageUrl}" alt="${product.name || 'Product Image'}" loading="lazy">`;
+    } else {
+        // Optionally add a CSS class or content for an empty state placeholder
+        // imageHTML = '<span class="empty-image-placeholder">No Image</span>'; 
+    }
+    // --- End Image Placeholder Logic ---
+
     if (includeBuyButton) {
         // Logic for when the buy button IS included (e.g., on category.html)
         priceDisplay = `${originalPriceHTML} ${salePriceHTML}`; // Show normal price
@@ -453,7 +463,7 @@ function createProductCardElement(product, includeBuyButton = false) {
     // Set the inner HTML of the wrapper element (<a> or <div>)
     wrapperElement.innerHTML = `
         <div class="product-image-placeholder">
-            <img src="${product.imageUrl || 'images/product-placeholder.png'}" alt="${product.name || 'Product Image'}" loading="lazy">
+            ${imageHTML} 
             ${tagHTML}
             ${brandTagHTML}
         </div>
@@ -465,15 +475,6 @@ function createProductCardElement(product, includeBuyButton = false) {
             </p>
             ${buyButtonHTML} 
         </div>`;
-
-    // --- FIX: Set the actual image src AFTER setting innerHTML to avoid potential conflicts with lazy loading attributes ---
-    const imgElement = wrapperElement.querySelector('img');
-    if (imgElement && product.imageUrl) {
-        imgElement.src = product.imageUrl;
-        imgElement.removeAttribute('srcset'); // Remove potentially conflicting attributes
-        imgElement.removeAttribute('data-src'); // Remove potentially conflicting attributes
-    }
-    // --- END FIX ---
 
     // Return the wrapper element
     return wrapperElement;

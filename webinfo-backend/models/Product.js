@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema({
     brand: { type: String, trim: true, required: false, index: true }, // <-- ADDED BRAND FIELD + INDEX
     price: { type: Number, required: [true, 'Price is required'], min: 0, index: true }, // <-- ADDED INDEX
     originalPrice: { type: Number, min: 0, required: false },
-    imageUrl: { type: String, trim: true, default: 'images/product-placeholder.png' },
+    imageUrl: { type: String, trim: true }, // REMOVED DEFAULT
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: [true, 'Category is required'], index: true }, // <-- ADDED INDEX
     tags: [{ type: String, trim: true, lowercase: true }],
     stockStatus: { type: String, default: 'in_stock', enum: ['in_stock', 'out_of_stock', 'contact', 'check_price'] },
