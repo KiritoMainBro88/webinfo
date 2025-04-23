@@ -1,22 +1,19 @@
-console.log("Admin script loading...");
+console.log("Admin script version 1.1 running!"); // Update log
 
 document.addEventListener('DOMContentLoaded', () => {
     const adminContent = document.getElementById('admin-content');
     const authCheckDiv = document.getElementById('admin-auth-check');
-    const API_BASE = 'https://webinfo-zbkq.onrender.com/api'; // Your backend URL
 
-    // --- VERY BASIC Auth Check (Replace with real token verification) ---
+    // --- INSECURE ADMIN ACCESS CHECK FOR DEMO ---
     const userId = localStorage.getItem('userId');
-    // In a real app, you'd send a token to a /api/auth/verifyAdmin endpoint
-    // For now, we just check if logged in. THIS IS NOT SECURE.
     if (!userId) {
-        authCheckDiv.innerHTML = '<p class="error">Access Denied. Please log in as admin via the main site.</p>';
-        // Optionally redirect: setTimeout(() => window.location.href = 'index.html', 3000);
+        authCheckDiv.innerHTML = '<p class="error">Access Denied. Please log in via the main site first.</p>';
+        authCheckDiv.style.display = 'block';
+        adminContent.style.display = 'none';
         return;
     } else {
-        // Assume logged-in user might be admin for demo structure
-        // A backend check is essential in reality.
-        console.warn("Performing only frontend check for login status. Backend admin verification is required for security.");
+        // TODO: Replace this with a real backend call to verify admin status using userId or a token
+        console.warn("SECURITY RISK: Displaying admin panel based only on login status. Implement backend admin verification!");
         authCheckDiv.style.display = 'none';
         adminContent.style.display = 'block';
         initializeAdminPanel();
@@ -25,44 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initializeAdminPanel() {
     console.log("Initializing Admin Panel...");
+    if (typeof fetchData !== 'function') {
+         console.error("FATAL: fetchData function not found in admin.js. Ensure script.js with fetchData is loaded first or copy fetchData here.");
+         alert("A critical error occurred loading the admin panel (fetchData missing). Check console.");
+         return;
+    }
     loadCategories();
     loadProducts();
     setupAdminForms();
-}
-
-
-async function fetchData(endpoint, options = {}) {
-    const API_BASE = 'https://webinfo-zbkq.onrender.com/api';
-    const url = `${API_BASE}${endpoint}`;
-
-    // --- Add Authorization Header (CONCEPTUAL - Needs real token) ---
-    // This is where you would get your secure token (e.g., JWT)
-    // const token = localStorage.getItem('authToken'); // Assuming you store a token
-     const tempUserId = localStorage.getItem('userId'); // INSECURE temporary way
-    options.headers = {
-        'Content-Type': 'application/json', // Assume JSON for POST/PUT
-        ...options.headers,
-        // Add Authorization header if you have a token strategy
-        // 'Authorization': `Bearer ${token}`,
-        'X-Temp-UserId': tempUserId || '' // INSECURE temporary header for demo middleware
-    };
-    // --- End Auth Header ---
-
-    try {
-        const response = await fetch(url, options);
-        const isJson = response.headers.get('content-type')?.includes('application/json');
-        const data = isJson ? await response.json() : null;
-
-        if (!response.ok) {
-            const error = (data && data.message) || response.statusText;
-            console.error(`API Error (${response.status}) on ${endpoint}:`, error);
-            throw new Error(error);
-        }
-        return data;
-    } catch (error) {
-        console.error(`Network or Fetch Error on ${endpoint}:`, error);
-        throw error; // Re-throw for caller handling
-    }
 }
 
 function displayMessage(elementId, message, isSuccess) {
@@ -70,268 +37,222 @@ function displayMessage(elementId, message, isSuccess) {
     if (!el) return;
     el.textContent = message;
     el.className = 'admin-message ' + (isSuccess ? 'success' : 'error');
-    el.style.display = 'block'; // Make sure it's visible
-    setTimeout(() => {
-        el.textContent = '';
-        el.style.display = 'none'; // Hide it again
-     }, 5000); // Clear after 5s
+    el.style.display = 'block';
+    setTimeout(() => { el.textContent = ''; el.style.display = 'none'; }, 5000);
 }
 
 // --- Category Functions ---
 async function loadCategories() {
     const categoryListDiv = document.getElementById('category-list');
-    const categorySelect = document.querySelector('#product-category'); // For product form
+    const categorySelect = document.querySelector('#product-category');
     if (!categoryListDiv || !categorySelect) return;
-
     categoryListDiv.innerHTML = '<p>Loading categories...</p>';
     categorySelect.innerHTML = '<option value="">-- Loading --</option>';
     try {
         const categories = await fetchData('/categories');
-        categoryListDiv.innerHTML = ''; // Clear loading
+        categoryListDiv.innerHTML = '';
         categorySelect.innerHTML = '<option value="">-- Select Category --</option>';
-
-        if (categories.length === 0) {
-            categoryListDiv.innerHTML = '<p>No categories found.</p>';
-        } else {
+        if (categories.length === 0) { categoryListDiv.innerHTML = '<p>No categories found.</p>'; }
+        else {
             const ul = document.createElement('ul');
             categories.forEach(cat => {
-                // Populate list for display/editing
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span><i class="${cat.iconClass || 'fas fa-tag'}"></i> ${cat.name} (Order: ${cat.displayOrder})</span>
+                    <span><i class="${cat.iconClass || 'fas fa-tag'}"></i> ${cat.name} (Order: ${cat.displayOrder ?? 0})</span>
                     <span class="actions">
-                        <button class="edit-cat-btn cta-button secondary" data-id="${cat._id}" data-name="${cat.name}" data-icon="${cat.iconClass || ''}" data-order="${cat.displayOrder}">Edit</button>
-                        <button class="delete-cat-btn cta-button danger" data-id="${cat._id}">Delete</button>
-                    </span>
-                `;
+                         <button class="edit-cat-btn cta-button secondary" data-id="${cat._id}" data-name="${cat.name}" data-icon="${cat.iconClass || ''}" data-order="${cat.displayOrder ?? 0}">Edit</button>
+                         <button class="delete-cat-btn cta-button danger" data-id="${cat._id}">Delete</button>
+                    </span>`;
                 ul.appendChild(li);
-
-                // Populate select dropdown
-                const option = document.createElement('option');
-                option.value = cat._id;
-                option.textContent = cat.name;
-                categorySelect.appendChild(option);
+                const option = document.createElement('option'); option.value = cat._id; option.textContent = cat.name; categorySelect.appendChild(option);
             });
             categoryListDiv.appendChild(ul);
         }
-    } catch (error) {
-         categoryListDiv.innerHTML = `<p class="error">Error loading categories: ${error.message}</p>`;
-         categorySelect.innerHTML = '<option value="">-- Error Loading --</option>';
-    }
+    } catch (error) { categoryListDiv.innerHTML = `<p class="error">Error loading categories: ${error.message}</p>`; categorySelect.innerHTML = '<option value="">-- Error Loading --</option>'; }
 }
 
 // --- Product Functions ---
 async function loadProducts() {
-     const productListDiv = document.getElementById('product-list');
-     if (!productListDiv) return;
-     productListDiv.innerHTML = '<p>Loading products...</p>';
+     const productListDiv = document.getElementById('product-list'); if (!productListDiv) return; productListDiv.innerHTML = '<p>Loading products...</p>';
      try {
-         const products = await fetchData('/products'); // Fetches all products with category populated
-         productListDiv.innerHTML = '';
-          if (products.length === 0) {
-            productListDiv.innerHTML = '<p>No products found.</p>';
-         } else {
-             const table = createProductTable(products);
-             productListDiv.appendChild(table);
-         }
-
-     } catch (error) {
-         productListDiv.innerHTML = `<p class="error">Error loading products: ${error.message}</p>`;
-     }
+         const products = await fetchData('/products'); productListDiv.innerHTML = '';
+          if (products.length === 0) { productListDiv.innerHTML = '<p>No products found.</p>'; }
+          else { const table = createProductTable(products); productListDiv.appendChild(table); }
+     } catch (error) { productListDiv.innerHTML = `<p class="error">Error loading products: ${error.message}</p>`; }
  }
 
 function createProductTable(products) {
-    const table = document.createElement('table');
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Order</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody></tbody>`;
-    const tbody = table.querySelector('tbody');
+    const table = document.createElement('table'); table.innerHTML = `<thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Order</th><th>Actions</th></tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody');
     products.forEach(prod => {
-        const tr = document.createElement('tr');
+        const tr = document.createElement('tr'); const formattedPrice = prod.price !== null ? formatPrice(prod.price) : 'N/A'; const formattedOriginalPrice = prod.originalPrice ? `<del style="font-size:0.8em; color:grey;">${formatPrice(prod.originalPrice)}</del>` : '';
         tr.innerHTML = `
             <td><img src="${prod.imageUrl || 'images/product-placeholder.png'}" alt="${prod.name}" class="product-thumb"></td>
             <td>${prod.name}</td>
             <td>${prod.category?.name || 'N/A'}</td>
-            <td>${formatPrice(prod.price)} ${prod.originalPrice ? `<del style="font-size:0.8em; color:grey;">${formatPrice(prod.originalPrice)}</del>` : ''}</td>
+            <td>${formattedPrice} ${formattedOriginalPrice}</td>
             <td>${prod.stockStatus}</td>
-            <td>${prod.displayOrder}</td>
-            <td class="actions">
-                <button class="edit-btn" data-id="${prod._id}">Edit</button>
-                <button class="delete-btn" data-id="${prod._id}">Delete</button>
-            </td>
-        `;
+            <td>${prod.displayOrder ?? 0}</td>
+            <td class="actions"> <button class="edit-btn" data-id="${prod._id}">Edit</button> <button class="delete-btn" data-id="${prod._id}">Delete</button> </td>`;
          tbody.appendChild(tr);
-    });
-    return table;
+    }); return table;
 }
 
 // --- Form and Action Setup ---
 function setupAdminForms() {
     const addCategoryForm = document.getElementById('add-category-form');
+    const categoryListDiv = document.getElementById('category-list');
+    const editCategoryIdField = document.getElementById('edit-category-id'); // Hidden field for category edit ID
+    const cancelEditCategoryBtn = document.getElementById('cancel-edit-category');
+
     const addProductForm = document.getElementById('add-product-form');
     const productListDiv = document.getElementById('product-list');
-    const categoryListDiv = document.getElementById('category-list');
-    const cancelEditBtn = document.getElementById('cancel-edit-product');
+    const cancelEditProductBtn = document.getElementById('cancel-edit-product');
     const editProductIdField = document.getElementById('edit-product-id');
 
-    // Add Category
+    const addBalanceForm = document.getElementById('add-balance-form');
+
+    // Add/Edit Category Handler
     if (addCategoryForm) {
         addCategoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('new-cat-name').value;
             const iconClass = document.getElementById('new-cat-icon').value;
             const displayOrder = document.getElementById('new-cat-order').value;
+            const isEditing = !!editCategoryIdField.value;
+            const categoryId = editCategoryIdField.value;
+
+            const url = isEditing ? `/categories/${categoryId}` : '/categories';
+            const method = isEditing ? 'PUT' : 'POST';
             const button = addCategoryForm.querySelector('button[type="submit"]');
             button.disabled = true; button.textContent = 'Saving...';
 
             try {
-                await fetchData('/categories', {
-                    method: 'POST',
+                await fetchData(url, {
+                    method,
                     body: JSON.stringify({ name, iconClass, displayOrder: parseInt(displayOrder, 10) })
                 });
-                displayMessage('cat-message', 'Category added successfully!', true);
-                addCategoryForm.reset();
-                loadCategories(); // Refresh lists
+                displayMessage('cat-message', `Category ${isEditing ? 'updated' : 'added'} successfully!`, true);
+                addCategoryForm.reset(); // Reset form
+                editCategoryIdField.value = ''; // Clear edit ID
+                cancelEditCategoryBtn.style.display = 'none'; // Hide cancel button
+                addCategoryForm.querySelector('h3').textContent = 'Add New Category'; // Reset title
+                loadCategories(); // Refresh list & dropdown
             } catch (error) {
                 displayMessage('cat-message', `Error: ${error.message}`, false);
             } finally {
-                 button.disabled = false; button.textContent = 'Add Category';
+                 button.disabled = false; button.textContent = 'Save Category';
             }
         });
     }
 
-    // Add/Update Product
+     // Cancel Edit Category
+    if (cancelEditCategoryBtn) {
+        cancelEditCategoryBtn.addEventListener('click', () => {
+            addCategoryForm.reset();
+            editCategoryIdField.value = '';
+            cancelEditCategoryBtn.style.display = 'none';
+            addCategoryForm.querySelector('h3').textContent = 'Add New Category';
+        });
+    }
+
+
+    // Add/Update Product Handler (Remains Largely the Same)
     if (addProductForm) {
          addProductForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(addProductForm);
-            const productData = Object.fromEntries(formData.entries());
-            const isEditing = !!editProductIdField.value;
-            const productId = editProductIdField.value;
-
-            // Prepare data
-            productData.price = parseFloat(productData.price);
-            productData.originalPrice = productData.originalPrice ? parseFloat(productData.originalPrice) : null; // Use null if empty
-            productData.tags = productData.tags ? productData.tags.split(',').map(tag => tag.trim().toLowerCase()) : [];
-             productData.displayOrder = parseInt(productData.displayOrder || '0', 10);
-
-
-            const url = isEditing ? `/products/${productId}` : '/products';
-            const method = isEditing ? 'PUT' : 'POST';
-            const button = addProductForm.querySelector('button[type="submit"]');
-            button.disabled = true; button.textContent = 'Saving...';
-
+            e.preventDefault(); const formData = new FormData(addProductForm); const productData = Object.fromEntries(formData.entries()); const isEditing = !!editProductIdField.value; const productId = editProductIdField.value; productData.price = parseFloat(productData.price); productData.originalPrice = productData.originalPrice ? parseFloat(productData.originalPrice) : null; productData.tags = productData.tags ? productData.tags.split(',').map(tag => tag.trim().toLowerCase()) : []; productData.displayOrder = parseInt(productData.displayOrder || '0', 10); const url = isEditing ? `/products/${productId}` : '/products'; const method = isEditing ? 'PUT' : 'POST'; const button = addProductForm.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = 'Saving...';
             try {
                  await fetchData(url, { method, body: JSON.stringify(productData) });
-                 displayMessage('product-message', `Product ${isEditing ? 'updated' : 'added'} successfully!`, true);
-                 addProductForm.reset();
-                 editProductIdField.value = ''; // Clear edit ID
-                 cancelEditBtn.style.display = 'none';
-                 loadProducts(); // Refresh list
-                 loadCategories(); // Refresh category list in dropdown in case of edits
-            } catch (error) {
-                 displayMessage('product-message', `Error: ${error.message}`, false);
-            } finally {
-                 button.disabled = false; button.textContent = 'Save Product';
-            }
+                 displayMessage('product-message', `Product ${isEditing ? 'updated' : 'added'}!`, true);
+                 addProductForm.reset(); editProductIdField.value = ''; cancelEditProductBtn.style.display = 'none'; addProductForm.querySelector('h3').textContent = 'Add/Edit Product';
+                 loadProducts();
+            } catch (error) { displayMessage('product-message', `Error: ${error.message}`, false); }
+            finally { button.disabled = false; button.textContent = 'Save Product'; }
          });
     }
 
     // Cancel Edit Product
-    if (cancelEditBtn) {
-        cancelEditBtn.addEventListener('click', () => {
-            addProductForm.reset();
-            editProductIdField.value = '';
-            cancelEditBtn.style.display = 'none';
-             addProductForm.querySelector('h3').textContent = 'Add New Product';
+    if (cancelEditProductBtn) { cancelEditProductBtn.addEventListener('click', () => { addProductForm.reset(); editProductIdField.value = ''; cancelEditProductBtn.style.display = 'none'; addProductForm.querySelector('h3').textContent = 'Add/Edit Product'; }); }
+
+     // Add Balance Form Handler
+     if (addBalanceForm) {
+        addBalanceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userIdInput = document.getElementById('balance-user-id').value.trim(); // Can be username or ID
+            const amount = document.getElementById('balance-amount').value;
+            const button = addBalanceForm.querySelector('button[type="submit"]');
+            if (!userIdInput || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) { displayMessage('balance-message', 'Valid User ID/Username & positive Amount required.', false); return; }
+            button.disabled = true; button.textContent = 'Processing...';
+            try {
+                // IMPORTANT: Create POST /api/admin/add-balance on backend
+                const result = await fetchData('/admin/add-balance', { method: 'POST', body: JSON.stringify({ userId: userIdInput, amount: parseFloat(amount) }) });
+                displayMessage('balance-message', result.message || 'Balance updated!', true);
+                addBalanceForm.reset();
+            } catch (error) { displayMessage('balance-message', `Error: ${error.message || 'Could not update balance'}`, false); }
+            finally { button.disabled = false; button.textContent = 'Add Balance'; }
         });
     }
 
     // Event Delegation for Edit/Delete Buttons
-    if (categoryListDiv) {
-        categoryListDiv.addEventListener('click', handleCategoryActions);
-    }
-     if (productListDiv) {
-        productListDiv.addEventListener('click', handleProductActions);
-    }
+    if (categoryListDiv) { categoryListDiv.addEventListener('click', handleCategoryActions); }
+     if (productListDiv) { productListDiv.addEventListener('click', handleProductActions); }
 }
 
-async function handleCategoryActions(e) {
+// --- Action Handlers ---
+
+function handleCategoryActions(e) { // Modified to handle edit state
     const target = e.target;
     const catId = target.dataset.id;
+    const addCategoryForm = document.getElementById('add-category-form');
+    const editCategoryIdField = document.getElementById('edit-category-id');
+    const cancelEditCategoryBtn = document.getElementById('cancel-edit-category');
 
     if (target.classList.contains('delete-cat-btn')) {
-        if (confirm(`Are you sure you want to delete category ${catId}? Products in this category will need reassignment.`)) {
-            try {
-                await fetchData(`/categories/${catId}`, { method: 'DELETE' });
-                displayMessage('cat-message', 'Category deleted.', true);
-                loadCategories();
-                loadProducts(); // Refresh products as category is gone
-            } catch (error) {
-                displayMessage('cat-message', `Error deleting: ${error.message}`, false);
-            }
+        if (confirm(`DELETE Category ${catId}? Check if products use it first!`)) {
+            fetchData(`/categories/${catId}`, { method: 'DELETE' })
+                .then(() => { displayMessage('cat-message', 'Category deleted.', true); loadCategories(); loadProducts(); }) // Refresh both
+                .catch(error => displayMessage('cat-message', `Error deleting: ${error.message}`, false));
         }
     } else if (target.classList.contains('edit-cat-btn')) {
         // Populate the add form for editing
+        editCategoryIdField.value = catId; // Set the hidden ID field
         document.getElementById('new-cat-name').value = target.dataset.name || '';
         document.getElementById('new-cat-icon').value = target.dataset.icon || '';
         document.getElementById('new-cat-order').value = target.dataset.order || '0';
-        // TODO: Change form submit handler to PUT if an ID exists, or add separate edit form
-        alert(`Editing category ${catId} - feature needs PUT endpoint connection.`);
-         // Scroll to form
-        document.getElementById('add-category-form').scrollIntoView({ behavior: 'smooth' });
+        addCategoryForm.querySelector('h3').textContent = 'Edit Category'; // Change form title
+        cancelEditCategoryBtn.style.display = 'inline-block'; // Show cancel button
+        addCategoryForm.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-async function handleProductActions(e) {
+async function handleProductActions(e) { // Modified to populate edit form
      const target = e.target;
      const prodId = target.dataset.id;
+     const addProductForm = document.getElementById('add-product-form');
+     const editProductIdField = document.getElementById('edit-product-id');
+     const cancelEditProductBtn = document.getElementById('cancel-edit-product');
+
 
      if (target.classList.contains('delete-btn')) {
-        if (confirm(`Are you sure you want to delete product ${prodId}?`)) {
-            try {
-                await fetchData(`/products/${prodId}`, { method: 'DELETE' });
-                displayMessage('product-message', 'Product deleted.', true);
-                loadProducts(); // Refresh list
-            } catch (error) {
-                displayMessage('product-message', `Error deleting: ${error.message}`, false);
-            }
+        if (confirm(`DELETE Product ${prodId}? This cannot be undone.`)) {
+            try { await fetchData(`/products/${prodId}`, { method: 'DELETE' }); displayMessage('product-message', 'Product deleted.', true); loadProducts(); } catch (error) { displayMessage('product-message', `Error deleting: ${error.message}`, false); }
         }
     } else if (target.classList.contains('edit-btn')) {
-         // Fetch full product data and populate the form for editing
          try {
-            const product = await fetchData(`/products/${prodId}`);
-            if (!product) throw new Error('Product data not found');
-
-            document.getElementById('edit-product-id').value = product._id;
+            const product = await fetchData(`/products/${prodId}`); if (!product) throw new Error('Product data not found');
+            editProductIdField.value = product._id;
             document.getElementById('product-name').value = product.name || '';
-            document.getElementById('product-category').value = product.category?._id || '';
-            document.getElementById('product-price').value = product.price || 0;
-            document.getElementById('product-original-price').value = product.originalPrice || '';
+            document.getElementById('product-category').value = product.category?._id || ''; // Set dropdown value
+            document.getElementById('product-price').value = product.price ?? '';
+            document.getElementById('product-original-price').value = product.originalPrice ?? '';
             document.getElementById('product-image').value = product.imageUrl || '';
             document.getElementById('product-tags').value = product.tags?.join(', ') || '';
             document.getElementById('product-stock').value = product.stockStatus || 'in_stock';
-            document.getElementById('product-order').value = product.displayOrder || 0;
+            document.getElementById('product-order').value = product.displayOrder ?? 0;
             document.getElementById('product-description').value = product.description || '';
-
-            document.getElementById('add-product-form').querySelector('h3').textContent = 'Edit Product';
-            document.getElementById('cancel-edit-product').style.display = 'inline-block';
-            // Scroll to form
-            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
-
-         } catch (error) {
-             displayMessage('product-message', `Error loading product for edit: ${error.message}`, false);
-         }
+            addProductForm.querySelector('h3').textContent = 'Edit Product';
+            cancelEditProductBtn.style.display = 'inline-block';
+            addProductForm.scrollIntoView({ behavior: 'smooth' });
+         } catch (error) { displayMessage('product-message', `Error loading product for edit: ${error.message}`, false); }
     }
 }
 
