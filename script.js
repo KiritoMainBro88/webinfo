@@ -738,18 +738,32 @@ async function loadCategoryPageData() {
 
     try {
         console.log(`Fetching products for slug: ${categorySlug}`);
-        // --- MODIFICATION: Expect object response --- 
-        const response = await fetchData(`/products?categorySlug=${categorySlug}`); 
-        // --- END MODIFICATION ---
+        const response = await fetchData(`/products?categorySlug=${categorySlug}`);
+        // --- ADDED: Log the raw response --- 
+        console.log("Raw response for category:", response);
+        // --- END LOGGING --- 
 
-        // --- MODIFIED: Check product data structure (extract from response object) ---
-        if (typeof response !== 'object' || response === null || !Array.isArray(response.products)) {
-             console.error("Invalid product data received for category, expected object with products array:", response);
-              throw new Error("Invalid product data structure received for category.");
-        } 
+        // --- MODIFIED: Handle array OR object response --- 
+        let productsArray = [];
+        let categoryNameFromResponse = null;
+
+        if (Array.isArray(response)) {
+            // If the response itself is the array
+            console.log("Received direct array of products.");
+            productsArray = response;
+            // Category name might need separate fetch or lookup if only array is sent
+        } else if (typeof response === 'object' && response !== null && Array.isArray(response.products)) {
+            // If the response is an object containing the products array
+            console.log("Received object containing products array.");
+            productsArray = response.products;
+            categoryNameFromResponse = response.categoryName; // Get category name if backend sent it
+        } else {
+            // If it's neither a direct array nor the expected object structure
+             console.error("Invalid product data received for category. Expected array or object with products array:", response);
+             throw new Error("Invalid product data structure received for category.");
+        }
         
-        originalCategoryProducts = response.products; // Store the products array
-        const categoryNameFromResponse = response.categoryName; // Get category name if backend sent it
+        originalCategoryProducts = productsArray; // Store the correctly identified products array
         
         console.log(`Fetched and stored ${originalCategoryProducts.length} original products for this category.`);
         // --- END MODIFICATION ---
