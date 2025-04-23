@@ -1,63 +1,126 @@
-console.log("Script version 1.9.1 - Debugging Login UI Update"); // Increment version
+console.log("Script version 1.9.2 - Fixing Scope Issues"); // Increment version
 
 // --- GSAP and Helpers ---
 gsap.registerPlugin(ScrollTrigger);
 function calculateAge(birthDateString) { const birthDate = new Date(birthDateString); const today = new Date(); let age = today.getFullYear() - birthDate.getFullYear(); const m = today.getMonth() - birthDate.getMonth(); if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; } return age; }
 function updateYear() { const yearSpan = document.getElementById('year'); if (yearSpan) { yearSpan.textContent = new Date().getFullYear(); } }
 function formatPrice(price) {
-    // Handle potential null/undefined price gracefully
     if (price === null || price === undefined || isNaN(price)) {
-        return 'N/A'; // Or '0đ' or '' depending on preference
+        return '0đ'; // Default to 0đ if invalid
     }
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 }
 
+// --- Global Constants & Variables ---
+const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
+
+// --- Global DOM Element References (Initialize after DOM loaded) ---
+let userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection;
+let sidebarUserInfoDiv, sidebarLoginBtn, sidebarRegisterBtn, sidebarDepositBtn, sidebarLogoutBtn, sidebarUsernameSpan, sidebarBalanceSpan;
+
+function initializeDOMElements() {
+    // Header Elements
+    userNameSpan = document.getElementById('user-name');
+    userStatusSpan = document.getElementById('user-status');
+    authActionLink = document.getElementById('auth-action-link');
+    registerActionLink = document.getElementById('register-action-link');
+    forgotActionLink = document.getElementById('forgot-action-link');
+    logoutLink = document.getElementById('logout-link');
+    adminDropdownSection = document.getElementById('admin-dropdown-section');
+
+    // Sidebar Elements
+    sidebarUserInfoDiv = document.getElementById('sidebar-user-info');
+    sidebarLoginBtn = document.getElementById('sidebar-login-btn');
+    sidebarRegisterBtn = document.getElementById('sidebar-register-btn');
+    sidebarDepositBtn = document.getElementById('sidebar-deposit-btn');
+    sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
+    sidebarUsernameSpan = document.getElementById('sidebar-username');
+    sidebarBalanceSpan = document.getElementById('sidebar-balance');
+}
 
 // --- fetchData Utility Function ---
-const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // Ensure this is defined globally or passed around
-
 async function fetchData(endpoint, options = {}) {
-    // console.log(`Fetching data from: ${BACKEND_URL}/api${endpoint}`, options); // Optional: Keep for detailed debugging
+    // console.log(`Fetching data from: ${BACKEND_URL}/api${endpoint}`, options); // Optional debug
     const headers = {
         'Content-Type': 'application/json',
-        ...options.headers, // Allow overriding default headers
+        ...options.headers,
     };
-
-    // Add the insecure temporary user ID for admin checks (REPLACE WITH REAL AUTH LATER)
     const tempUserId = localStorage.getItem('userId');
     if (tempUserId) {
         headers['x-temp-userid'] = tempUserId;
-        // console.log("Added x-temp-userid header for admin check (INSECURE)"); // Optional: Keep for detailed debugging
     }
-
     const config = {
         method: options.method || 'GET',
         headers: headers,
     };
-
     if (options.body) {
-        config.body = options.body; // Assume body is already stringified if method is POST/PUT etc.
+        config.body = options.body;
     }
-
     try {
         const response = await fetch(`${BACKEND_URL}/api${endpoint}`, config);
-        const data = await response.json(); // Attempt to parse JSON regardless of status
-
+        const data = await response.json();
         if (!response.ok) {
             console.error(`HTTP error! Status: ${response.status} for ${endpoint}`, data);
-            // Try to use the message from the JSON response, otherwise use statusText
             throw new Error(data.message || response.statusText || `Request failed with status ${response.status}`);
         }
-
-        // console.log(`Successfully fetched data from ${endpoint}`); // Optional: Keep for detailed debugging
-        return data; // Return the parsed JSON data
+        // console.log(`Successfully fetched data from ${endpoint}`); // Optional debug
+        return data;
     } catch (error) {
         console.error(`Fetch error for ${endpoint}:`, error);
-        // Rethrow the error so calling functions can handle it
         throw error;
     }
 }
-// --- END: fetchData Utility Function ---
+
+// --- Global UI Update Functions ---
+function updateUserStatus(isLoggedIn, username = 'Khách', isAdmin = false) {
+    console.log(`Updating header status: loggedIn=${isLoggedIn}, username=${username}, isAdmin=${isAdmin}`);
+    // Ensure elements are available (they should be after initializeDOMElements runs)
+    if (!userNameSpan || !adminDropdownSection || !logoutLink) {
+       console.warn("Header user elements not ready for update status.");
+       return; // Don't proceed if elements aren't found
+    }
+
+    const authLinks = [authActionLink, registerActionLink, forgotActionLink].filter(Boolean); // Filter out nulls
+
+    if (isLoggedIn) {
+       userNameSpan.textContent = username;
+       authLinks.forEach(link => { if (link) link.style.display = 'none'; });
+       logoutLink.style.display = 'flex';
+       adminDropdownSection.style.display = isAdmin ? 'block' : 'none';
+       localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
+   } else {
+       userNameSpan.textContent = 'Khách';
+       authLinks.forEach(link => { if (link) link.style.display = 'flex'; });
+       logoutLink.style.display = 'none';
+       adminDropdownSection.style.display = 'none';
+       localStorage.removeItem('isAdmin');
+   }
+}
+
+function updateSidebarUserArea(isLoggedIn, username = 'Khách', balance = 0) {
+    console.log(`Updating sidebar: loggedIn=${isLoggedIn}, username=${username}, balance=${balance}`);
+    // Ensure elements are available
+    if (!sidebarUserInfoDiv || !sidebarLoginBtn || !sidebarRegisterBtn || !sidebarDepositBtn || !sidebarLogoutBtn || !sidebarUsernameSpan || !sidebarBalanceSpan) {
+        console.warn("Sidebar elements not ready for update.");
+        return; // Don't proceed if elements aren't found
+    }
+
+    if (isLoggedIn) {
+        sidebarUsernameSpan.textContent = username;
+        sidebarBalanceSpan.textContent = formatPrice(balance);
+        sidebarLoginBtn.style.display = 'none';
+        sidebarRegisterBtn.style.display = 'none';
+        sidebarDepositBtn.style.display = 'block';
+        sidebarLogoutBtn.style.display = 'block';
+    } else {
+        sidebarUsernameSpan.textContent = 'Khách';
+        sidebarBalanceSpan.textContent = '0đ';
+        sidebarLoginBtn.style.display = 'block';
+        sidebarRegisterBtn.style.display = 'block';
+        sidebarDepositBtn.style.display = 'none';
+        sidebarLogoutBtn.style.display = 'none';
+    }
+}
 
 
 // --- Header Scroll Effect ---
@@ -87,14 +150,13 @@ function setupProfessionalAnimations() {
         let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true, /* markers: true, */ } };
         if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; }
         let target = element;
-        // Simplified target logic - apply animation to children if specified by class and has children
         if ((element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('product-category-section')) && element.children.length > 0 ) {
-             target = Array.from(element.children).filter(child => !child.matches('h2.category-title') && !child.matches('h2.page-title')); // Exclude titles from stagger
+             target = Array.from(element.children).filter(child => !child.matches('h2.category-title') && !child.matches('h2.page-title'));
              if (target.length > 0) {
-                if (staggerAmount === 0 && target.length > 1) staggerAmount = 0.05; // Default stagger if not set and multiple items
+                if (staggerAmount === 0 && target.length > 1) staggerAmount = 0.05;
                 if (staggerAmount > 0) animProps.scrollTrigger.stagger = staggerAmount;
              } else {
-                 target = element; // Fallback to animating the container itself if no suitable children
+                 target = element;
              }
         }
         gsap.from(target, animProps);
@@ -110,122 +172,245 @@ function handleButtonMouseLeave(event) { gsap.to(event.currentTarget, { scale: 1
 // --- Click-based Dropdowns ---
 function setupClickDropdowns() { const wrappers = document.querySelectorAll('.nav-item-wrapper'); wrappers.forEach(wrapper => { const trigger = wrapper.querySelector('.nav-dropdown-trigger'); const menu = wrapper.querySelector('.dropdown-menu'); if (!trigger || !menu) return; trigger.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); wrappers.forEach(otherWrapper => { if (otherWrapper !== wrapper) otherWrapper.classList.remove('open'); }); wrapper.classList.toggle('open'); }); }); document.addEventListener('click', (event) => { wrappers.forEach(wrapper => { if (!wrapper.contains(event.target) && wrapper.classList.contains('open')) wrapper.classList.remove('open'); }); }); document.addEventListener('keydown', (event) => { if (event.key === "Escape") wrappers.forEach(wrapper => wrapper.classList.remove('open')); }); }
 
-// --- Authentication Logic ---
+// --- Authentication Logic Setup ---
 function setupActionButtons() {
-    const authContainer = document.getElementById('auth-container'); const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginFormWrapper = document.getElementById('login-form-wrapper'); const registerFormWrapper = document.getElementById('register-form-wrapper'); const forgotFormWrapper = document.getElementById('forgot-form-wrapper'); const resetFormWrapper = document.getElementById('reset-form-wrapper'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); const authActionLink = document.getElementById('auth-action-link'); const registerActionLink = document.getElementById('register-action-link'); const forgotActionLink = document.getElementById('forgot-action-link'); const logoutLink = document.getElementById('logout-link'); const userNameSpan = document.getElementById('user-name'); const userStatusSpan = document.getElementById('user-status'); const adminDropdownSection = document.getElementById('admin-dropdown-section'); function showMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } function showForm(formToShow) { if (!authContainer) return; authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => { if(msg) showMessage(msg, ''); }); } window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } }; if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms));
+    // Get references to forms and messages
+    const authContainer = document.getElementById('auth-container');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const forgotForm = document.getElementById('forgot-form');
+    const resetForm = document.getElementById('reset-form');
+    const loginFormWrapper = document.getElementById('login-form-wrapper');
+    const registerFormWrapper = document.getElementById('register-form-wrapper');
+    const forgotFormWrapper = document.getElementById('forgot-form-wrapper');
+    const resetFormWrapper = document.getElementById('reset-form-wrapper');
+    const loginMessage = document.getElementById('login-message');
+    const registerMessage = document.getElementById('register-message');
+    const forgotMessage = document.getElementById('forgot-message');
+    const resetMessage = document.getElementById('reset-message');
+    // Note: Auth action links (like login, register) are already grabbed globally
+
+    // Helper to show messages within auth forms
+    function showMessage(element, message, isSuccess = false) {
+        if (!element) return;
+        element.textContent = message;
+        element.className = 'auth-message ' + (isSuccess ? 'success' : 'error');
+    }
+
+    // Helper to display specific auth forms
+    function showForm(formToShow) {
+        if (!authContainer) return;
+        authContainer.style.display = 'flex';
+        authContainer.classList.add('visible');
+        [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => {
+            if(form) form.style.display = form === formToShow ? 'block' : 'none';
+        });
+        [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => {
+            if(msg) showMessage(msg, ''); // Clear previous messages
+        });
+    }
+    window.showLoginForm = () => showForm(loginFormWrapper);
+    window.showRegisterForm = () => showForm(registerFormWrapper);
+    window.showForgotForm = () => showForm(forgotFormWrapper);
+    window.showResetForm = () => showForm(resetFormWrapper);
+    window.closeAuthForms = () => {
+        if(authContainer) {
+            authContainer.classList.remove('visible');
+            setTimeout(() => { authContainer.style.display = 'none'; }, 300);
+        }
+    };
+
+    // Setup trigger links
+    if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+    if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); });
+    if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); });
+
+    // Setup close buttons
+    const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn');
+    closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms));
+
     // LOGIN Handler
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); showMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value;
+            e.preventDefault();
+            showMessage(loginMessage, 'Đang đăng nhập...');
+            const username = e.target.username.value;
+            const password = e.target.password.value;
             try {
-                const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-                const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`);
-                showMessage(loginMessage, 'Đăng nhập thành công! Đang cập nhật thông tin...', true); // Update message
-                localStorage.setItem('userId', data.userId); // Store userId IMMEDIATELY
-                localStorage.setItem('username', data.username); // Store username IMMEDIATELY
+                // Use fetchData directly (no need for global BACKEND_URL here)
+                const data = await fetchData('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                 });
+                showMessage(loginMessage, 'Đăng nhập thành công! Đang cập nhật thông tin...', true);
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('username', data.username);
 
-                // Fetch user info AFTER successful login to get balance and admin status
-                // Use await here to ensure user info is fetched before closing the modal
-                await fetchAndUpdateUserInfo();
+                await fetchAndUpdateUserInfo(); // Fetch full details
 
-                // Close form slightly later, allowing time for fetch/UI update (optional)
-                setTimeout(closeAuthForms, 1200);
-            } catch (error) { console.error("Login failed:", error); showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); }
+                setTimeout(closeAuthForms, 1200); // Close modal after update attempt
+            } catch (error) {
+                console.error("Login failed:", error);
+                showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+                // No need to call updateUserStatus here, state remains logged out
+            }
         });
     }
+
     // REGISTER Handler
-    if (registerForm) { registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; if (password !== confirmPassword) { showMessage(registerMessage, 'Mật khẩu nhập lại không khớp.'); return; } showMessage(registerMessage, 'Đang đăng ký...'); const username = e.target.username.value; const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error("Registration failed:", error); showMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.'); } }); }
-    // FORGOT PASSWORD
-     if (forgotForm) { forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(forgotMessage, 'Đang xử lý yêu cầu...'); const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); if (!response.ok && response.status !== 200) { throw new Error(data.message || `Error: ${response.status}`); } showMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true); } catch (error) { console.error("Forgot password failed:", error); showMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.'); } }); }
-     // RESET PASSWORD
-      if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); }
-    // LOGOUT
-    if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('isAdmin'); localStorage.removeItem('balance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); }
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = e.target.password.value;
+            const confirmPassword = e.target.confirmPassword.value;
+            if (password !== confirmPassword) {
+                showMessage(registerMessage, 'Mật khẩu nhập lại không khớp.');
+                return;
+            }
+            showMessage(registerMessage, 'Đang đăng ký...');
+            const username = e.target.username.value;
+            const email = e.target.email.value;
+            try {
+                await fetchData('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, email, password })
+                });
+                showMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true);
+                setTimeout(() => { showLoginForm(); }, 1500);
+            } catch (error) {
+                console.error("Registration failed:", error);
+                showMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+            }
+        });
+    }
 
-    // Helper to Update Header UI (Uses isAdmin flag)
-     function updateUserStatus(isLoggedIn, username = 'Khách', isAdmin = false) {
-         console.log(`Updating header status: loggedIn=${isLoggedIn}, username=${username}, isAdmin=${isAdmin}`); // Debug log
-         const elements = { userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection };
-         // Check if elements exist (add safety checks)
-         const userNameEl = elements.userNameSpan || document.getElementById('user-name');
-         const adminSectionEl = elements.adminDropdownSection || document.getElementById('admin-dropdown-section');
-         const logoutLinkEl = elements.logoutLink || document.getElementById('logout-link');
-         const authLinks = [elements.authActionLink, elements.registerActionLink, elements.forgotActionLink].filter(Boolean); // Filter out nulls
+    // FORGOT PASSWORD Handler
+     if (forgotForm) {
+        forgotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showMessage(forgotMessage, 'Đang xử lý yêu cầu...');
+            const email = e.target.email.value;
+            try {
+                const data = await fetchData('/auth/forgot-password', {
+                    method: 'POST',
+                    body: JSON.stringify({ email })
+                });
+                // Backend returns 200 even if email not found for security
+                showMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true);
+            } catch (error) {
+                // This catch might not be hit often if backend always returns 200/success message
+                console.error("Forgot password failed:", error);
+                showMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.');
+            }
+        });
+    }
 
-         if (!userNameEl || !adminSectionEl || !logoutLinkEl) {
-            console.warn("Some header user elements missing for update.");
-            // Attempt to query again if needed, or return if critical elements are missing
-            // return;
-         }
+     // RESET PASSWORD Handler
+      if (resetForm) {
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = e.target.password.value;
+            const confirmPassword = e.target.confirmPassword.value;
+            const token = e.target.token.value;
+            if (password !== confirmPassword) {
+                showMessage(resetMessage, 'Mật khẩu mới không khớp.');
+                return;
+            }
+            if (!token) {
+                showMessage(resetMessage, 'Thiếu mã token đặt lại.');
+                return;
+            }
+            showMessage(resetMessage, 'Đang đặt lại mật khẩu...');
+            try {
+                await fetchData('/auth/reset-password', {
+                    method: 'POST',
+                    body: JSON.stringify({ token, password })
+                });
+                showMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true);
+                setTimeout(() => { showLoginForm(); }, 2000);
+            } catch (error) {
+                console.error("Reset password failed:", error);
+                showMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.');
+            }
+        });
+    }
 
-         if (isLoggedIn) {
-            if (userNameEl) userNameEl.textContent = username;
-            authLinks.forEach(link => { if (link) link.style.display = 'none'; });
-            if (logoutLinkEl) logoutLinkEl.style.display = 'flex';
-            if (adminSectionEl) adminSectionEl.style.display = isAdmin ? 'block' : 'none';
-            localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false'); // Store admin status
-        } else {
-            if (userNameEl) userNameEl.textContent = 'Khách';
-            authLinks.forEach(link => { if (link) link.style.display = 'flex'; });
-            if (logoutLinkEl) logoutLinkEl.style.display = 'none';
-            if (adminSectionEl) adminSectionEl.style.display = 'none';
-            localStorage.removeItem('isAdmin'); // Clear admin status on logout
-        }
-     }
-     // Check Login Status on Load (Fetches user info)
+    // LOGOUT Handler (Uses global logoutLink now)
+    if (logoutLink) {
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('balance');
+            updateUserStatus(false); // Call global function
+            updateSidebarUserArea(false); // Call global function
+            console.log("User logged out.");
+        });
+    }
+
+     // Check Initial Login Status on Load
      const checkLoginAndToken = () => {
-         console.log("checkLoginAndToken triggered"); // Debug log
+         console.log("checkLoginAndToken triggered");
          const userId = localStorage.getItem('userId');
          if (userId) {
-             console.log("User ID found in localStorage, fetching user info..."); // Debug log
+             console.log("User ID found in localStorage, fetching user info...");
              fetchAndUpdateUserInfo(); // Fetch full info if userId exists
          } else {
-             console.log("No User ID found in localStorage, setting logged out state."); // Debug log
+             console.log("No User ID found in localStorage, setting logged out state.");
              updateUserStatus(false);
              updateSidebarUserArea(false);
          }
-         const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) { tokenInput.value = resetToken; } else { console.warn("Reset token input field not found."); } window.history.replaceState({}, document.title, window.location.pathname); }
+         // Handle reset token in URL
+         const urlParams = new URLSearchParams(window.location.search);
+         const resetToken = urlParams.get('token');
+         if (resetToken) {
+            showResetForm();
+            const tokenInput = document.getElementById('reset-token');
+            if (tokenInput) {
+                tokenInput.value = resetToken;
+            } else {
+                console.warn("Reset token input field not found.");
+            }
+            // Clean the token from URL without reloading
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
      };
-     checkLoginAndToken(); // Run on initial load
+     checkLoginAndToken(); // Run check on setup
 }
 
-// --- Fetch and Update User Info (Now uses fetchData) ---
+// --- Fetch and Update User Info ---
 async function fetchAndUpdateUserInfo() {
     const userId = localStorage.getItem('userId');
     if (!userId) {
         console.log("No userId found in localStorage, skipping user info fetch.");
-        updateUserStatus(false); // Ensure UI is logged out
+        updateUserStatus(false);
         updateSidebarUserArea(false);
-        return; // Exit if no user ID
+        return;
     }
-
     console.log("Fetching user info for userId:", userId);
     try {
-        // Use the new fetchData utility which includes the temporary header
-        const userData = await fetchData('/users/me', {
-            method: 'GET',
-            // No need to manually add header here, fetchData handles it
-        });
+        const userData = await fetchData('/users/me'); // Endpoint is correct
+        console.log("User data received:", userData);
 
-        console.log("User data received:", userData); // Debug: Check the received data structure
-
-        // Ensure critical data exists before updating UI
         if (!userData || !userData.username) {
-            throw new Error("Received invalid user data from /users/me");
+             console.error("Received invalid or incomplete user data from /users/me", userData);
+             throw new Error("Received invalid user data"); // Trigger catch block
         }
 
-        // Store retrieved data (even if balance/isAdmin are null/undefined, store them as such)
+        // Store necessary data
         localStorage.setItem('username', userData.username);
-        localStorage.setItem('balance', userData.balance ?? 0); // Default balance to 0 if missing
-        localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false'); // Default isAdmin to false if missing
+        // Use ?? to provide default value if balance or isAdmin is null/undefined
+        localStorage.setItem('balance', userData.balance ?? 0);
+        localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false');
 
-        // Update UI elements with fetched data
-        updateUserStatus(true, userData.username, !!userData.isAdmin); // Use boolean conversion for safety
-        updateSidebarUserArea(true, userData.username, userData.balance ?? 0); // Use default balance if missing
+        // Update UI
+        updateUserStatus(true, userData.username, !!userData.isAdmin);
+        updateSidebarUserArea(true, userData.username, userData.balance ?? 0);
 
     } catch (error) {
         console.error("Error fetching or processing user info:", error);
-        // If fetching fails (e.g., invalid ID, server error, invalid data), log out the user
+        // Log out user if fetch fails
         localStorage.removeItem('userId');
         localStorage.removeItem('username');
         localStorage.removeItem('balance');
@@ -235,41 +420,21 @@ async function fetchAndUpdateUserInfo() {
     }
 }
 
-
-// --- Sidebar Update Function (Now uses real balance) ---
-function updateSidebarUserArea(isLoggedIn, username = 'Khách', balance = 0) {
-    console.log(`Updating sidebar: loggedIn=${isLoggedIn}, username=${username}, balance=${balance}`); // Debug log
-    const sidebarUserInfoDiv = document.getElementById('sidebar-user-info'); if (!sidebarUserInfoDiv) return; const loginBtn = document.getElementById('sidebar-login-btn'); const registerBtn = document.getElementById('sidebar-register-btn'); const depositBtn = document.getElementById('sidebar-deposit-btn'); const logoutBtn = document.getElementById('sidebar-logout-btn'); const usernameSpan = document.getElementById('sidebar-username'); const balanceSpan = document.getElementById('sidebar-balance'); if (!loginBtn || !registerBtn || !depositBtn || !logoutBtn || !usernameSpan || !balanceSpan) { console.warn("Sidebar elements missing for update."); return; }
-    if (isLoggedIn) {
-        usernameSpan.textContent = username;
-        balanceSpan.textContent = formatPrice(balance); // Use formatted balance
-        loginBtn.style.display = 'none'; registerBtn.style.display = 'none'; depositBtn.style.display = 'block'; logoutBtn.style.display = 'block';
-    } else {
-        usernameSpan.textContent = 'Khách'; balanceSpan.textContent = '0đ'; loginBtn.style.display = 'block'; registerBtn.style.display = 'block'; depositBtn.style.display = 'none'; logoutBtn.style.display = 'none';
-    }
-}
-
-// --- Basic Dropdown Actions (Includes reverted buy button logic) ---
+// --- Basic Dropdown Actions (No change needed here) ---
 function setupDropdownActions() {
     const depositLink = document.getElementById('deposit-link'); const historyLink = document.getElementById('history-link'); const depositLinkMobile = document.getElementById('deposit-link-mobile'); const historyLinkMobile = document.getElementById('history-link-mobile'); const handleDepositClick = (e) => { e.preventDefault(); alert('Nạp tiền function coming soon!'); }; const handleHistoryClick = (e) => { e.preventDefault(); window.location.href = 'history.html'; }; if(depositLink) depositLink.addEventListener('click', handleDepositClick); if(historyLink) historyLink.addEventListener('click', handleHistoryClick); if(depositLinkMobile) depositLinkMobile.addEventListener('click', handleDepositClick); if(historyLinkMobile) historyLinkMobile.addEventListener('click', handleHistoryClick);
-
-    // Reverted Buy Button Logic
     if (document.body.classList.contains('shopping-page')) {
         console.log("Setting up reverted shopping page 'buy' listeners...");
-        // Use event delegation on a static parent if product list might change,
-        // but since it's hardcoded now, direct selection is fine.
          document.querySelectorAll('.product-buy-btn').forEach(button => {
              button.addEventListener('click', (e) => {
                  e.preventDefault();
                  const productCard = e.target.closest('.product-card');
                  const productTitle = productCard?.querySelector('.product-title')?.textContent || 'Sản phẩm';
-
                  if (!localStorage.getItem('userId')) {
                     alert('Vui lòng đăng nhập để mua hàng!');
                     if (typeof showLoginForm === 'function') { showLoginForm(); }
                     else { console.error("showLoginForm function not found"); }
                  } else {
-                    // Simple alert instead of modal flow
                     alert(`Chức năng mua "${productTitle}" coming soon!`);
                  }
              });
@@ -277,22 +442,20 @@ function setupDropdownActions() {
     }
 }
 
-// --- Back to Top Button ---
+// --- Back to Top Button (No change needed here) ---
 function setupBackToTopButton() { const backToTopButton = document.getElementById("back-to-top-btn"); if (!backToTopButton) { return; } const scrollThreshold = 200; const checkScroll = () => { if (!backToTopButton) return; if (window.scrollY > scrollThreshold) { backToTopButton.classList.add("visible"); } else { backToTopButton.classList.remove("visible"); } }; window.addEventListener("scroll", checkScroll, { passive: true }); checkScroll(); backToTopButton.addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }); }
 
-// --- Modal Handling (Only needed for Auth modals now) ---
+// --- Modal Handling (No change needed here) ---
 function showModal(modalId) { const modal = document.getElementById(modalId); if (modal && modalId === 'auth-container') { modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('visible'); }, 10); } else if (modal) { console.warn("ShowModal called for non-auth modal:", modalId); } else { console.error(`Modal with ID ${modalId} not found.`); } }
 function hideModal(modalId) { const modal = document.getElementById(modalId); if (modal && modalId === 'auth-container') { modal.classList.remove('visible'); setTimeout(() => { modal.style.display = 'none'; }, 300); } else if (modal) { console.warn("HideModal called for non-auth modal:", modalId); } else { console.error(`Modal with ID ${modalId} not found.`); } }
-// Remove showMessageModal if only used for purchase flow
 
-// --- Purchase Flow Logic (REMOVED) ---
-
-// --- Load Dynamic Shopping Page Data (REMOVED) ---
+// --- Purchase/Dynamic Load Logic (REMOVED) ---
 
 
-// ----- Initialization -----
+// ----- Initialization Function -----
 function initializePage() {
-    console.log("Initializing page (v1.9.1)..."); // Update version
+    console.log("Initializing page (v1.9.2)...");
+    initializeDOMElements(); // Grab DOM elements first
     updateYear();
     setupHeaderScrollEffect();
     setupMobileMenuToggle();
@@ -301,28 +464,19 @@ function initializePage() {
     setupLanguageToggle();
     setupProfessionalAnimations();
     setupActionButtons(); // Sets up auth forms/buttons AND checks initial login state
-    setupDropdownActions(); // Handles simple buy alerts etc.
+    setupDropdownActions();
     setupClickDropdowns();
     setupBackToTopButton();
 
-     // Check specific page states AFTER main setup
      if (document.body.classList.contains('history-page')) {
-        console.log("History page detected, loadHistoryPageData() needs implementation.");
-        // Add any future history-specific JS init here
+        console.log("History page detected.");
      }
 
-    // Donate button listener
     const donateButtonHeader = document.getElementById('donate-button-header');
     if (donateButtonHeader) {
-        donateButtonHeader.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Donate function coming soon!');
-        });
-    } else {
-        console.warn("Header donate button not found");
-    }
+        donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); });
+    } else { console.warn("Header donate button not found"); }
 
-    // Age calculation
     const ageSpan = document.getElementById('age');
     if (ageSpan) {
         try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; }
@@ -331,10 +485,9 @@ function initializePage() {
     console.log("Page initialization complete.");
 }
 
-// --- Run Initialization ---
-// Ensure DOM is fully loaded before running initialization
+// --- Run Initialization on DOM Ready ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializePage);
 } else {
-    initializePage(); // DOMContentLoaded has already fired
+    initializePage(); // Already loaded
 }
