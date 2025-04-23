@@ -1,4 +1,4 @@
-console.log("Script version 1.9.8 - Real Purchase API Call"); // Increment version
+console.log("Script version 1.9.9 - Category Title Links"); // Increment version
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
@@ -250,17 +250,32 @@ async function loadAndDisplayShoppingData() {
     }
 }
 
+// --- MODIFIED: Create Category Section Element ---
 function createCategorySectionElement(category) {
     const section = document.createElement('section');
     section.classList.add('product-category-section');
-    section.dataset.animate = "fade-up"; // Animation trigger
-    const title = document.createElement('h2');
-    title.classList.add('category-title');
-    title.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`;
+    section.dataset.animate = "fade-up";
+
+    // --- Create Link (<a>) element ---
+    const titleLink = document.createElement('a');
+    // *** IMPORTANT: Define your URL structure here ***
+    // Option 1: Using slug directly (e.g., /account-roblox.html or just /account-roblox if using routing)
+    // titleLink.href = `/${category.slug || 'category'}.html`;
+    // Option 2: Using a generic page with query parameter (e.g., /category.html?slug=account-roblox)
+    titleLink.href = `category-page.html?slug=${category.slug || 'unknown'}`; // Using Option 2 for now
+    titleLink.classList.add('category-title-link'); // Add class for styling
+
+    // --- Create Heading (<h2>) inside the link ---
+    const titleHeading = document.createElement('h2');
+    titleHeading.classList.add('category-title'); // Keep original class for styling consistency if needed
+    titleHeading.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`;
+
+    // Append heading to link, and link to section
+    titleLink.appendChild(titleHeading);
+    section.appendChild(titleLink); // Add the link (containing the h2)
+
     const grid = document.createElement('div');
     grid.classList.add('product-grid');
-    // data-animate and data-stagger could be added to grid if needed for children animation
-    section.appendChild(title);
     section.appendChild(grid);
     return section;
 }
@@ -507,19 +522,7 @@ function setupPurchaseModalListeners() {
 }
 
 // ----- Initialization Function -----
-function initializePage() {
-    const scriptTag = document.querySelector('script[src*="script.js"]');
-    const version = scriptTag ? scriptTag.src.split('v=')[1] : 'unknown';
-    console.log(`Initializing page (v${version})...`);
-    initializeDOMElements(); updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModalListeners(); setupActionButtons(); setupDropdownActions();
-    if (document.body.classList.contains('shopping-page')) { loadAndDisplayShoppingData(); }
-    else if (document.body.classList.contains('history-page')) { console.log("History page detected."); setupProfessionalAnimations(); }
-    else { setupProfessionalAnimations(); }
-    const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); }
-    const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } }
-    console.log("Page initialization complete.");
-}
+function initializePage() { const scriptTag = document.querySelector('script[src*="script.js"]'); const version = scriptTag ? scriptTag.src.split('v=')[1] : 'unknown'; console.log(`Initializing page (v${version})...`); initializeDOMElements(); updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModalListeners(); setupActionButtons(); setupDropdownActions(); if (document.body.classList.contains('shopping-page')) { loadAndDisplayShoppingData(); } else if (document.body.classList.contains('history-page')) { console.log("History page detected."); setupProfessionalAnimations(); } else { setupProfessionalAnimations(); } const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete."); }
 
 // --- Run Initialization on DOM Ready ---
-if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initializePage); }
-else { initializePage(); }
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initializePage); } else { initializePage(); }
