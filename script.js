@@ -466,6 +466,15 @@ function createProductCardElement(product, includeBuyButton = false) {
             ${buyButtonHTML} 
         </div>`;
 
+    // --- FIX: Set the actual image src AFTER setting innerHTML to avoid potential conflicts with lazy loading attributes ---
+    const imgElement = wrapperElement.querySelector('img');
+    if (imgElement && product.imageUrl) {
+        imgElement.src = product.imageUrl;
+        imgElement.removeAttribute('srcset'); // Remove potentially conflicting attributes
+        imgElement.removeAttribute('data-src'); // Remove potentially conflicting attributes
+    }
+    // --- END FIX ---
+
     // Return the wrapper element
     return wrapperElement;
 }
