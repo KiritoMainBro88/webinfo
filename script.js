@@ -246,8 +246,8 @@ async function loadAndDisplayShoppingData() {
             if (categoryProducts.length > 0) {
                 categoryProducts.forEach(product => {
                     try {
-                        // Pass TRUE to include buy button for previews
-                        const productCard = createProductCardElement(product, true); 
+                        // Pass FALSE to prevent buy button on main page previews
+                        const productCard = createProductCardElement(product, false); 
                         productGrid.appendChild(productCard);
                     } catch (cardError) {
                         console.error(`Error creating product card for ${product.name}:`, cardError);
@@ -262,9 +262,6 @@ async function loadAndDisplayShoppingData() {
         });
         console.log("Finished rendering categories and products.");
 
-        // --- Setup Buy Button Listeners for the newly added cards --- 
-        setupShoppingPageBuyListeners();
-        
         // --- Re-apply animations --- 
         console.log("Re-applying animations...");
         setTimeout(() => {
@@ -387,10 +384,12 @@ function createProductCardElement(product, includeBuyButton = false) {
 
     let buttonText = 'Mua ngay';
     let buttonDisabled = false;
-    let priceDisplay = `${originalPriceHTML} ${salePriceHTML}`;
-    let buyButtonHTML = '';
+    let priceDisplay = ''; // Initialize price display
+    let buyButtonHTML = ''; // Initialize button HTML
 
     if (includeBuyButton) {
+        // Logic for when the buy button IS included (e.g., on category.html)
+        priceDisplay = `${originalPriceHTML} ${salePriceHTML}`; // Show normal price
         switch (product.stockStatus) {
             case 'out_of_stock':
                 buttonText = 'Hết hàng';
@@ -410,15 +409,21 @@ function createProductCardElement(product, includeBuyButton = false) {
             ${buttonText}
         </button>`;
     } else {
-        // If not including buy button, ensure price still shows correctly for special statuses
-        switch (product.stockStatus) {
-            case 'contact':
-                priceDisplay = `<span class="sale-price">Liên hệ</span>`;
-                break;
-            case 'check_price':
-                priceDisplay = `<span class="sale-price">Giá tốt</span>`;
-                break;
+        // Logic for when the buy button is NOT included (e.g., on shopping.html previews)
+        // Show Min-Max price range IF product.minPrice and product.maxPrice exist
+        if (typeof product.minPrice === 'number' && typeof product.maxPrice === 'number') {
+            if (product.minPrice === product.maxPrice) {
+                 priceDisplay = `<span class="price-range">Giá: ${formatPrice(product.minPrice)}</span>`;
+            } else {
+                priceDisplay = `<span class="price-range">Bắt đầu từ: ${formatPrice(product.minPrice)} - ${formatPrice(product.maxPrice)}</span>`;
+            }
+        } else {
+             // Fallback if min/max prices aren't available - show standard price or placeholder
+            priceDisplay = `${originalPriceHTML} ${salePriceHTML}`; 
+            // Or maybe a different placeholder:
+            // priceDisplay = `<span class="price-range">Xem chi tiết</span>`; 
         }
+        // buyButtonHTML remains empty
     }
 
     // Set the inner HTML of the wrapper element (<a> or <div>)
