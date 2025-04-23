@@ -175,108 +175,108 @@ window.closeAuthForms = () => {
 };
 
 
-// --- Shopping Page Dynamic Loading ---
+// --- Shopping Page Dynamic Loading --- (Reverted to Product Grid Layout)
 async function loadAndDisplayShoppingData() {
     if (!dynamicProductArea) {
         return;
     }
-    console.log("Attempting to load shopping overview data..."); // Updated log
+    console.log("Attempting to load shopping page data (product grid layout)...");
     dynamicProductArea.innerHTML = `
         <p style="text-align: center; padding: 2rem; background-color: var(--bg-tertiary); border-radius: var(--border-radius-md);">
             <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
-            Đang tải danh mục...
-        </p>`; // Updated loading text
+            Đang tải sản phẩm...
+        </p>`; // Loading message
 
     try {
-        console.log("Fetching categories and all products..."); // Updated log
+        console.log("Fetching categories and all products...");
         const [categories, allProductsData] = await Promise.all([
             fetchData('/categories'),
-            fetchData('/products') // Fetch all products once
+            fetchData('/products') // Fetch all products
         ]);
 
         console.log("Fetched Categories:", categories);
         console.log("Fetched All Products Data:", allProductsData);
 
         dynamicProductArea.innerHTML = ''; // Clear loading message
-        dynamicProductArea.classList.add('category-summary-grid'); // Add class for grid layout
+        dynamicProductArea.classList.remove('category-summary-grid'); // Remove summary grid class
 
         if (!categories || !Array.isArray(categories)) {
              console.error("Received invalid data for categories:", categories);
              throw new Error("Invalid category data received from server.");
         }
 
-        // --- Process all products data --- (Copied from previous check)
+        // --- Process all products data --- (Handle array or object)
         let productArray = [];
-        if (Array.isArray(allProductsData)) {
+         if (Array.isArray(allProductsData)) {
             productArray = allProductsData;
-        } else if (typeof allProductsData === 'object' && allProductsData !== null) {
-            if (Array.isArray(allProductsData.products)) {
-                productArray = allProductsData.products;
-            } else if (Array.isArray(allProductsData.items)) {
-                productArray = allProductsData.items;
-            } else {
-                console.error("Received object, but could not find products array inside:", allProductsData);
-                throw new Error("Invalid product data structure received from server.");
-            }
+        } else if (typeof allProductsData === 'object' && allProductsData !== null && allProductsData.hasOwnProperty('products') && Array.isArray(allProductsData.products)) {
+            productArray = allProductsData.products;
         } else {
-            console.error("Received invalid data type for products:", allProductsData);
-            throw new Error("Invalid product data type received from server.");
+            console.error("Invalid product data structure received (expected array or object with products):");
+             // Attempt to log structure without crashing on circular refs
+            try { console.log(JSON.stringify(allProductsData, null, 2).substring(0, 500) + '...'); } catch { console.log(allProductsData); }
+            throw new Error("Invalid product data structure received from server.");
         }
         console.log(`Processed ${productArray.length} products total.`);
         // --- End Product Processing ---
 
         if (categories.length === 0) {
             console.log("No categories found.");
-            dynamicProductArea.classList.remove('category-summary-grid');
             dynamicProductArea.innerHTML = '<p style="text-align: center; padding: 2rem;">Không tìm thấy danh mục sản phẩm nào.</p>';
             return;
         }
 
-        console.log("Rendering category summaries...");
+        console.log("Rendering category sections with product grids...");
         categories.forEach((category, index) => {
-            console.log(`Processing category ${index}: ${category.name}`);
+            console.log(`Rendering category ${index}: ${category.name}`);
 
-            // 1. Filter products for this category
+            // 1. Create the category section element (using existing function)
+            const categorySection = createCategorySectionElement(category);
+            const productGrid = categorySection.querySelector('.product-grid');
+            if (!productGrid) { 
+                console.error(`Product grid container not found for category: ${category.name}`); 
+                return; // Skip this category if structure is wrong
+            }
+
+            // 2. Filter products for this category
             const categoryProducts = productArray.filter(product => product.category?._id === category._id);
             console.log(`Found ${categoryProducts.length} products for category ${category.name}`);
 
-            // 2. Calculate Min/Max prices
-            let minPrice = null;
-            let maxPrice = null;
-            const numericPrices = categoryProducts
-                .map(p => p.price) // Get prices
-                .filter(price => typeof price === 'number' && !isNaN(price)); // Filter only valid numbers
-
-            if (numericPrices.length > 0) {
-                minPrice = Math.min(...numericPrices);
-                maxPrice = Math.max(...numericPrices);
-                console.log(`Category ${category.name} - Min: ${minPrice}, Max: ${maxPrice}`);
+            // 3. Render product cards into the grid
+            if (categoryProducts.length > 0) {
+                categoryProducts.forEach(product => {
+                    try {
+                        // Pass TRUE to include buy button for previews
+                        const productCard = createProductCardElement(product, true); 
+                        productGrid.appendChild(productCard);
+                    } catch (cardError) {
+                        console.error(`Error creating product card for ${product.name}:`, cardError);
+                    }
+                });
+            } else {
+                 productGrid.innerHTML = '<p style="font-size: 0.9em; color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Chưa có sản phẩm trong danh mục này.</p>';
             }
 
-            // 3. Create and append the summary card
-            try {
-                const summaryCard = createCategorySummaryCardElement(category, minPrice, maxPrice);
-                dynamicProductArea.appendChild(summaryCard);
-            } catch (cardError) {
-                console.error(`Error creating summary card for ${category.name}:`, cardError);
-            }
+            // 4. Append the whole section to the main area
+            dynamicProductArea.appendChild(categorySection);
         });
-        console.log("Finished rendering category summaries.");
+        console.log("Finished rendering categories and products.");
 
+        // --- Setup Buy Button Listeners for the newly added cards --- 
+        setupShoppingPageBuyListeners();
+        
         // --- Re-apply animations --- 
-        // (Adjust selector if needed for new summary cards)
         console.log("Re-applying animations...");
         setTimeout(() => {
-            gsap.utils.toArray('.category-summary-card[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
-            setupProfessionalAnimations(); // This might need adjustment if it targets old structure
+            // Target section containers and product cards within them
+            gsap.utils.toArray('.product-category-section[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
+            setupProfessionalAnimations(); // Should re-animate sections and cards
             console.log("Animations re-applied.");
         }, 150);
-        // NOTE: No buy listeners needed here anymore
 
     } catch (error) {
-        console.error("Error loading or rendering shopping overview data:", error); // Updated log
-        dynamicProductArea.classList.remove('category-summary-grid');
-        dynamicProductArea.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--danger-color);">Lỗi tải danh mục: ${error.message}. Vui lòng kiểm tra Console (F12) và thử lại sau.</p>`; // Updated error message
+        console.error("Error loading or rendering shopping page data:", error);
+        dynamicProductArea.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--danger-color);">Lỗi tải sản phẩm: ${error.message}. Vui lòng kiểm tra Console (F12) và thử lại sau.</p>`;
     }
 }
 
