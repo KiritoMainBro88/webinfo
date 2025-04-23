@@ -6,6 +6,54 @@ function calculateAge(birthDateString) { const birthDate = new Date(birthDateStr
 function updateYear() { const yearSpan = document.getElementById('year'); if (yearSpan) { yearSpan.textContent = new Date().getFullYear(); } }
 function formatPrice(price) { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price); }
 
+// --- ADDED: fetchData Utility Function ---
+const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // Ensure this is defined globally or passed around
+
+async function fetchData(endpoint, options = {}) {
+    console.log(`Fetching data from: ${BACKEND_URL}/api${endpoint}`, options);
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers, // Allow overriding default headers
+    };
+
+    // Add the insecure temporary user ID for admin checks (REPLACE WITH REAL AUTH LATER)
+    const tempUserId = localStorage.getItem('userId');
+    if (tempUserId) {
+        headers['x-temp-userid'] = tempUserId;
+        console.log("Added x-temp-userid header for admin check (INSECURE)");
+    }
+
+
+    const config = {
+        method: options.method || 'GET',
+        headers: headers,
+    };
+
+    if (options.body) {
+        config.body = options.body; // Assume body is already stringified if method is POST/PUT etc.
+    }
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api${endpoint}`, config);
+        const data = await response.json(); // Attempt to parse JSON regardless of status
+
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`, data);
+            // Try to use the message from the JSON response, otherwise use statusText
+            throw new Error(data.message || response.statusText || `Request failed with status ${response.status}`);
+        }
+
+        console.log(`Successfully fetched data from ${endpoint}`);
+        return data; // Return the parsed JSON data
+    } catch (error) {
+        console.error(`Fetch error for ${endpoint}:`, error);
+        // Rethrow the error so calling functions can handle it
+        throw error;
+    }
+}
+// --- END: fetchData Utility Function ---
+
+
 // --- Header Scroll Effect ---
 function setupHeaderScrollEffect() { const header = document.querySelector('.content-header'); if (!header) return; const scrollThreshold = 10; const checkScroll = () => { if (window.getComputedStyle(header).position === 'fixed') { header.classList.toggle('header-scrolled', window.scrollY > scrollThreshold); } else { header.classList.remove('header-scrolled'); } }; checkScroll(); window.addEventListener('scroll', checkScroll, { passive: true }); window.addEventListener('resize', checkScroll); }
 
@@ -33,7 +81,16 @@ function setupProfessionalAnimations() {
         let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true, /* markers: true, */ } };
         if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; }
         let target = element;
-        if (element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('summary-card-container') || element.classList.contains('history-filters') || element.classList.contains('info-box') || element.classList.contains('notification-bar') || element.classList.contains('warning-box') || element.classList.contains('product-category-section')) { if (element.children.length > 0 && !element.classList.contains('product-grid')) { target = Array.from(element.children).filter(child => !child.matches('h2.category-title') && !child.matches('h2.page-title')); if (target.length > 0) { if (staggerAmount === 0) staggerAmount = 0.05; if (staggerAmount > 0) animProps.scrollTrigger.stagger = staggerAmount; } else { target = element; } } }
+        // Simplified target logic - apply animation to children if specified by class and has children
+        if ((element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('product-category-section')) && element.children.length > 0 ) {
+             target = Array.from(element.children).filter(child => !child.matches('h2.category-title') && !child.matches('h2.page-title')); // Exclude titles from stagger
+             if (target.length > 0) {
+                if (staggerAmount === 0 && target.length > 1) staggerAmount = 0.05; // Default stagger if not set and multiple items
+                if (staggerAmount > 0) animProps.scrollTrigger.stagger = staggerAmount;
+             } else {
+                 target = element; // Fallback to animating the container itself if no suitable children
+             }
+        }
         gsap.from(target, animProps);
     });
 
@@ -48,10 +105,9 @@ function handleButtonMouseLeave(event) { gsap.to(event.currentTarget, { scale: 1
 function setupClickDropdowns() { const wrappers = document.querySelectorAll('.nav-item-wrapper'); wrappers.forEach(wrapper => { const trigger = wrapper.querySelector('.nav-dropdown-trigger'); const menu = wrapper.querySelector('.dropdown-menu'); if (!trigger || !menu) return; trigger.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); wrappers.forEach(otherWrapper => { if (otherWrapper !== wrapper) otherWrapper.classList.remove('open'); }); wrapper.classList.toggle('open'); }); }); document.addEventListener('click', (event) => { wrappers.forEach(wrapper => { if (!wrapper.contains(event.target) && wrapper.classList.contains('open')) wrapper.classList.remove('open'); }); }); document.addEventListener('keydown', (event) => { if (event.key === "Escape") wrappers.forEach(wrapper => wrapper.classList.remove('open')); }); }
 
 // --- Authentication Logic ---
-const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
 function setupActionButtons() {
     const authContainer = document.getElementById('auth-container'); const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginFormWrapper = document.getElementById('login-form-wrapper'); const registerFormWrapper = document.getElementById('register-form-wrapper'); const forgotFormWrapper = document.getElementById('forgot-form-wrapper'); const resetFormWrapper = document.getElementById('reset-form-wrapper'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); const authActionLink = document.getElementById('auth-action-link'); const registerActionLink = document.getElementById('register-action-link'); const forgotActionLink = document.getElementById('forgot-action-link'); const logoutLink = document.getElementById('logout-link'); const userNameSpan = document.getElementById('user-name'); const userStatusSpan = document.getElementById('user-status'); const adminDropdownSection = document.getElementById('admin-dropdown-section'); function showMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } function showForm(formToShow) { if (!authContainer) return; authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => { if(msg) showMessage(msg, ''); }); } window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } }; if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms));
-    // LOGIN Handler - REVERTED: Does not fetch balance/admin status
+    // LOGIN Handler - REVERTED: Does not fetch balance/admin status directly
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault(); showMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value;
@@ -60,9 +116,9 @@ function setupActionButtons() {
                 const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`);
                 showMessage(loginMessage, 'Đăng nhập thành công!', true);
                 localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username);
-                // NOTE: No balance is stored or fetched here in this reverted version
-                updateUserStatus(true, data.username); // Update UI based only on login
-                updateSidebarUserArea(true, data.username); // Update sidebar based only on login
+                // NOTE: No balance/admin status stored here in this reverted version
+                // Fetch user info AFTER login to get balance and admin status
+                fetchAndUpdateUserInfo(); // Call this to update UI properly
                 setTimeout(closeAuthForms, 1000);
             } catch (error) { console.error("Login failed:", error); showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); }
         });
@@ -74,43 +130,87 @@ function setupActionButtons() {
      // RESET PASSWORD
       if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); }
     // LOGOUT
-    if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); /* No balance to remove */ /* No admin flag to reset */ updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); }
-    // Helper to Update Header UI (REVERTED - No isAdmin check)
-     function updateUserStatus(isLoggedIn, username = 'Khách') {
+    if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('isAdmin'); localStorage.removeItem('balance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); }
+
+    // Helper to Update Header UI (Uses isAdmin flag)
+     function updateUserStatus(isLoggedIn, username = 'Khách', isAdmin = false) {
          const elements = { userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection };
          if (!elements.userNameSpan || !elements.userStatusSpan || !elements.logoutLink || !elements.adminDropdownSection) { /* console.warn("Header elements missing."); */ return; }
          if (isLoggedIn) {
             elements.userNameSpan.textContent = username;
             [elements.authActionLink, elements.registerActionLink, elements.forgotActionLink].forEach(link => { if (link) link.style.display = 'none'; });
             elements.logoutLink.style.display = 'flex';
-            // TODO: Simple isAdmin check based on username (INSECURE - replace later)
-            elements.adminDropdownSection.style.display = (username === 'chuongdepzai') ? 'block' : 'none'; // Example check
+            // Use the isAdmin flag fetched from the backend
+            elements.adminDropdownSection.style.display = isAdmin ? 'block' : 'none';
+            localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false'); // Store admin status
         } else {
             elements.userNameSpan.textContent = 'Khách';
             [elements.authActionLink, elements.registerActionLink, elements.forgotActionLink].forEach(link => { if (link) link.style.display = 'flex'; });
             elements.logoutLink.style.display = 'none';
             elements.adminDropdownSection.style.display = 'none';
+            localStorage.removeItem('isAdmin'); // Clear admin status on logout
         }
      }
-     // Check Login Status on Load (REVERTED - Does not fetch user info)
+     // Check Login Status on Load (Fetches user info)
      const checkLoginAndToken = () => {
-         const userId = localStorage.getItem('userId'); const username = localStorage.getItem('username');
-         if (userId && username) { updateUserStatus(true, username); updateSidebarUserArea(true, username); }
-         else { updateUserStatus(false); updateSidebarUserArea(false); }
+         const userId = localStorage.getItem('userId');
+         if (userId) {
+             fetchAndUpdateUserInfo(); // Fetch full info if userId exists
+         } else {
+             updateUserStatus(false);
+             updateSidebarUserArea(false);
+         }
          const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) { tokenInput.value = resetToken; } else { console.warn("Reset token input field not found."); } window.history.replaceState({}, document.title, window.location.pathname); }
      };
      checkLoginAndToken();
 }
 
-// --- Fetch and Update User Info (REMOVED - Logic handled simply in checkLoginAndToken) ---
-// async function fetchAndUpdateUserInfo() { /* ... REMOVED ... */ }
+// --- Fetch and Update User Info (Now uses fetchData) ---
+async function fetchAndUpdateUserInfo() {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+        console.log("No userId found in localStorage, skipping user info fetch.");
+        updateUserStatus(false); // Ensure UI is logged out
+        updateSidebarUserArea(false);
+        return;
+    }
 
-// --- Sidebar Update Function (REVERTED - Doesn't use fetched balance) ---
-function updateSidebarUserArea(isLoggedIn, username = 'Khách') {
+    console.log("Fetching user info for userId:", userId);
+    try {
+        // Use the new fetchData utility which includes the temporary header
+        const userData = await fetchData('/users/me', {
+            method: 'GET',
+            // No need to manually add header here, fetchData handles it
+        });
+
+        console.log("User data received:", userData);
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('balance', userData.balance); // Store balance
+        localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false'); // Store admin status
+
+        // Update UI elements with fetched data
+        updateUserStatus(true, userData.username, userData.isAdmin);
+        updateSidebarUserArea(true, userData.username, userData.balance);
+
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        // If fetching fails (e.g., invalid ID, server error), log out the user
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
+        localStorage.removeItem('balance');
+        localStorage.removeItem('isAdmin');
+        updateUserStatus(false);
+        updateSidebarUserArea(false);
+    }
+}
+
+
+// --- Sidebar Update Function (Now uses real balance) ---
+function updateSidebarUserArea(isLoggedIn, username = 'Khách', balance = 0) {
     const sidebarUserInfoDiv = document.getElementById('sidebar-user-info'); if (!sidebarUserInfoDiv) return; const loginBtn = document.getElementById('sidebar-login-btn'); const registerBtn = document.getElementById('sidebar-register-btn'); const depositBtn = document.getElementById('sidebar-deposit-btn'); const logoutBtn = document.getElementById('sidebar-logout-btn'); const usernameSpan = document.getElementById('sidebar-username'); const balanceSpan = document.getElementById('sidebar-balance'); if (!loginBtn || !registerBtn || !depositBtn || !logoutBtn || !usernameSpan || !balanceSpan) { console.warn("Sidebar elements missing for update."); return; }
     if (isLoggedIn) {
         usernameSpan.textContent = username;
-        balanceSpan.textContent = '0đ'; // Reverted to show 0đ
+        balanceSpan.textContent = formatPrice(balance); // Use formatted balance
         loginBtn.style.display = 'none'; registerBtn.style.display = 'none'; depositBtn.style.display = 'block'; logoutBtn.style.display = 'block';
     } else {
         usernameSpan.textContent = 'Khách'; balanceSpan.textContent = '0đ'; loginBtn.style.display = 'block'; registerBtn.style.display = 'block'; depositBtn.style.display = 'none'; logoutBtn.style.display = 'none';
@@ -152,20 +252,17 @@ function setupBackToTopButton() { const backToTopButton = document.getElementByI
 function showModal(modalId) { const modal = document.getElementById(modalId); if (modal && modalId === 'auth-container') { modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('visible'); }, 10); } else if (modal) { console.warn("ShowModal called for non-auth modal:", modalId); } else { console.error(`Modal with ID ${modalId} not found.`); } }
 function hideModal(modalId) { const modal = document.getElementById(modalId); if (modal && modalId === 'auth-container') { modal.classList.remove('visible'); setTimeout(() => { modal.style.display = 'none'; }, 300); } else if (modal) { console.warn("HideModal called for non-auth modal:", modalId); } else { console.error(`Modal with ID ${modalId} not found.`); } }
 // Remove showMessageModal if only used for purchase flow
-// function showMessageModal(title, message, type = 'info') { ... }
 
 // --- Purchase Flow Logic (REMOVED) ---
-// function setupPurchaseModals() { /* ... REMOVED ... */ }
 
 // --- Load Dynamic Shopping Page Data (REMOVED) ---
-// async function loadShoppingPageData() { /* ... REMOVED ... */ }
-// function createProductCardElement(product) { /* ... REMOVED ... */ }
 
 
 // ----- Initialization -----
 function initializePage() {
     console.log("Initializing page (v1.9 - Reverted Shopping JS)...");
-    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); /* setupAdminPanel only in admin.js */ setupActionButtons(); setupDropdownActions(); // Handles simple buy alerts now
+    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); /* setupAdminPanel only in admin.js */ setupActionButtons(); // Sets up auth forms/buttons
+    setupDropdownActions(); // Handles simple buy alerts now
     setupClickDropdowns(); setupBackToTopButton(); // setupPurchaseModals(); // REMOVED
     // REMOVED check for shopping page and loadShoppingPageData call
      if (document.body.classList.contains('history-page')) { console.log("History page detected, loadHistoryPageData() needs implementation."); /* if (typeof loadHistoryPageData === 'function') { loadHistoryPageData(); } */ }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Server Edit - KMB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=1.6">
+    <link rel="stylesheet" href="style.css?v=1.9"> <!-- Updated CSS version -->
     <link rel="stylesheet" href="admin-style.css?v=1.1">
 </head>
 <body class="dark-theme">
@@ -47,24 +47,27 @@
     </div>
 
     <!-- Load main script first -->
-    <script src="script.js?v=1.6"></script>
+    <script src="script.js?v=1.9"></script> <!-- Updated script version -->
     <!-- Load admin script (contains balance logic) -->
     <script src="admin.js?v=1.2"></script>
      <script>
-         // Basic auth check for this page
+         // Basic auth check for this page (Can be kept or rely solely on admin.js check)
          document.addEventListener('DOMContentLoaded', () => {
             const adminContent = document.getElementById('admin-content');
             const authCheckDiv = document.getElementById('admin-auth-check');
             const userId = localStorage.getItem('userId');
+            const isAdmin = localStorage.getItem('isAdmin') === 'true'; // Check admin flag too
+
             // Replace with real check later
-             if (!userId) {
-                authCheckDiv.innerHTML = '<p class="error">Access Denied. Please log in via the main site first.</p>';
+             if (!userId || !isAdmin) { // Check both login and admin status
+                authCheckDiv.innerHTML = '<p class="error">Access Denied. Admin privileges required.</p>';
+                if (adminContent) adminContent.style.display = 'none';
             } else {
-                 console.warn("SECURITY RISK: Displaying admin page based only on login status.");
+                 console.warn("SECURITY RISK: Displaying admin page based only on insecure flags.");
                  authCheckDiv.style.display = 'none';
                  adminContent.style.display = 'block';
-                 // Call specific setup if needed for this page, e.g.
-                 // if (typeof setupBalanceForm === 'function') setupBalanceForm();
+                 // Initialize forms specific to this page via admin.js if needed
+                 // (admin.js already handles the balance form setup if present)
             }
          });
      </script>
