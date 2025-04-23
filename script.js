@@ -345,7 +345,11 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
 function createProductCardElement(product, includeBuyButton = false) {
     // Determine the wrapper element: <a> if linking, <div> otherwise
     const categorySlug = product.category?.slug;
+    // --- DEBUG LOG --- 
+    console.log(`Product: ${product.name}, Category:`, product.category, `Slug: ${categorySlug}, IncludeButton: ${includeBuyButton}`);
+    // --------------- 
     const canLink = !includeBuyButton && categorySlug;
+    console.log(`  Resulting canLink: ${canLink}`); // Log canLink status
     const wrapperElement = canLink ? document.createElement('a') : document.createElement('div');
 
     // Add base class to the wrapper
@@ -439,7 +443,7 @@ function createProductCardElement(product, includeBuyButton = false) {
             <p class="product-price">
                 ${priceDisplay}
             </p>
-            ${buyButtonHTML} // Buy button HTML will be empty if includeBuyButton is false
+            ${buyButtonHTML} 
         </div>`;
 
     // Return the wrapper element

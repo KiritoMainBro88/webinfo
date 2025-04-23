@@ -178,10 +178,21 @@ function setupAdminForms() {
 
         addCategoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('new-cat-name').value;
-            const slug = document.getElementById('new-cat-slug').value; // Get slug value
-            const iconClass = document.getElementById('new-cat-icon').value;
-            const displayOrder = document.getElementById('new-cat-order').value;
+            const formData = new FormData(); // Use FormData
+
+            // Append regular fields
+            formData.append('name', document.getElementById('new-cat-name').value);
+            formData.append('slug', document.getElementById('new-cat-slug').value); // Get slug value
+            formData.append('iconClass', document.getElementById('new-cat-icon').value);
+            formData.append('displayOrder', parseInt(document.getElementById('new-cat-order').value || '0', 10));
+
+            // Append the file if selected
+            const iconFile = document.getElementById('category-icon-upload').files[0];
+            if (iconFile) {
+                 console.log("Appending category icon file:", iconFile.name);
+                 formData.append('categoryIconImage', iconFile);
+            }
+
             const isEditing = !!editCategoryIdField.value;
             const categoryId = editCategoryIdField.value;
             const url = isEditing ? `/categories/${categoryId}` : '/categories';
@@ -189,8 +200,13 @@ function setupAdminForms() {
             const button = addCategoryForm.querySelector('button[type="submit"]');
             button.disabled = true; button.textContent = 'Saving...';
             try {
-                // Send slug in the body
-                await fetchData(url, { method, body: JSON.stringify({ name, slug, iconClass, displayOrder: parseInt(displayOrder || '0', 10) }) });
+                 // Send FormData - Remove JSON content type header
+                 // Note: fetchData might need adjustment if it STRICTLY enforces JSON content-type
+                await fetchData(url, { 
+                    method, 
+                    body: formData // Send formData directly
+                    // headers: {} // Let browser set Content-Type for FormData
+                });
                 displayMessage('cat-message', `Category ${isEditing ? 'updated' : 'added'}!`, true);
                 addCategoryForm.reset(); editCategoryIdField.value = ''; cancelEditCategoryBtn.style.display = 'none'; addCategoryForm.querySelector('h3').textContent = 'Add / Edit Category';
                 await loadCategories();
@@ -206,12 +222,44 @@ function setupAdminForms() {
     // Add/Update Product Handler (Uses FormData, includes 'brand' automatically)
     if (addProductForm && editProductIdField && cancelEditProductBtn) {
          addProductForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); const formData = new FormData(addProductForm); const productData = Object.fromEntries(formData.entries()); const isEditing = !!editProductIdField.value; const productId = editProductIdField.value;
-            productData.price = productData.price ? parseFloat(productData.price) : 0; productData.originalPrice = productData.originalPrice ? parseFloat(productData.originalPrice) : null; productData.tags = productData.tags ? productData.tags.split(',').map(tag => tag.trim().toLowerCase()).filter(Boolean) : []; productData.displayOrder = parseInt(productData.displayOrder || '0', 10);
-            // Brand is already included via FormData
-            const url = isEditing ? `/products/${productId}` : '/products'; const method = isEditing ? 'PUT' : 'POST'; const button = addProductForm.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = 'Saving...';
+            e.preventDefault(); 
+            const formData = new FormData(); // Use FormData
+            const isEditing = !!editProductIdField.value;
+            const productId = editProductIdField.value;
+
+            // Append all standard fields from the form
+            formData.append('name', document.getElementById('product-name').value);
+            formData.append('category', document.getElementById('product-category').value);
+            formData.append('price', document.getElementById('product-price').value || '0');
+            formData.append('originalPrice', document.getElementById('product-original-price').value || '');
+            formData.append('imageUrl', document.getElementById('product-image').value); // Keep sending original URL field too
+            formData.append('tags', document.getElementById('product-tags').value);
+            formData.append('stockStatus', document.getElementById('product-stock').value);
+            formData.append('displayOrder', document.getElementById('product-order').value || '0');
+            formData.append('description', document.getElementById('product-description').value);
+            formData.append('brand', document.getElementById('product-brand').value); // Append brand
+
+            // Append the file if selected
+             const imageFile = document.getElementById('product-image-upload').files[0];
+             if (imageFile) {
+                 console.log("Appending product image file:", imageFile.name);
+                 formData.append('productImage', imageFile); // Use the name attribute of the file input
+             }
+
+            // No need to manually process tags/prices here, backend should handle it
+            // productData.price = productData.price ? parseFloat(productData.price) : 0; 
+            // ... etc ...
+
+            const url = isEditing ? `/products/${productId}` : '/products'; 
+            const method = isEditing ? 'PUT' : 'POST'; 
+            const button = addProductForm.querySelector('button[type="submit"]'); 
+            button.disabled = true; button.textContent = 'Saving...';
             try {
-                 await fetchData(url, { method, body: JSON.stringify(productData) });
+                 await fetchData(url, { 
+                    method, 
+                    body: formData 
+                    // headers: {} // Let browser set Content-Type for FormData
+                });
                  displayMessage('product-message', `Product ${isEditing ? 'updated' : 'added'}!`, true); addProductForm.reset(); editProductIdField.value = ''; cancelEditProductBtn.style.display = 'none'; addProductForm.querySelector('h3').textContent = 'Add/Edit Product';
                  await loadProducts();
             } catch (error) { displayMessage('product-message', `Error: ${error.message}`, false); }
