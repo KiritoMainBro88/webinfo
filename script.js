@@ -1,4 +1,4 @@
-console.log("Script version 1.9.7 - Frontend Balance Check & Header Fix"); // Keep version or increment if debugging
+console.log("Script version 1.9.8 - Real Purchase API Call"); // Increment version
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
@@ -434,8 +434,77 @@ function setupBackToTopButton() { const backToTopButton = document.getElementByI
 function showModal(modalId) { const modal = document.getElementById(modalId); if (modal) { modal.style.display = modal.classList.contains('modal-overlay') ? 'flex' : 'block'; setTimeout(() => { modal.classList.add('visible'); }, 10); } else { console.error(`Modal with ID ${modalId} not found.`); } }
 function hideModal(modalId) { const modal = document.getElementById(modalId); if (modal) { modal.classList.remove('visible'); setTimeout(() => { modal.style.display = 'none'; }, 300); } else { console.error(`Modal with ID ${modalId} not found.`); } }
 
-// --- Setup Listeners for Purchase Modal ---
-function setupPurchaseModalListeners() { if (!purchaseModal || !purchaseForm || !purchaseCloseBtn || !purchaseCancelBtn || !purchaseMessage || !purchaseItemPriceInput) { return; } purchaseCloseBtn.addEventListener('click', () => hideModal('purchase-modal')); purchaseCancelBtn.addEventListener('click', () => hideModal('purchase-modal')); purchaseForm.addEventListener('submit', async (e) => { e.preventDefault(); purchaseMessage.textContent = 'Đang kiểm tra và xử lý...'; purchaseMessage.className = 'auth-message'; const formData = new FormData(purchaseForm); const purchaseData = Object.fromEntries(formData.entries()); purchaseData.userId = localStorage.getItem('userId'); const itemPrice = parseFloat(purchaseItemPriceInput.value); const currentBalance = parseFloat(localStorage.getItem('balance') || '0'); const submitButton = purchaseForm.querySelector('button[type="submit"]'); if (isNaN(itemPrice)) { purchaseMessage.textContent = 'Lỗi: Giá sản phẩm không hợp lệ.'; purchaseMessage.className = 'auth-message error'; return; } if (currentBalance < itemPrice) { purchaseMessage.textContent = 'Lỗi: Số dư không đủ để thực hiện giao dịch.'; purchaseMessage.className = 'auth-message error'; return; } if(submitButton) submitButton.disabled = true; try { console.warn("!!! SIMULATING purchase - Backend endpoint needed at /api/purchase/confirm !!!"); await new Promise(resolve => setTimeout(resolve, 1500)); purchaseMessage.textContent = 'Mua hàng thành công! Cập nhật số dư...'; purchaseMessage.className = 'auth-message success'; await fetchAndUpdateUserInfo(); setTimeout(() => { hideModal('purchase-modal'); }, 2500); } catch (error) { console.error("Purchase failed:", error); purchaseMessage.textContent = `Lỗi: ${error.message || 'Mua hàng thất bại.'}`; purchaseMessage.className = 'auth-message error'; } finally { if(submitButton) submitButton.disabled = false; } }); }
+// --- MODIFIED: Setup Listeners for Purchase Modal ---
+function setupPurchaseModalListeners() {
+    if (!purchaseModal || !purchaseForm || !purchaseCloseBtn || !purchaseCancelBtn || !purchaseMessage || !purchaseItemPriceInput) {
+        return; // Exit silently if elements aren't found
+    }
+
+    purchaseCloseBtn.addEventListener('click', () => hideModal('purchase-modal'));
+    purchaseCancelBtn.addEventListener('click', () => hideModal('purchase-modal'));
+
+    purchaseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("Purchase form submitted");
+        purchaseMessage.textContent = 'Đang kiểm tra và xử lý...';
+        purchaseMessage.className = 'auth-message';
+
+        const formData = new FormData(purchaseForm);
+        const purchaseData = Object.fromEntries(formData.entries()); // Contains form fields like robloxUser, contactInfo etc.
+        purchaseData.userId = localStorage.getItem('userId'); // Get user ID
+        const itemId = purchaseData.itemId; // Get item ID from hidden input
+        const submitButton = purchaseForm.querySelector('button[type="submit"]');
+
+        // Frontend balance check remains for immediate feedback (optional but good UX)
+        const currentBalance = parseFloat(localStorage.getItem('balance') || '0');
+        const itemPrice = parseFloat(purchaseItemPriceInput.value);
+        if (isNaN(itemPrice)) { purchaseMessage.textContent = 'Lỗi: Giá sản phẩm không hợp lệ.'; purchaseMessage.className = 'auth-message error'; return; }
+        if (currentBalance < itemPrice) { purchaseMessage.textContent = 'Lỗi: Số dư không đủ để thực hiện giao dịch.'; purchaseMessage.className = 'auth-message error'; return; }
+
+        if(submitButton) submitButton.disabled = true;
+
+        try {
+            // --- !!! ACTUAL BACKEND CALL !!! ---
+            console.log(`Calling backend /purchase/confirm for item: ${itemId}`);
+            const result = await fetchData('/purchase/confirm', { // Call the new backend endpoint
+                 method: 'POST',
+                 body: JSON.stringify({
+                     itemId: itemId // Send only the item ID (backend gets price & userId securely)
+                     // You might send other relevant data if needed by backend (like robloxUser, contactInfo)
+                     // robloxUser: purchaseData.robloxUser,
+                     // contactInfo: purchaseData.contactInfo,
+                     // notes: purchaseData.notes
+                 })
+             });
+            console.log("Backend Purchase result:", result);
+
+            // Check result based on the structure defined in the backend route
+            if (!result || !result.success) {
+                 throw new Error(result.message || 'Giao dịch thất bại từ máy chủ.'); // Throw error if backend indicates failure
+            }
+            // --- END ACTUAL BACKEND CALL ---
+
+            // If backend call was successful:
+            purchaseMessage.textContent = result.message || 'Mua hàng thành công! Cập nhật số dư...'; // Use message from backend
+            purchaseMessage.className = 'auth-message success';
+            console.log("Purchase successful for item ID:", itemId);
+
+            // Refresh user balance AFTER successful purchase confirmation from backend
+            // This will fetch the NEW balance returned by the server via /users/me
+            await fetchAndUpdateUserInfo();
+
+            setTimeout(() => { hideModal('purchase-modal'); }, 2500); // Close modal after showing success
+
+        } catch (error) {
+            console.error("Purchase failed:", error);
+            // Display the error message received from backend or fetch
+            purchaseMessage.textContent = `Lỗi: ${error.message || 'Mua hàng thất bại.'}`;
+            purchaseMessage.className = 'auth-message error';
+        } finally {
+             if(submitButton) submitButton.disabled = false; // Re-enable button regardless of outcome
+        }
+    });
+}
 
 // ----- Initialization Function -----
 function initializePage() {
@@ -444,8 +513,8 @@ function initializePage() {
     console.log(`Initializing page (v${version})...`);
     initializeDOMElements(); updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModalListeners(); setupActionButtons(); setupDropdownActions();
     if (document.body.classList.contains('shopping-page')) { loadAndDisplayShoppingData(); }
-    else if (document.body.classList.contains('history-page')) { console.log("History page detected."); setupProfessionalAnimations(); } // Run animations on history page too
-    else { setupProfessionalAnimations(); } // Run general animations on other pages
+    else if (document.body.classList.contains('history-page')) { console.log("History page detected."); setupProfessionalAnimations(); }
+    else { setupProfessionalAnimations(); }
     const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); }
     const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } }
     console.log("Page initialization complete.");
