@@ -1,7 +1,9 @@
-console.log("Script version 1.9.10 - Category Page Logic"); // Increment version
+console.log("Script version 1.9.11 - Handle Product API Object Response"); // Increment version
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
+let currentCategoryProducts = [];
+let currentCategorySlug = null;
 
 // --- Global DOM Element References ---
 let userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection;
@@ -178,7 +180,7 @@ window.closeAuthForms = () => {
 // --- Shopping Page Dynamic Loading ---
 async function loadAndDisplayShoppingData() {
     if (!dynamicProductArea) {
-        // console.log("Not on shopping page or dynamic area not found."); // Less verbose
+        // console.warn("Not on shopping page or dynamic area not found."); // Less verbose
         return;
     }
     console.log("Attempting to load shopping data...");
@@ -190,25 +192,32 @@ async function loadAndDisplayShoppingData() {
 
     try {
         console.log("Fetching categories and products...");
-        const [categories, products] = await Promise.all([
+        const [categories, productsData] = await Promise.all([
             fetchData('/categories'),
             fetchData('/products')
         ]);
 
         console.log("Fetched Categories:", categories);
-        console.log("Fetched Products:", products);
+        console.log("Fetched Products:", productsData);
 
         dynamicProductArea.innerHTML = ''; // Clear loading message
 
-        if (!categories || !Array.isArray(categories)) { // Add check for array type
-             console.error("Received invalid data for categories:", categories);
-             throw new Error("Invalid category data received from server.");
-        }
-         if (!products || !Array.isArray(products)) { // Add check for array type
-             console.error("Received invalid data for products:", products);
-             throw new Error("Invalid product data received from server.");
-         }
+        // --- CORRECTLY Extract products array ---
+        const products = productsData?.products; // Get the nested array
 
+        // --- Validate fetched data ---
+        if (!categories || !Array.isArray(categories)) { // Add check for array type
+            console.error("Received invalid data for categories:", categories);
+            throw new Error("Invalid category data received from server.");
+        }
+        if (!productsData || typeof productsData !== 'object') { 
+            console.error("Received invalid data for products:", productsData);
+            throw new Error("Invalid product data structure received (expected object).");
+        }
+        if (!products || !Array.isArray(products)) { // Add check for nested array
+            console.error("Received invalid products array:", products);
+            throw new Error("Invalid product array within data received.");
+        }
 
         if (categories.length === 0) {
             console.log("No categories found.");
@@ -546,44 +555,69 @@ async function loadCategoryPageData() {
     console.log("Loading data for category detail page...");
 
     const urlParams = new URLSearchParams(window.location.search);
-    const categorySlug = urlParams.get('slug');
+    currentCategorySlug = urlParams.get('slug');
 
-    if (!categorySlug) {
+    if (!currentCategorySlug) {
         categoryPageTitle.textContent = "Lỗi";
         categoryProductGrid.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Không tìm thấy mã danh mục (slug) trong URL.</p>';
         return;
     }
 
-    categoryPageTitle.textContent = `Đang tải danh mục '${categorySlug}'...`;
+    await fetchAndRenderCategoryProducts();
+}
+
+// --- NEW: Fetch and Render Products for Category Page ---
+async function fetchAndRenderCategoryProducts() {
+    if (!currentCategorySlug || !categoryProductGrid || !categoryPageTitle) return;
+    
+    categoryPageTitle.textContent = `Đang tải danh mục '${currentCategorySlug}'...`;
     categoryProductGrid.innerHTML = `<p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải sản phẩm...</p>`;
+
+    const sortValue = sortFilterSelect ? sortFilterSelect.value : 'default';
+    const searchValue = searchFilterInput ? searchFilterInput.value : '';
 
     try {
         // Fetch products specifically for this category using the slug
-        // The backend route '/api/products' now supports ?categorySlug=...
-        console.log(`Fetching products for slug: ${categorySlug}`);
-        const products = await fetchData(`/products?categorySlug=${categorySlug}`);
-        console.log(`Fetched ${products.length} products for this category.`);
+        const apiUrl = `/products?categorySlug=${currentCategorySlug}&sort=${sortValue}&search=${encodeURIComponent(searchValue)}`;
+        console.log(`Fetching products with: ${apiUrl}`);
+        const data = await fetchData(apiUrl);
+        console.log("Fetched category data:", data);
+
+        // --- CORRECTLY Extract products array and other data ---
+        if (!data || typeof data !== 'object') {
+            throw new Error("Invalid data structure received from product API (expected object).");
+        }
+        
+        const products = data.products; // Get nested array
+        const categoryName = data.categoryName;
+        const minPrice = data.minPrice;
+        const maxPrice = data.maxPrice;
+        
+        // --- Validate extracted products array ---
+        if (!products || !Array.isArray(products)) {
+            throw new Error("Invalid product array within data received.");
+        }
+
+        currentCategoryProducts = products; // Store fetched products
 
         categoryProductGrid.innerHTML = ''; // Clear loading message
 
-        if (!products || !Array.isArray(products)) {
-             throw new Error("Invalid product data received for category.");
+        // Update Page Title
+        if (categoryName) {
+            categoryPageTitle.textContent = categoryName;
+            document.title = `${categoryName} - KiritoMainBro`; // Update browser tab title
+        } else {
+            categoryPageTitle.textContent = `Danh mục: ${currentCategorySlug}`; // Fallback title
+        }
+
+        // Update price filter if function exists
+        if (typeof updatePriceFilterOptions === 'function') {
+            updatePriceFilterOptions(minPrice, maxPrice);
         }
 
         if (products.length === 0) {
-            categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào trong danh mục này.</p>';
-            // Try to set category name from the first product's category if possible (though unlikely if no products)
-            // Or fetch category details separately if needed
-            categoryPageTitle.textContent = `Danh mục: ${categorySlug} (Trống)`; // Placeholder title
+            categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào khớp với tiêu chí.</p>';
         } else {
-            // Set page title from the first product's category name (assuming all products belong to the same fetched category)
-            if (products[0].category && products[0].category.name) {
-                categoryPageTitle.textContent = products[0].category.name;
-                document.title = `${products[0].category.name} - KiritoMainBro`; // Update browser tab title
-            } else {
-                categoryPageTitle.textContent = `Danh mục: ${categorySlug}`; // Fallback title
-            }
-
             // Render product cards WITH buy buttons
             products.forEach(product => {
                 try {
@@ -593,30 +627,30 @@ async function loadCategoryPageData() {
                 }
             });
 
-             // --- Setup Listeners specifically for this page's grid ---
-             setupCategoryPageBuyListeners();
+            // --- Setup Listeners specifically for this page's grid ---
+            setupCategoryPageBuyListeners();
         }
 
         // --- Re-apply animations to the new grid ---
         console.log("Re-applying animations for category page...");
         setTimeout(() => {
             gsap.utils.toArray('#category-product-grid-container [data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
-             // Animate filter bar and grid container
-             gsap.utils.toArray('.category-detail-layout [data-animate]:not(.gsap-initiated)').forEach(element => {
-                 element.classList.add('gsap-initiated');
-                 const delay = parseFloat(element.dataset.delay) || 0;
-                 gsap.from(element, { opacity: 0, y: 20, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 90%", toggleActions: "play none none none", once: true } });
-             });
-             // Animate product cards within the grid
-             const productCards = categoryProductGrid.querySelectorAll('.product-card');
-             if (productCards.length > 0) {
-                  gsap.from(productCards, { opacity: 0, y: 20, duration: 0.5, ease: "power2.out", stagger: 0.07, scrollTrigger: { trigger: categoryProductGrid, start: "top 85%", toggleActions: "play none none none", once: true } });
-             }
-             console.log("Category page animations applied.");
+            // Animate filter bar and grid container
+            gsap.utils.toArray('.category-detail-layout [data-animate]:not(.gsap-initiated)').forEach(element => {
+                element.classList.add('gsap-initiated');
+                const delay = parseFloat(element.dataset.delay) || 0;
+                gsap.from(element, { opacity: 0, y: 20, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 90%", toggleActions: "play none none none", once: true } });
+            });
+            // Animate product cards within the grid
+            const productCards = categoryProductGrid.querySelectorAll('.product-card');
+            if (productCards.length > 0) {
+                gsap.from(productCards, { opacity: 0, y: 20, duration: 0.5, ease: "power2.out", stagger: 0.07, scrollTrigger: { trigger: categoryProductGrid, start: "top 85%", toggleActions: "play none none none", once: true } });
+            }
+            console.log("Category page animations applied.");
         }, 150);
 
     } catch (error) {
-        console.error(`Error loading category page data for slug ${categorySlug}:`, error);
+        console.error(`Error loading category page data for slug ${currentCategorySlug}:`, error);
         categoryPageTitle.textContent = "Lỗi tải danh mục";
         categoryProductGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--danger-color);">Không thể tải sản phẩm: ${error.message}</p>`;
     }

@@ -142,11 +142,11 @@ body.light-theme .header-inner { background-color: var(--bg-header-inner); borde
 .product-category-section { margin-bottom: 3rem; }
 
 /* Category Title Styling (Link Wrapper) */
-.category-title-link { display: block; text-decoration: none; color: inherit; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-primary); padding-bottom: 0.5rem; transition: opacity 0.2s ease; cursor: pointer; }
+.category-title-link { display: block; text-decoration: none; color: inherit; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-primary); padding-bottom: 0.5rem; transition: opacity 0.2s ease; }
 .category-title-link:hover { opacity: 0.8; }
 /* Heading inside the link */
-.category-title-link .category-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0; padding-bottom: 0; border-bottom: none; display: flex; align-items: center; pointer-events: none; }
-.category-title-link .category-title .icon-left { margin-right: 0.8em; color: var(--accent-primary); pointer-events: none; }
+.category-title-link .category-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0; padding-bottom: 0; border-bottom: none; display: flex; align-items: center; }
+.category-title-link .category-title .icon-left { margin-right: 0.8em; color: var(--accent-primary); }
 
 
 .sidebar-widget { margin-bottom: 2rem; } .sidebar-widget:last-child { margin-bottom: 0; } .sidebar-widget h4 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; border-bottom: 1px solid var(--border-secondary); padding-bottom: 0.5rem; } .sidebar-widget h4 .icon-left { margin-right: 0.6em; color: var(--accent-secondary); } .sidebar-widget p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.8rem; } .sidebar-widget strong { color: var(--text-primary); font-weight: 500; } .cta-button.sidebar-button { display: block; width: 100%; text-align: center; margin-bottom: 0.5rem; font-size: 0.9rem; padding: 0.5rem 1rem; } .cta-button.sidebar-button.logout { background-color: var(--danger-color); border-color: var(--danger-color); } .cta-button.sidebar-button.logout:hover { background-color: #c62828; border-color: #c62828; }
