@@ -178,100 +178,105 @@ window.closeAuthForms = () => {
 // --- Shopping Page Dynamic Loading ---
 async function loadAndDisplayShoppingData() {
     if (!dynamicProductArea) {
-        // console.log("Not on shopping page or dynamic area not found."); // Less verbose
         return;
     }
-    console.log("Attempting to load shopping data...");
+    console.log("Attempting to load shopping overview data..."); // Updated log
     dynamicProductArea.innerHTML = `
         <p style="text-align: center; padding: 2rem; background-color: var(--bg-tertiary); border-radius: var(--border-radius-md);">
             <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
-            Đang tải sản phẩm...
-        </p>`;
+            Đang tải danh mục...
+        </p>`; // Updated loading text
 
     try {
-        console.log("Fetching categories and products...");
-        const [categories, products] = await Promise.all([
+        console.log("Fetching categories and all products..."); // Updated log
+        const [categories, allProductsData] = await Promise.all([
             fetchData('/categories'),
-            fetchData('/products')
+            fetchData('/products') // Fetch all products once
         ]);
 
         console.log("Fetched Categories:", categories);
-        console.log("Fetched Products:", products);
+        console.log("Fetched All Products Data:", allProductsData);
 
         dynamicProductArea.innerHTML = ''; // Clear loading message
+        dynamicProductArea.classList.add('category-summary-grid'); // Add class for grid layout
 
-        if (!categories || !Array.isArray(categories)) { // Add check for array type
+        if (!categories || !Array.isArray(categories)) {
              console.error("Received invalid data for categories:", categories);
              throw new Error("Invalid category data received from server.");
         }
 
-        // --- MODIFIED: Check for products array ---
-        let productArray = []; // Initialize as empty array
-
-        if (Array.isArray(products)) {
-            productArray = products; // Use directly if it's an array
-        } else if (typeof products === 'object' && products !== null) {
-            // Check for common nested array keys
-            if (Array.isArray(products.products)) {
-                console.log("Received object, extracting products from 'products' key.");
-                productArray = products.products;
-            } else if (Array.isArray(products.items)) {
-                console.log("Received object, extracting products from 'items' key.");
-                productArray = products.items;
+        // --- Process all products data --- (Copied from previous check)
+        let productArray = [];
+        if (Array.isArray(allProductsData)) {
+            productArray = allProductsData;
+        } else if (typeof allProductsData === 'object' && allProductsData !== null) {
+            if (Array.isArray(allProductsData.products)) {
+                productArray = allProductsData.products;
+            } else if (Array.isArray(allProductsData.items)) {
+                productArray = allProductsData.items;
             } else {
-                // If it's an object but doesn't contain a known array key, log error and throw
-                console.error("Received object, but could not find products array inside:", products);
-                throw new Error("Invalid product data structure received from server. Expected an array or object containing 'products'/'items' array.");
+                console.error("Received object, but could not find products array inside:", allProductsData);
+                throw new Error("Invalid product data structure received from server.");
             }
         } else {
-            // If it's neither an array nor a valid object, throw error
-            console.error("Received invalid data type for products:", products);
-            throw new Error("Invalid product data type received from server. Expected an array or object.");
+            console.error("Received invalid data type for products:", allProductsData);
+            throw new Error("Invalid product data type received from server.");
         }
-        // --- END MODIFICATION ---
-
+        console.log(`Processed ${productArray.length} products total.`);
+        // --- End Product Processing ---
 
         if (categories.length === 0) {
             console.log("No categories found.");
+            dynamicProductArea.classList.remove('category-summary-grid');
             dynamicProductArea.innerHTML = '<p style="text-align: center; padding: 2rem;">Không tìm thấy danh mục sản phẩm nào.</p>';
             return;
         }
 
-        console.log("Rendering categories...");
+        console.log("Rendering category summaries...");
         categories.forEach((category, index) => {
-            console.log(`Rendering category ${index}: ${category.name}`);
-            const categorySection = createCategorySectionElement(category);
-            const productGrid = categorySection.querySelector('.product-grid');
-            if (!productGrid) { console.error(`Product grid not found for category: ${category.name}`); return; }
+            console.log(`Processing category ${index}: ${category.name}`);
 
+            // 1. Filter products for this category
             const categoryProducts = productArray.filter(product => product.category?._id === category._id);
-             console.log(`Found ${categoryProducts.length} products for category ${category.name}`);
+            console.log(`Found ${categoryProducts.length} products for category ${category.name}`);
 
-            if (categoryProducts.length > 0) {
-                categoryProducts.forEach(product => {
-                    try {
-                        const productCard = createProductCardElement(product, false);
-                        productGrid.appendChild(productCard);
-                    } catch (cardError) { console.error(`Error creating product card for ${product.name}:`, cardError); }
-                });
-            } else {
-                 productGrid.innerHTML = '<p style="font-size: 0.9em; color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Chưa có sản phẩm trong danh mục này.</p>';
+            // 2. Calculate Min/Max prices
+            let minPrice = null;
+            let maxPrice = null;
+            const numericPrices = categoryProducts
+                .map(p => p.price) // Get prices
+                .filter(price => typeof price === 'number' && !isNaN(price)); // Filter only valid numbers
+
+            if (numericPrices.length > 0) {
+                minPrice = Math.min(...numericPrices);
+                maxPrice = Math.max(...numericPrices);
+                console.log(`Category ${category.name} - Min: ${minPrice}, Max: ${maxPrice}`);
             }
-            dynamicProductArea.appendChild(categorySection);
-        });
-        console.log("Finished rendering categories.");
 
-        console.log("Re-applying animations and listeners...");
+            // 3. Create and append the summary card
+            try {
+                const summaryCard = createCategorySummaryCardElement(category, minPrice, maxPrice);
+                dynamicProductArea.appendChild(summaryCard);
+            } catch (cardError) {
+                console.error(`Error creating summary card for ${category.name}:`, cardError);
+            }
+        });
+        console.log("Finished rendering category summaries.");
+
+        // --- Re-apply animations --- 
+        // (Adjust selector if needed for new summary cards)
+        console.log("Re-applying animations...");
         setTimeout(() => {
-            gsap.utils.toArray('[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
-            setupProfessionalAnimations();
-            // No buy listeners needed here since buttons are not included
+            gsap.utils.toArray('.category-summary-card[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
+            setupProfessionalAnimations(); // This might need adjustment if it targets old structure
             console.log("Animations re-applied.");
         }, 150);
+        // NOTE: No buy listeners needed here anymore
 
     } catch (error) {
-        console.error("Error loading or rendering shopping page data:", error);
-        dynamicProductArea.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--danger-color);">Lỗi tải sản phẩm: ${error.message}. Vui lòng kiểm tra Console (F12) và thử lại sau.</p>`;
+        console.error("Error loading or rendering shopping overview data:", error); // Updated log
+        dynamicProductArea.classList.remove('category-summary-grid');
+        dynamicProductArea.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--danger-color);">Lỗi tải danh mục: ${error.message}. Vui lòng kiểm tra Console (F12) và thử lại sau.</p>`; // Updated error message
     }
 }
 
@@ -302,15 +307,62 @@ function createCategorySectionElement(category) {
     return section;
 }
 
+// --- NEW: Create Category Summary Card Element (for main shopping page) ---
+function createCategorySummaryCardElement(category, minPrice, maxPrice) {
+    const cardLink = document.createElement('a');
+    cardLink.href = `category.html?slug=${category.slug || 'unknown'}`;
+    cardLink.classList.add('category-summary-card'); // Add a class for styling
+    cardLink.dataset.animate = "fade-up"; // Optional animation
+
+    let priceRangeHTML = '';
+    if (minPrice !== null && maxPrice !== null) {
+        if (minPrice === maxPrice) {
+            // If min and max are the same, just show that price
+            priceRangeHTML = `<p class="category-price-range">Giá: ${formatPrice(minPrice)}</p>`;
+        } else {
+            priceRangeHTML = `<p class="category-price-range">Từ: ${formatPrice(minPrice)} - ${formatPrice(maxPrice)}</p>`;
+        }
+    } else {
+        // Handle cases with no numeric prices or only special prices
+        priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`; // Or "Liên hệ giá", etc.
+    }
+
+    // Basic structure - adjust classes and content as needed for styling
+    cardLink.innerHTML = `
+        <div class="category-summary-info">
+            <h3 class="category-summary-title">
+                <i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>
+                ${category.name}
+            </h3>
+            ${priceRangeHTML}
+        </div>
+        <div class="category-summary-arrow">
+             <i class="fas fa-chevron-right"></i>
+        </div>
+    `;
+
+    return cardLink;
+}
+
 // --- MODIFIED: Create Product Card Element ---
 function createProductCardElement(product, includeBuyButton = false) {
-    const card = document.createElement('div');
-    card.classList.add('product-card');
+    // Determine the wrapper element: <a> if linking, <div> otherwise
+    const categorySlug = product.category?.slug;
+    const canLink = !includeBuyButton && categorySlug;
+    const wrapperElement = canLink ? document.createElement('a') : document.createElement('div');
+
+    // Add base class to the wrapper
+    wrapperElement.classList.add('product-card');
+
+    // Set link properties if applicable
+    if (canLink) {
+        wrapperElement.href = `category.html?slug=${categorySlug}`;
+        wrapperElement.classList.add('product-card-link'); // Optional class for linked cards
+    }
 
     const originalPriceHTML = product.originalPrice && product.originalPrice > product.price
         ? `<span class="original-price">${formatPrice(product.originalPrice)}</span>`
         : '';
-    // Ensure price is formatted, defaulting to N/A if needed
     const salePriceFormatted = formatPrice(product.price);
     const salePriceHTML = `<span class="sale-price">${salePriceFormatted}</span>`;
 
@@ -321,12 +373,23 @@ function createProductCardElement(product, includeBuyButton = false) {
         tagHTML = '<span class="product-tag sale-tag">Sale</span>';
     }
 
+    // --- ADDED: Brand/Category Tag ---
+    let brandTagHTML = '';
+    const categoryName = product.category?.name;
+    const brandName = product.brand; // ASSUMING product.brand exists
+    if (categoryName && brandName) {
+        brandTagHTML = `<span class="product-tag brand-tag">${categoryName} - ${brandName}</span>`;
+    } else if (categoryName) {
+        // Fallback if brand is missing
+        brandTagHTML = `<span class="product-tag brand-tag">${categoryName}</span>`;
+    }
+    // --- END ADDED ---
+
     let buttonText = 'Mua ngay';
     let buttonDisabled = false;
     let priceDisplay = `${originalPriceHTML} ${salePriceHTML}`;
-    let buyButtonHTML = ''; // Default to no button
+    let buyButtonHTML = '';
 
-    // Only include button HTML if requested
     if (includeBuyButton) {
         switch (product.stockStatus) {
             case 'out_of_stock':
@@ -358,10 +421,12 @@ function createProductCardElement(product, includeBuyButton = false) {
         }
     }
 
-    card.innerHTML = `
+    // Set the inner HTML of the wrapper element (<a> or <div>)
+    wrapperElement.innerHTML = `
         <div class="product-image-placeholder">
             <img src="${product.imageUrl || 'images/product-placeholder.png'}" alt="${product.name || 'Product Image'}" loading="lazy">
             ${tagHTML}
+            ${brandTagHTML}
         </div>
         <div class="product-info">
             <h3 class="product-title">${product.name || 'Unnamed Product'}</h3>
@@ -369,9 +434,11 @@ function createProductCardElement(product, includeBuyButton = false) {
             <p class="product-price">
                 ${priceDisplay}
             </p>
-            ${buyButtonHTML}
+            ${buyButtonHTML} // Buy button HTML will be empty if includeBuyButton is false
         </div>`;
-    return card;
+
+    // Return the wrapper element
+    return wrapperElement;
 }
 
 function handleBuyButtonClick(event) {
@@ -471,7 +538,7 @@ function handleButtonMouseLeave(event) { gsap.to(event.currentTarget, { scale: 1
 function setupClickDropdowns() { const wrappers = document.querySelectorAll('.nav-item-wrapper'); wrappers.forEach(wrapper => { const trigger = wrapper.querySelector('.nav-dropdown-trigger'); const menu = wrapper.querySelector('.dropdown-menu'); if (!trigger || !menu) return; trigger.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); wrappers.forEach(otherWrapper => { if (otherWrapper !== wrapper) otherWrapper.classList.remove('open'); }); wrapper.classList.toggle('open'); }); }); document.addEventListener('click', (event) => { wrappers.forEach(wrapper => { if (!wrapper.contains(event.target) && wrapper.classList.contains('open')) wrapper.classList.remove('open'); }); }); document.addEventListener('keydown', (event) => { if (event.key === "Escape") wrappers.forEach(wrapper => wrapper.classList.remove('open')); }); }
 
 // --- Authentication Logic Setup ---
-function setupActionButtons() { const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); function showAuthMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms)); if (loginForm) { loginForm.addEventListener('submit', async (e) => { e.preventDefault(); showAuthMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value; try { const data = await fetchData('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }); showAuthMessage(loginMessage, 'Đang cập nhật thông tin...', true); localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username); await fetchAndUpdateUserInfo(); setTimeout(closeAuthForms, 1200); } catch (error) { console.error("Login failed:", error); showAuthMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); } }); } if (registerForm) { registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; if (password !== confirmPassword) { showAuthMessage(registerMessage, 'Mật khẩu nhập lại không khớp.'); return; } showAuthMessage(registerMessage, 'Đang đăng ký...'); const username = e.target.username.value; const email = e.target.email.value; try { await fetchData('/auth/register', { method: 'POST', body: JSON.stringify({ username, email, password }) }); showAuthMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error("Registration failed:", error); showAuthMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.'); } }); } if (forgotForm) { forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); showAuthMessage(forgotMessage, 'Đang xử lý yêu cầu...'); const email = e.target.email.value; try { const data = await fetchData('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }); showAuthMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true); } catch (error) { console.error("Forgot password failed:", error); showAuthMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.'); } }); } if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showAuthMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showAuthMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showAuthMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { await fetchData('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) }); showAuthMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showAuthMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); } if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('isAdmin'); localStorage.removeItem('balance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); } const checkLoginAndToken = () => { const userId = localStorage.getItem('userId'); if (userId) { fetchAndUpdateUserInfo(); } else { updateUserStatus(false); updateSidebarUserArea(false); } const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) tokenInput.value = resetToken; window.history.replaceState({}, document.title, window.location.pathname); } }; checkLoginAndToken(); }
+function setupActionButtons() { const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); function showAuthMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e => { e.preventDefault(); showForgotForm(); })); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms)); if (loginForm) { loginForm.addEventListener('submit', async (e) => { e.preventDefault(); showAuthMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value; try { const data = await fetchData('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }); showAuthMessage(loginMessage, 'Đang cập nhật thông tin...', true); localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username); await fetchAndUpdateUserInfo(); setTimeout(closeAuthForms, 1200); } catch (error) { console.error("Login failed:", error); showAuthMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); } }); } if (registerForm) { registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; if (password !== confirmPassword) { showAuthMessage(registerMessage, 'Mật khẩu nhập lại không khớp.'); return; } showAuthMessage(registerMessage, 'Đang đăng ký...'); const username = e.target.username.value; const email = e.target.email.value; try { await fetchData('/auth/register', { method: 'POST', body: JSON.stringify({ username, email, password }) }); showAuthMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error("Registration failed:", error); showAuthMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.'); } }); } if (forgotForm) { forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); showAuthMessage(forgotMessage, 'Đang xử lý yêu cầu...'); const email = e.target.email.value; try { const data = await fetchData('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }); showAuthMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true); } catch (error) { console.error("Forgot password failed:", error); showAuthMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.'); } }); } if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showAuthMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showAuthMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showAuthMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { await fetchData('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) }); showAuthMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showAuthMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); } if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('isAdmin'); localStorage.removeItem('balance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); } const checkLoginAndToken = () => { const userId = localStorage.getItem('userId'); if (userId) { fetchAndUpdateUserInfo(); } else { updateUserStatus(false); updateSidebarUserArea(false); } const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) tokenInput.value = resetToken; window.history.replaceState({}, document.title, window.location.pathname); } }; checkLoginAndToken(); }
 
 // --- Fetch and Update User Info ---
 async function fetchAndUpdateUserInfo() { const userId = localStorage.getItem('userId'); if (!userId) { updateUserStatus(false); updateSidebarUserArea(false); return; } try { const userData = await fetchData('/users/me'); if (!userData || !userData.username) { throw new Error("Received invalid user data"); } localStorage.setItem('username', userData.username); localStorage.setItem('balance', userData.balance ?? 0); localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false'); updateUserStatus(true, userData.username, !!userData.isAdmin); updateSidebarUserArea(true, userData.username, userData.balance ?? 0); } catch (error) { console.error("Error fetching or processing user info:", error); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('balance'); localStorage.removeItem('isAdmin'); updateUserStatus(false); updateSidebarUserArea(false); } }
@@ -559,12 +626,103 @@ function setupPurchaseModalListeners() {
 }
 
 // --- NEW: Category Detail Page Logic ---
+let originalCategoryProducts = []; // Store the initial list of products
+let categoryControlListenersAdded = false; // Flag to prevent adding listeners multiple times
+
+// Function to render products in the category grid
+function renderCategoryProducts(productsToRender) {
+    if (!categoryProductGrid) return;
+    categoryProductGrid.innerHTML = ''; // Clear existing products
+
+    if (productsToRender.length === 0) {
+        categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào phù hợp.</p>';
+        return;
+    }
+
+    productsToRender.forEach(product => {
+        try {
+            categoryProductGrid.appendChild(createProductCardElement(product, true)); // includeBuyButton is true
+        } catch (cardError) {
+            console.error(`Error creating product card on category page for ${product.name}:`, cardError);
+        }
+    });
+
+    // Re-apply animations to the newly rendered cards (optional, can be adjusted)
+    setTimeout(() => {
+        const productCards = categoryProductGrid.querySelectorAll('.product-card.gsap-initiated');
+        productCards.forEach(card => card.classList.remove('gsap-initiated')); // Reset animation state
+
+        const newCards = categoryProductGrid.querySelectorAll('.product-card:not(.gsap-initiated)');
+        if (newCards.length > 0) {
+            newCards.forEach(card => card.classList.add('gsap-initiated')); // Mark as initiated
+            gsap.from(newCards, { opacity: 0, y: 15, duration: 0.4, ease: "power1.out", stagger: 0.05 });
+        }
+    }, 50); // Short delay to allow DOM update
+}
+
+// Function to apply filters and sorting
+function applyCategoryFilters() {
+    const sortValue = document.getElementById('sort-select')?.value || 'default';
+    const searchValue = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
+
+    let filteredProducts = [...originalCategoryProducts]; // Start with the original list
+
+    // 1. Apply Search Filter
+    if (searchValue) {
+        filteredProducts = filteredProducts.filter(product =>
+            (product.name?.toLowerCase().includes(searchValue)) ||
+            (product.brand?.toLowerCase().includes(searchValue)) // Also search brand if it exists
+            // Add more fields to search if needed (e.g., description)
+        );
+    }
+
+    // 2. Apply Sorting
+    switch (sortValue) {
+        case 'price-asc':
+            // Sort by price, handling non-numeric prices (placing them potentially last)
+            filteredProducts.sort((a, b) => {
+                const priceA = typeof a.price === 'number' ? a.price : Infinity;
+                const priceB = typeof b.price === 'number' ? b.price : Infinity;
+                return priceA - priceB;
+            });
+            break;
+        case 'price-desc':
+            filteredProducts.sort((a, b) => {
+                const priceA = typeof a.price === 'number' ? a.price : -Infinity;
+                const priceB = typeof b.price === 'number' ? b.price : -Infinity;
+                return priceB - priceA;
+            });
+            break;
+        case 'best-seller':
+            // Assuming purchaseCount exists
+            filteredProducts.sort((a, b) => (b.purchaseCount || 0) - (a.purchaseCount || 0));
+            break;
+        case 'newest':
+            // Assuming createdAt exists (or updatedAt)
+            filteredProducts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            break;
+        case 'oldest':
+            filteredProducts.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+            break;
+        // 'default' case requires no sorting, keeps original fetched order (or search filtered order)
+    }
+
+    console.log(`Applied filters: sort=${sortValue}, search=${searchValue}. Rendering ${filteredProducts.length} products.`);
+    renderCategoryProducts(filteredProducts);
+}
+
+// --- MODIFIED loadCategoryPageData --- 
 async function loadCategoryPageData() {
     if (!document.body.classList.contains('category-detail-page') || !categoryProductGrid || !categoryPageTitle) {
-        // console.log("Not on category detail page or elements missing."); // Less verbose
         return;
     }
     console.log("Loading data for category detail page...");
+
+    // --- Reset state for potential reloads --- 
+    originalCategoryProducts = [];
+    const controls = document.querySelector('.category-controls');
+    if (controls) controls.style.display = 'none'; // Hide controls initially
+    // ----------------------------------------
 
     const urlParams = new URLSearchParams(window.location.search);
     const categorySlug = urlParams.get('slug');
@@ -579,62 +737,83 @@ async function loadCategoryPageData() {
     categoryProductGrid.innerHTML = `<p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); grid-column: 1 / -1;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải sản phẩm...</p>`;
 
     try {
-        // Fetch products specifically for this category using the slug
-        // The backend route '/api/products' now supports ?categorySlug=...
         console.log(`Fetching products for slug: ${categorySlug}`);
-        const products = await fetchData(`/products?categorySlug=${categorySlug}`);
-        console.log(`Fetched ${products.length} products for this category.`);
+        const products = await fetchData(`/products?categorySlug=${categorySlug}`); // Expecting array
 
-        categoryProductGrid.innerHTML = ''; // Clear loading message
-
-        if (!products || !Array.isArray(products)) {
-             throw new Error("Invalid product data received for category.");
-        }
-
-        if (products.length === 0) {
-            categoryProductGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Không tìm thấy sản phẩm nào trong danh mục này.</p>';
-            // Try to set category name from the first product's category if possible (though unlikely if no products)
-            // Or fetch category details separately if needed
-            categoryPageTitle.textContent = `Danh mục: ${categorySlug} (Trống)`; // Placeholder title
+        // --- MODIFIED: Check product data structure (can adapt if server sends object) ---
+        if (!Array.isArray(products)) {
+             console.error("Invalid product data received for category, expected array:", products);
+             // Attempt to extract if nested (optional, depends on server)
+             // if (typeof products === 'object' && products !== null && Array.isArray(products.products)) { 
+             //     originalCategoryProducts = products.products; 
+             // } else { 
+                 throw new Error("Invalid product data structure received for category.");
+             // } 
         } else {
-            // Set page title from the first product's category name (assuming all products belong to the same fetched category)
-            if (products[0].category && products[0].category.name) {
-                categoryPageTitle.textContent = products[0].category.name;
-                document.title = `${products[0].category.name} - KiritoMainBro`; // Update browser tab title
+            originalCategoryProducts = products; // Store the original list
+        }
+        console.log(`Fetched and stored ${originalCategoryProducts.length} original products for this category.`);
+        // --- END MODIFICATION ---
+
+        // Initial render
+        renderCategoryProducts(originalCategoryProducts);
+
+        // Set page title (only if products exist)
+        if (originalCategoryProducts.length > 0) {
+            if (originalCategoryProducts[0].category && originalCategoryProducts[0].category.name) {
+                categoryPageTitle.textContent = originalCategoryProducts[0].category.name;
+                document.title = `${originalCategoryProducts[0].category.name} - KiritoMainBro`;
             } else {
-                categoryPageTitle.textContent = `Danh mục: ${categorySlug}`; // Fallback title
+                categoryPageTitle.textContent = `Danh mục: ${categorySlug}`;
             }
-
-            // Render product cards WITH buy buttons
-            products.forEach(product => {
-                try {
-                    categoryProductGrid.appendChild(createProductCardElement(product, true)); // Pass true to include button
-                } catch (cardError) {
-                    console.error(`Error creating product card on category page for ${product.name}:`, cardError);
-                }
-            });
-
-             // --- Setup Listeners specifically for this page's grid ---
-             setupCategoryPageBuyListeners();
+            // Show controls only if products exist
+            if (controls) controls.style.display = 'block';
+        } else {
+            categoryPageTitle.textContent = `Danh mục: ${categorySlug} (Trống)`;
         }
 
-        // --- Re-apply animations to the new grid ---
-        console.log("Re-applying animations for category page...");
+        // --- Setup Listeners (only once) ---
+        if (!categoryControlListenersAdded) {
+            const sortSelect = document.getElementById('sort-select');
+            const searchInput = document.getElementById('search-input');
+            const resetButton = document.getElementById('filter-reset-btn');
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', applyCategoryFilters);
+            }
+            if (searchInput) {
+                // Basic immediate filtering on input
+                searchInput.addEventListener('input', applyCategoryFilters); 
+                // TODO: Add debouncing for better performance on rapid typing
+            }
+            if (resetButton) {
+                resetButton.addEventListener('click', () => {
+                    if(sortSelect) sortSelect.value = 'default';
+                    if(searchInput) searchInput.value = '';
+                    console.log("Resetting filters.");
+                    renderCategoryProducts(originalCategoryProducts); // Render the original list
+                });
+            }
+            categoryControlListenersAdded = true;
+            console.log("Category control listeners added.");
+        }
+        // ---------------------------------
+
+        // --- Setup Buy Button Listeners for the grid ---
+        setupCategoryPageBuyListeners();
+
+        // --- Initial Animations (apply AFTER controls are potentially shown) ---
+        console.log("Applying initial animations for category page...");
         setTimeout(() => {
-            gsap.utils.toArray('#category-product-grid-container [data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
-             // Animate filter bar and grid container
+             gsap.utils.toArray('.category-detail-layout [data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
              gsap.utils.toArray('.category-detail-layout [data-animate]:not(.gsap-initiated)').forEach(element => {
                  element.classList.add('gsap-initiated');
-                 const delay = parseFloat(element.dataset.delay) || 0;
+                 const delay = parseFloat(element.dataset.delay) || (element.classList.contains('category-controls') ? 0.1 : 0.2); // Delay controls slightly less
                  gsap.from(element, { opacity: 0, y: 20, duration: 0.6, ease: "power2.out", delay: delay, scrollTrigger: { trigger: element, start: "top 90%", toggleActions: "play none none none", once: true } });
              });
-             // Animate product cards within the grid
-             const productCards = categoryProductGrid.querySelectorAll('.product-card');
-             if (productCards.length > 0) {
-                  gsap.from(productCards, { opacity: 0, y: 20, duration: 0.5, ease: "power2.out", stagger: 0.07, scrollTrigger: { trigger: categoryProductGrid, start: "top 85%", toggleActions: "play none none none", once: true } });
-             }
-             console.log("Category page animations applied.");
-        }, 150);
+            // Note: Card animation is now handled within renderCategoryProducts
+             console.log("Category page initial animations applied.");
+        }, 100); // Slight delay
 
     } catch (error) {
         console.error(`Error loading category page data for slug ${categorySlug}:`, error);

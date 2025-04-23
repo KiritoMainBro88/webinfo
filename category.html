@@ -26,13 +26,37 @@
                      <h1 id="category-page-title" data-animate="fade-up">Đang tải danh mục...</h1>
                      <p id="category-page-description" class="text-secondary" data-animate="fade-up" data-delay="0.1" style="text-align: center; margin-bottom: 1.5rem;">Duyệt các sản phẩm thuộc danh mục này.</p>
 
-                     <!-- Filter Bar -->
-                     <section class="filter-bar" data-animate="fade-up" data-delay="0.2">
-                         <div class="filter-group"> <label for="price-filter">Chọn Mức Giá:</label> <select id="price-filter" name="price"> <option value="all">Tất cả</option> <option value="0-50000">Dưới 50.000đ</option> <option value="50000-100000">50.000đ - 100.000đ</option> <option value="100000-500000">100.000đ - 500.000đ</option> <option value="500000+">Trên 500.000đ</option> </select> </div>
-                         <div class="filter-group"> <label for="sort-filter">Sắp Xếp Theo:</label> <select id="sort-filter" name="sort"> <option value="default">Mặc định</option> <option value="price-asc">Giá tăng dần</option> <option value="price-desc">Giá giảm dần</option> <option value="name-asc">Tên A-Z</option> </select> </div>
-                         <div class="filter-group filter-search"> <label for="search-filter">Tìm Kiếm:</label> <input type="text" id="search-filter" name="search" placeholder="Tìm kiếm trong danh mục..."> </div>
-                         <div class="filter-actions"> <button id="apply-filters-btn" class="cta-button secondary"><i class="fas fa-search icon-left"></i>Tìm Kiếm</button> <button id="reset-filters-btn" class="cta-button danger"><i class="fas fa-trash icon-left"></i>Đặt Lại</button> </div>
-                     </section>
+                     <!-- Filter Controls -->
+                     <div class="category-controls" data-animate="fade-up" data-delay="0.2">
+                         <h3>Lọc & Sắp xếp</h3>
+                         <div class="controls-grid">
+                             <!-- Sorting -->
+                             <div class="control-group">
+                                 <label for="sort-select">Sắp xếp theo:</label>
+                                 <select id="sort-select" name="sort">
+                                     <option value="default">Mặc định</option>
+                                     <option value="price-asc">Giá: Tăng dần</option>
+                                     <option value="price-desc">Giá: Giảm dần</option>
+                                     <option value="best-seller">Bán chạy nhất</option>
+                                     <option value="newest">Mới nhất</option>
+                                     <option value="oldest">Cũ nhất</option>
+                                 </select>
+                             </div>
+
+                             <!-- Search -->
+                             <div class="control-group search-group">
+                                 <label for="search-input">Tìm kiếm:</label>
+                                 <input type="search" id="search-input" name="search" placeholder="Nhập tên sản phẩm...">
+                             </div>
+
+                             <!-- Actions -->
+                             <div class="control-group action-group">
+                                 <button id="filter-reset-btn" class="secondary-button">Khôi phục</button>
+                                 <!-- <button id="search-btn">Tìm</button> -->
+                             </div>
+                         </div>
+                     </div>
+                     <!-- End of Filter Controls -->
 
                     <!-- Product Grid Area -->
                      <section class="product-grid-section" id="category-product-grid-container">
