@@ -8,8 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Add a version number to the CSS link -->
-    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="style.css?v=1.6"> <!-- Use latest CSS version -->
 </head>
 <body class="dark-theme">
 
@@ -49,7 +48,7 @@
                                  <a href="#" class="dropdown-link" id="deposit-link">
                                      <i class="fas fa-credit-card fa-fw icon-left"></i> Nạp tiền
                                  </a>
-                                 <a href="#" class="dropdown-link" id="history-link">
+                                 <a href="history.html" class="dropdown-link" id="history-link"> <!-- Link to history page -->
                                      <i class="fas fa-history fa-fw icon-left"></i> Lịch sử mua hàng
                                  </a>
                              </div>
@@ -65,12 +64,26 @@
                          <div class="user-area" id="user-area-trigger">
                              <img id="user-avatar" src="images/cat-avatar-default.jpg" alt="User Avatar" class="user-avatar-img">
                              <span id="user-status"> <span id="user-name">Khách</span> <i class="fas fa-chevron-down user-area-chevron"></i> </span>
+                             <!-- UPDATED User Dropdown Content -->
                              <div class="user-dropdown-content" id="user-dropdown">
-                                 <a href="#" class="auth-link" id="auth-action-link"><i class="fas fa-sign-in-alt icon-left"></i>Đăng Nhập</a>
-                                 <a href="#" class="auth-link" id="register-action-link"><i class="fas fa-user-plus icon-left"></i>Tạo Tài Khoản</a>
-                                 <a href="#" class="auth-link" id="forgot-action-link"><i class="fas fa-key icon-left"></i>Quên Mật Khẩu?</a>
+                                 <!-- Login/Register/Forgot Links (shown when logged out) -->
+                                 <a href="#" class="auth-link" id="auth-action-link" style="display: flex;"><i class="fas fa-sign-in-alt icon-left"></i>Đăng Nhập</a>
+                                 <a href="#" class="auth-link" id="register-action-link" style="display: flex;"><i class="fas fa-user-plus icon-left"></i>Tạo Tài Khoản</a>
+                                 <a href="#" class="auth-link" id="forgot-action-link" style="display: flex;"><i class="fas fa-key icon-left"></i>Quên Mật Khẩu?</a>
+
+                                 <!-- Admin Links (shown only to logged-in admins) -->
+                                 <div id="admin-dropdown-section" style="display: none;">
+                                     <hr style="margin: 0.5rem 0; border-color: var(--border-primary);"> <!-- Separator -->
+                                     <a href="admin-page-edit.html" class="admin-link"><i class="fas fa-edit icon-left"></i>Admin Page Edit</a>
+                                     <a href="admin-shop.html" class="admin-link"><i class="fas fa-store icon-left"></i>Admin Shop Edit</a>
+                                     <a href="admin-server-edit.html" class="admin-link"><i class="fas fa-server icon-left"></i>Admin Server Edit</a>
+                                     <hr style="margin: 0.5rem 0; border-color: var(--border-primary);"> <!-- Separator -->
+                                 </div>
+
+                                  <!-- Logout Link (shown when logged in) -->
                                  <a href="#" id="logout-link" style="display: none;"><i class="fas fa-sign-out-alt icon-left"></i>Đăng Xuất</a>
                              </div>
+                             <!-- End UPDATED User Dropdown Content -->
                          </div>
                      </div>
                  </div> <!-- End header-inner -->
@@ -81,7 +94,7 @@
                 <a href="#intro" class="mobile-nav-link"><i class="fas fa-home fa-fw"></i> Trang chính</a>
                 <a href="shopping.html" class="mobile-nav-link" id="shopping-link-mobile"><i class="fas fa-shopping-bag fa-fw"></i> Mua hàng</a>
                 <a href="#" class="mobile-nav-link" id="deposit-link-mobile"><i class="fas fa-credit-card fa-fw"></i> Nạp tiền</a>
-                <a href="#" class="mobile-nav-link" id="history-link-mobile"><i class="fas fa-history fa-fw"></i> Lịch sử mua hàng</a>
+                <a href="history.html" class="mobile-nav-link" id="history-link-mobile"><i class="fas fa-history fa-fw"></i> Lịch sử mua hàng</a> <!-- Link to history page -->
             </nav>
 
 
@@ -148,100 +161,41 @@
                 <section id="content-creator" class="content-section text-center-section">
                    <h2 class="section-title" data-animate="fade-up">Hành trình <span class="highlight-text">Sáng tạo</span></h2>
                    <p data-editable="content-creator" class="content-narrow" data-animate="fade-up" data-delay="0.1"> Từ 2018, mình đã bắt đầu chia sẻ qua video. Dù có lúc thăng trầm, đam mê này vẫn tiếp tục trên: </p>
-                   <!-- START: Social Buttons Block (Ensure this is present) -->
                    <div class="social-buttons-inline" data-animate="fade-up" data-delay="0.2" data-stagger="0.08">
-                       <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube">
-                           <i class="fab fa-youtube"></i> YouTube
-                       </a>
-                       <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" class="social-button tiktok">
-                           <i class="fab fa-tiktok"></i> TikTok
-                       </a>
-                       <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="social-button discord">
-                           <i class="fab fa-discord"></i> Discord
-                       </a>
-                       <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" class="social-button github">
-                           <i class="fab fa-github"></i> GitHub
-                       </a>
-                       <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="social-button facebook">
-                           <i class="fab fa-facebook"></i> Facebook
-                       </a>
+                       <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" class="social-button youtube"> <i class="fab fa-youtube"></i> YouTube </a>
+                       <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" class="social-button tiktok"> <i class="fab fa-tiktok"></i> TikTok </a>
+                       <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="social-button discord"> <i class="fab fa-discord"></i> Discord </a>
+                       <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" class="social-button github"> <i class="fab fa-github"></i> GitHub </a>
+                       <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="social-button facebook"> <i class="fab fa-facebook"></i> Facebook </a>
                    </div>
-                   <!-- END: Social Buttons Block -->
                 </section>
 
                 <!-- Interests Section -->
                 <section id="interests" class="content-section background-alt">
                     <h2 class="section-title text-center" data-animate="fade-up">Ngoài lề: <span class="highlight-text">Đam mê khác</span></h2>
                     <div class="interests-carousel" data-animate="fade-up" data-delay="0.1" data-stagger="0.1">
-                        <div class="interest-card">
-                            <div class="interest-icon"><i class="fas fa-utensils"></i></div>
-                            <h3 class="interest-title">Ẩm thực Việt</h3>
-                            <p data-editable="food-interests">Đặc biệt mê <strong>Cơm tấm Sài Gòn</strong>!</p>
-                        </div>
-                        <div class="interest-card">
-                            <div class="interest-icon"><i class="fas fa-gamepad"></i></div>
-                            <h3 class="interest-title">Gaming</h3>
-                            <p data-editable="gaming-interests">Mobile & PC (Roblox, GTA 5,...).</p>
-                        </div>
-                        <div class="interest-card">
-                            <div class="interest-icon"><i class="fas fa-headphones-alt"></i></div>
-                            <h3 class="interest-title">Âm nhạc</h3>
-                            <p>Chill với nhiều thể loại, từ V-Pop đến nhạc game.</p>
-                        </div>
-                        <div class="interest-card">
-                            <div class="interest-icon"><i class="fas fa-film"></i></div>
-                            <h3 class="interest-title">Phim ảnh</h3>
-                            <p>Fan của phim khoa học viễn tưởng và hành động.</p>
-                        </div>
+                        <div class="interest-card"> <div class="interest-icon"><i class="fas fa-utensils"></i></div> <h3 class="interest-title">Ẩm thực Việt</h3> <p data-editable="food-interests">Đặc biệt mê <strong>Cơm tấm Sài Gòn</strong>!</p> </div>
+                        <div class="interest-card"> <div class="interest-icon"><i class="fas fa-gamepad"></i></div> <h3 class="interest-title">Gaming</h3> <p data-editable="gaming-interests">Mobile & PC (Roblox, GTA 5,...).</p> </div>
+                        <div class="interest-card"> <div class="interest-icon"><i class="fas fa-headphones-alt"></i></div> <h3 class="interest-title">Âm nhạc</h3> <p>Chill với nhiều thể loại, từ V-Pop đến nhạc game.</p> </div>
+                        <div class="interest-card"> <div class="interest-icon"><i class="fas fa-film"></i></div> <h3 class="interest-title">Phim ảnh</h3> <p>Fan của phim khoa học viễn tưởng và hành động.</p> </div>
                     </div>
                 </section>
 
                  <section id="admin-panel" style="display: none;">
                       <h2>Admin Panel - Chỉnh sửa nội dung</h2>
-                      <textarea name="intro" id="edit-intro"></textarea>
-                      <textarea name="skills" id="edit-skills"></textarea>
-                      <textarea name="content-creator" id="edit-content-creator"></textarea>
-                      <textarea name="food-interests" id="edit-food-interests"></textarea>
-                      <textarea name="gaming-interests" id="edit-gaming-interests"></textarea>
-                      <button class="cta-button">Lưu thay đổi</button>
+                      <textarea name="intro" id="edit-intro"></textarea> <textarea name="skills" id="edit-skills"></textarea> <textarea name="content-creator" id="edit-content-creator"></textarea> <textarea name="food-interests" id="edit-food-interests"></textarea> <textarea name="gaming-interests" id="edit-gaming-interests"></textarea> <button class="cta-button">Lưu thay đổi</button>
                  </section>
             </main>
 
             <!-- Content Footer -->
             <footer class="content-footer">
                 <div class="footer-main">
-                    <div class="footer-left">
-                        <a href="index.html" class="footer-logo-link">
-                            <img src="images/logo-cat.jpg" alt="KMB Logo" class="footer-logo-img">
-                            <span class="footer-site-name">KiritoMainBro</span>
-                        </a>
-                        <p>Developer & Creator</p>
-                    </div>
-                    <div class="footer-center">
-                        <h4>THÔNG TIN CHUNG</h4>
-                        <p>
-                           <strong>DỊCH VỤ ROBLOX GIÁ RẺ UY TÍN !</strong>
-                        </p>
-                        <p>Liên hệ hỗ trợ nếu bạn có thắc mắc !</p>
-                    </div>
-                    <div class="footer-right">
-                        <h4>LIÊN HỆ HỖ TRỢ</h4>
-                        <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="footer-link-button">
-                            <i class="fab fa-facebook"></i> Facebook
-                        </a>
-                        <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="footer-link-button">
-                            <i class="fab fa-discord"></i> Discord
-                        </a>
-                    </div>
+                    <div class="footer-left"> <a href="index.html" class="footer-logo-link"> <img src="images/logo-cat.jpg" alt="KMB Logo" class="footer-logo-img"> <span class="footer-site-name">KiritoMainBro</span> </a> <p>Developer & Creator</p> </div>
+                    <div class="footer-center"> <h4>THÔNG TIN CHUNG</h4> <p> <strong>DỊCH VỤ ROBLOX GIÁ RẺ UY TÍN !</strong> </p> <p>Liên hệ hỗ trợ nếu bạn có thắc mắc !</p> </div>
+                    <div class="footer-right"> <h4>LIÊN HỆ HỖ TRỢ</h4> <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" class="footer-link-button"> <i class="fab fa-facebook"></i> Facebook </a> <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" class="footer-link-button"> <i class="fab fa-discord"></i> Discord </a> </div>
                 </div>
-                <div class="footer-bottom">
-                    <p>© <span id="year">2024</span> KiritoMainBro. All Rights Reserved.</p>
-                </div>
-
-                 <!-- Back to Top Button (Ensure this is present) -->
-                 <button id="back-to-top-btn" aria-label="Back to top">
-                     <i class="fas fa-arrow-up"></i>
-                 </button>
+                <div class="footer-bottom"> <p>© <span id="year">2024</span> KiritoMainBro. All Rights Reserved.</p> </div>
+                <button id="back-to-top-btn" aria-label="Back to top"> <i class="fas fa-arrow-up"></i> </button>
             </footer>
 
         </div><!-- End Main Content Area -->
@@ -249,7 +203,6 @@
 
     <!-- Login/Register Forms Modal -->
     <div id="auth-container" style="display: none;">
-        <!-- ... Auth forms ... -->
          <div id="login-form-wrapper" class="auth-form-wrapper sky-form"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close login form">×</button> <h3>Đăng Nhập</h3> <p class="auth-subtext">Đăng Nhập Vào Hệ Thống</p> <form id="login-form"> <div class="form-group"> <label for="login-username">Tài Khoản</label> <input type="text" id="login-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="login-password">Mật Khẩu</label> <input type="password" id="login-password" name="password" required placeholder="Nhập Mật Khẩu Của Bạn"> </div> <div class="form-group remember-forgot"> <label class="remember-me"><input type="checkbox" name="remember"> Ghi Nhớ Tài Khoản</label> <a href="#" onclick="showForgotForm()" class="forgot-link">Bạn Quên Mật Khẩu?</a> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Nhập</button> <p id="login-message" class="auth-message"></p> </form> <p class="switch-form-link">BẠN CHƯA CÓ TÀI KHOẢN? <a href="#" onclick="showRegisterForm()">ĐĂNG KÝ NGAY</a></p> </div>
         <div id="register-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close registration form">×</button> <h3>Đăng Ký</h3> <p class="auth-subtext">Đăng Ký Tài Khoản Mới</p> <form id="register-form"> <div class="form-group"> <label for="register-username">Tài Khoản</label> <input type="text" id="register-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="register-email">Địa Chỉ Email</label> <input type="email" id="register-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <div class="form-group"> <label for="register-password">Mật Khẩu</label> <input type="password" id="register-password" name="password" required minlength="6" placeholder="Ít nhất 6 ký tự, gồm chữ hoa, số, ký tự đặc biệt"> </div> <div class="form-group"> <label for="register-confirm-password">Nhập Lại Mật Khẩu</label> <input type="password" id="register-confirm-password" name="confirmPassword" required placeholder="Nhập Lại Mật Khẩu"> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Ký</button> <p id="register-message" class="auth-message"></p> </form> <p class="switch-form-link">ĐÃ CÓ TÀI KHOẢN? <a href="#" onclick="showLoginForm()">ĐĂNG NHẬP NGAY</a></p> </div>
         <div id="forgot-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close forgot password form">×</button> <h3>Đặt Lại Mật Khẩu</h3> <p class="auth-subtext">Nhập Email Của Bạn Để Chúng Tôi Gửi Lại Mật Khẩu Mới</p> <form id="forgot-form"> <div class="form-group"> <label for="forgot-email">Địa Chỉ Email</label> <input type="email" id="forgot-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <button type="submit" class="cta-button auth-submit-btn">Đặt Lại Mật Khẩu</button> <p id="forgot-message" class="auth-message"></p> </form> <p class="switch-form-link"><a href="#" onclick="showLoginForm()">Quay Lại Đăng Nhập</a></p> </div>
@@ -258,7 +211,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <!-- Add a version number to the JS link -->
-    <script src="script.js?v=1.1"></script>
+    <script src="script.js?v=1.8"></script> <!-- Incremented version -->
 </body>
 </html>
