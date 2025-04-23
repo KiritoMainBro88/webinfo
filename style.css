@@ -207,18 +207,131 @@ body.light-theme .modal-content .form-group-checkbox label { color: var(--text-a
 .image-card, .cta-button, .social-button, .interest-card, .icon-button, .user-area, #donate-button-header, .header-nav-link, .mobile-nav-link, .dropdown-link, .category-button, .product-buy-btn, .footer-link-button, #back-to-top-btn { will-change: transform, box-shadow, background-color, color, opacity, width, padding; }
 [data-animate] { will-change: opacity, transform; } .content-header { will-change: border-color; } .header-inner { will-change: background-color, box-shadow, border-color; }
 
-/* --- Filter Bar Styles --- */
-.filter-bar { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; padding: 1rem 1.5rem; background-color: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--border-radius-md); margin-bottom: 2rem; align-items: flex-end; }
-.filter-group { display: flex; flex-direction: column; gap: 0.3rem; flex-grow: 1; min-width: 150px; }
-.filter-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 0; }
-.filter-group select, .filter-group input[type="text"] { padding: 0.5rem 0.8rem; font-size: 0.9rem; }
-.filter-group.filter-search { flex-grow: 2; }
-.filter-actions { display: flex; gap: 0.8rem; margin-left: auto; padding-top: 0.9rem; }
-.filter-actions .cta-button { padding: 0.5rem 1rem; font-size: 0.9rem; }
-.filter-actions .cta-button .icon-left { margin-right: 0.5em; }
-body.light-theme .filter-bar { background-color: var(--bg-secondary); border-color: var(--border-primary); }
-body.light-theme .filter-group label { color: var(--text-secondary); }
-body.light-theme .filter-group select, body.light-theme .filter-group input[type="text"] { background-color: #fff; border-color: var(--border-secondary); color: var(--text-auth-primary); }
-body.light-theme .filter-group select:focus, body.light-theme .filter-group input[type="text"]:focus { border-color: var(--accent-primary); background-color: #fff; }
-@media (max-width: 768px) { .filter-bar { gap: 0.8rem; } .filter-group { min-width: calc(50% - 0.4rem); } .filter-actions { width: 100%; margin-left: 0; justify-content: flex-start; padding-top: 0.5rem; } }
-@media (max-width: 500px) { .filter-group { min-width: 100%; } }
+/* --- Filter Bar Styles (Category Page) --- */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 1rem 1.5rem; /* Gap between items */
+    padding: 1rem 1.5rem;
+    background-color: var(--bg-secondary); /* Match shyunrb background */
+    border: 1px solid var(--border-primary);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 2rem;
+    align-items: flex-end; /* Align items based on their bottom edge */
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column; /* Labels on top */
+    gap: 0.3rem;
+    flex-grow: 1; /* Allow groups to grow */
+    min-width: 150px; /* Minimum width before wrapping */
+}
+
+.filter-group label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 0; /* Remove default margin if any */
+}
+
+.filter-group select,
+.filter-group input[type="search"] { /* Target search input */
+    padding: 0.6rem 0.9rem; /* Adjust padding */
+    font-size: 0.9rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-sm);
+    height: 38px; /* Consistent height */
+}
+
+/* Specific styling for search input */
+.filter-group.filter-search {
+    flex-grow: 2; /* Allow search to take more space */
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-left: auto; /* Push actions to the right */
+    padding-bottom: 0; /* Align with bottom of inputs/selects */
+}
+
+.filter-actions .cta-button {
+    padding: 0.6rem 1.2rem; /* Adjust padding */
+    font-size: 0.9rem;
+    height: 38px; /* Match input height */
+    display: inline-flex; /* Align icon and text */
+    align-items: center;
+}
+
+/* Specific Button Colors */
+.filter-actions .cta-button.primary {
+    background-color: #333; /* Dark background for Search */
+    border-color: #333;
+    color: #fff;
+}
+.filter-actions .cta-button.primary:hover {
+    background-color: #555;
+    border-color: #555;
+}
+
+.filter-actions .cta-button.secondary {
+    background-color: #dc3545; /* Red background for Reset */
+    border-color: #dc3545;
+    color: #fff;
+}
+.filter-actions .cta-button.secondary:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.filter-actions .cta-button .icon-left {
+    margin-right: 0.5em;
+}
+
+/* Light theme adjustments for filter bar */
+body.light-theme .filter-bar {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+body.light-theme .filter-group label {
+    color: var(--text-secondary);
+}
+body.light-theme .filter-group select,
+body.light-theme .filter-group input[type="search"] {
+    background-color: #fff;
+    border-color: var(--border-secondary);
+    color: var(--text-primary);
+}
+body.light-theme .filter-actions .cta-button.primary {
+    background-color: #343a40;
+    border-color: #343a40;
+}
+body.light-theme .filter-actions .cta-button.primary:hover {
+     background-color: #23272b;
+     border-color: #1d2124;
+}
+/* Reset button colors remain the same */
+
+/* --- Responsive adjustments for filter bar --- */
+@media (max-width: 768px) {
+    .filter-bar {
+        gap: 0.8rem;
+    }
+    .filter-group {
+        min-width: calc(50% - 0.4rem); /* Two columns on medium screens */
+    }
+    .filter-actions {
+        width: 100%; /* Full width on small screens */
+        margin-left: 0;
+        justify-content: flex-start; /* Align left */
+        padding-top: 0.5rem;
+    }
+}
+@media (max-width: 500px) {
+    .filter-group {
+        min-width: 100%; /* Stack vertically on very small screens */
+    }
+}

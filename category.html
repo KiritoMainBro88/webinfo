@@ -21,45 +21,51 @@
             <!-- Mobile Nav -->
              <nav id="mobile-nav" class="mobile-nav-menu"> <a href="index.html" class="mobile-nav-link"><i class="fas fa-home fa-fw"></i> Trang chính</a> <a href="shopping.html" class="mobile-nav-link"><i class="fas fa-shopping-bag fa-fw"></i> Mua hàng</a> <a href="#" class="mobile-nav-link" id="deposit-link-mobile"><i class="fas fa-credit-card fa-fw"></i> Nạp tiền</a> <a href="history.html" class="mobile-nav-link" id="history-link-mobile"><i class="fas fa-history fa-fw"></i> Lịch sử mua hàng</a> </nav>
 
-            <main class="site-main">
-                <div class="category-detail-layout">
-                     <h1 id="category-page-title" data-animate="fade-up">Đang tải danh mục...</h1>
-                     <p id="category-page-description" class="text-secondary" data-animate="fade-up" data-delay="0.1" style="text-align: center; margin-bottom: 1.5rem;">Duyệt các sản phẩm thuộc danh mục này.</p>
-
-                     <!-- Filter Controls -->
-                     <div class="category-controls" data-animate="fade-up" data-delay="0.2">
-                         <h3>Lọc & Sắp xếp</h3>
-                         <div class="controls-grid">
-                             <!-- Sorting -->
-                             <div class="control-group">
-                                 <label for="sort-select">Sắp xếp theo:</label>
-                                 <select id="sort-select" name="sort">
-                                     <option value="default">Mặc định</option>
-                                     <option value="price-asc">Giá: Tăng dần</option>
-                                     <option value="price-desc">Giá: Giảm dần</option>
-                                     <option value="best-seller">Bán chạy nhất</option>
-                                     <option value="newest">Mới nhất</option>
-                                     <option value="oldest">Cũ nhất</option>
-                                 </select>
-                             </div>
-
-                             <!-- Search -->
-                             <div class="control-group search-group">
-                                 <label for="search-input">Tìm kiếm:</label>
-                                 <input type="search" id="search-input" name="search" placeholder="Nhập tên sản phẩm...">
-                             </div>
-
-                             <!-- Actions -->
-                             <div class="control-group action-group">
-                                 <button id="filter-reset-btn" class="secondary-button">Khôi phục</button>
-                                 <!-- <button id="search-btn">Tìm</button> -->
-                             </div>
-                         </div>
+            <main class="site-main category-detail-page">
+                <div class="container">
+                     <!-- Breadcrumbs/Title -->
+                     <div class="category-header">
+                         <!-- Use H2 structure like shyunrb for consistency -->
+                         <h2 class="page-title" data-animate="fade-up"><span id="category-breadcrumb">Vật Phẩm</span> / <span id="category-name-display">Đang tải...</span></h2>
                      </div>
-                     <!-- End of Filter Controls -->
+
+                     <!-- Filter Bar - Updated Structure -->
+                     <div class="filter-bar" data-animate="fade-up" data-delay="0.1">
+                        <div class="filter-group">
+                            <label for="filter-price">Chọn Mức Giá:</label>
+                            <select id="filter-price" name="price">
+                                <option value="all">Tất cả</option>
+                                <!-- Price options loaded by JS or hardcoded -->
+                                <option value="0-100000">Dưới 100.000đ</option>
+                                <option value="100000-500000">100.000đ - 500.000đ</option>
+                                <option value="500000-1000000">500.000đ - 1.000.000đ</option>
+                                <option value="1000000-0">Trên 1.000.000đ</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-sort">Sắp Xếp Theo:</label>
+                            <select id="filter-sort" name="sort">
+                                <option value="default">Mặc định</option>
+                                <option value="price-asc">Giá: Tăng dần</option>
+                                <option value="price-desc">Giá: Giảm dần</option>
+                                <option value="best-seller">Bán chạy nhất</option>
+                                <option value="newest">Mới nhất</option>
+                                <option value="oldest">Cũ nhất</option>
+                            </select>
+                        </div>
+                        <div class="filter-group filter-search">
+                            <label for="filter-search-input">Tìm Kiếm:</label>
+                            <input type="search" id="filter-search-input" name="search" placeholder="Tìm kiếm mã hoặc tên...">
+                        </div>
+                        <div class="filter-actions">
+                            <button id="filter-search-btn" class="cta-button primary"><i class="fas fa-search icon-left"></i>Tìm Kiếm</button>
+                            <button id="filter-reset-btn" class="cta-button secondary">Đặt Lại</button>
+                        </div>
+                    </div>
+                    <!-- End of Filter Bar -->
 
                     <!-- Product Grid Area -->
-                     <section class="product-grid-section" id="category-product-grid-container">
+                     <section class="product-grid-section" id="category-product-grid-container" data-animate="fade-up" data-delay="0.2">
                          <div class="product-grid" id="category-product-grid">
                              <p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); margin-top: 1rem; grid-column: 1 / -1;"> <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Đang tải sản phẩm... </p>
                          </div>
