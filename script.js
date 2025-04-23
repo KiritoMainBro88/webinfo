@@ -738,20 +738,19 @@ async function loadCategoryPageData() {
 
     try {
         console.log(`Fetching products for slug: ${categorySlug}`);
-        const products = await fetchData(`/products?categorySlug=${categorySlug}`); // Expecting array
+        // --- MODIFICATION: Expect object response --- 
+        const response = await fetchData(`/products?categorySlug=${categorySlug}`); 
+        // --- END MODIFICATION ---
 
-        // --- MODIFIED: Check product data structure (can adapt if server sends object) ---
-        if (!Array.isArray(products)) {
-             console.error("Invalid product data received for category, expected array:", products);
-             // Attempt to extract if nested (optional, depends on server)
-             // if (typeof products === 'object' && products !== null && Array.isArray(products.products)) { 
-             //     originalCategoryProducts = products.products; 
-             // } else { 
-                 throw new Error("Invalid product data structure received for category.");
-             // } 
-        } else {
-            originalCategoryProducts = products; // Store the original list
-        }
+        // --- MODIFIED: Check product data structure (extract from response object) ---
+        if (typeof response !== 'object' || response === null || !Array.isArray(response.products)) {
+             console.error("Invalid product data received for category, expected object with products array:", response);
+              throw new Error("Invalid product data structure received for category.");
+        } 
+        
+        originalCategoryProducts = response.products; // Store the products array
+        const categoryNameFromResponse = response.categoryName; // Get category name if backend sent it
+        
         console.log(`Fetched and stored ${originalCategoryProducts.length} original products for this category.`);
         // --- END MODIFICATION ---
 
@@ -760,9 +759,11 @@ async function loadCategoryPageData() {
 
         // Set page title (only if products exist)
         if (originalCategoryProducts.length > 0) {
-            if (originalCategoryProducts[0].category && originalCategoryProducts[0].category.name) {
-                categoryPageTitle.textContent = originalCategoryProducts[0].category.name;
-                document.title = `${originalCategoryProducts[0].category.name} - KiritoMainBro`;
+            // Use category name from response if available, otherwise fallback
+            const titleToSet = categoryNameFromResponse || (originalCategoryProducts[0]?.category?.name);
+            if (titleToSet) {
+                categoryPageTitle.textContent = titleToSet;
+                document.title = `${titleToSet} - KiritoMainBro`;
             } else {
                 categoryPageTitle.textContent = `Danh mục: ${categorySlug}`;
             }
