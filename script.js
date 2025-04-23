@@ -1,16 +1,23 @@
-console.log("Script version 1.9 - Reverted Shopping Logic");
+console.log("Script version 1.9.1 - Debugging Login UI Update"); // Increment version
 
 // --- GSAP and Helpers ---
 gsap.registerPlugin(ScrollTrigger);
 function calculateAge(birthDateString) { const birthDate = new Date(birthDateString); const today = new Date(); let age = today.getFullYear() - birthDate.getFullYear(); const m = today.getMonth() - birthDate.getMonth(); if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; } return age; }
 function updateYear() { const yearSpan = document.getElementById('year'); if (yearSpan) { yearSpan.textContent = new Date().getFullYear(); } }
-function formatPrice(price) { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price); }
+function formatPrice(price) {
+    // Handle potential null/undefined price gracefully
+    if (price === null || price === undefined || isNaN(price)) {
+        return 'N/A'; // Or '0đ' or '' depending on preference
+    }
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
 
-// --- ADDED: fetchData Utility Function ---
+
+// --- fetchData Utility Function ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // Ensure this is defined globally or passed around
 
 async function fetchData(endpoint, options = {}) {
-    console.log(`Fetching data from: ${BACKEND_URL}/api${endpoint}`, options);
+    // console.log(`Fetching data from: ${BACKEND_URL}/api${endpoint}`, options); // Optional: Keep for detailed debugging
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers, // Allow overriding default headers
@@ -20,9 +27,8 @@ async function fetchData(endpoint, options = {}) {
     const tempUserId = localStorage.getItem('userId');
     if (tempUserId) {
         headers['x-temp-userid'] = tempUserId;
-        console.log("Added x-temp-userid header for admin check (INSECURE)");
+        // console.log("Added x-temp-userid header for admin check (INSECURE)"); // Optional: Keep for detailed debugging
     }
-
 
     const config = {
         method: options.method || 'GET',
@@ -38,12 +44,12 @@ async function fetchData(endpoint, options = {}) {
         const data = await response.json(); // Attempt to parse JSON regardless of status
 
         if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`, data);
+            console.error(`HTTP error! Status: ${response.status} for ${endpoint}`, data);
             // Try to use the message from the JSON response, otherwise use statusText
             throw new Error(data.message || response.statusText || `Request failed with status ${response.status}`);
         }
 
-        console.log(`Successfully fetched data from ${endpoint}`);
+        // console.log(`Successfully fetched data from ${endpoint}`); // Optional: Keep for detailed debugging
         return data; // Return the parsed JSON data
     } catch (error) {
         console.error(`Fetch error for ${endpoint}:`, error);
@@ -71,7 +77,7 @@ function setupLanguageToggle() { const langButton = document.getElementById('lan
 
 // --- GSAP Animations ---
 function setupProfessionalAnimations() {
-    console.log("Setting up GSAP animations...");
+    // console.log("Setting up GSAP animations..."); // Optional debug log
     const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" };
     const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']"); const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']"); const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']"); if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); } if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); } if (heroCta) { gsap.from(heroCta, { ...defaultOnLoadAnimation, delay: parseFloat(heroCta.dataset.delay) || 0.7 }); }
 
@@ -107,19 +113,23 @@ function setupClickDropdowns() { const wrappers = document.querySelectorAll('.na
 // --- Authentication Logic ---
 function setupActionButtons() {
     const authContainer = document.getElementById('auth-container'); const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginFormWrapper = document.getElementById('login-form-wrapper'); const registerFormWrapper = document.getElementById('register-form-wrapper'); const forgotFormWrapper = document.getElementById('forgot-form-wrapper'); const resetFormWrapper = document.getElementById('reset-form-wrapper'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); const authActionLink = document.getElementById('auth-action-link'); const registerActionLink = document.getElementById('register-action-link'); const forgotActionLink = document.getElementById('forgot-action-link'); const logoutLink = document.getElementById('logout-link'); const userNameSpan = document.getElementById('user-name'); const userStatusSpan = document.getElementById('user-status'); const adminDropdownSection = document.getElementById('admin-dropdown-section'); function showMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } function showForm(formToShow) { if (!authContainer) return; authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => { if(msg) showMessage(msg, ''); }); } window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } }; if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms));
-    // LOGIN Handler - REVERTED: Does not fetch balance/admin status directly
+    // LOGIN Handler
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault(); showMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value;
             try {
                 const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
                 const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`);
-                showMessage(loginMessage, 'Đăng nhập thành công!', true);
-                localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username);
-                // NOTE: No balance/admin status stored here in this reverted version
-                // Fetch user info AFTER login to get balance and admin status
-                fetchAndUpdateUserInfo(); // Call this to update UI properly
-                setTimeout(closeAuthForms, 1000);
+                showMessage(loginMessage, 'Đăng nhập thành công! Đang cập nhật thông tin...', true); // Update message
+                localStorage.setItem('userId', data.userId); // Store userId IMMEDIATELY
+                localStorage.setItem('username', data.username); // Store username IMMEDIATELY
+
+                // Fetch user info AFTER successful login to get balance and admin status
+                // Use await here to ensure user info is fetched before closing the modal
+                await fetchAndUpdateUserInfo();
+
+                // Close form slightly later, allowing time for fetch/UI update (optional)
+                setTimeout(closeAuthForms, 1200);
             } catch (error) { console.error("Login failed:", error); showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); }
         });
     }
@@ -134,35 +144,49 @@ function setupActionButtons() {
 
     // Helper to Update Header UI (Uses isAdmin flag)
      function updateUserStatus(isLoggedIn, username = 'Khách', isAdmin = false) {
+         console.log(`Updating header status: loggedIn=${isLoggedIn}, username=${username}, isAdmin=${isAdmin}`); // Debug log
          const elements = { userNameSpan, userStatusSpan, authActionLink, registerActionLink, forgotActionLink, logoutLink, adminDropdownSection };
-         if (!elements.userNameSpan || !elements.userStatusSpan || !elements.logoutLink || !elements.adminDropdownSection) { /* console.warn("Header elements missing."); */ return; }
+         // Check if elements exist (add safety checks)
+         const userNameEl = elements.userNameSpan || document.getElementById('user-name');
+         const adminSectionEl = elements.adminDropdownSection || document.getElementById('admin-dropdown-section');
+         const logoutLinkEl = elements.logoutLink || document.getElementById('logout-link');
+         const authLinks = [elements.authActionLink, elements.registerActionLink, elements.forgotActionLink].filter(Boolean); // Filter out nulls
+
+         if (!userNameEl || !adminSectionEl || !logoutLinkEl) {
+            console.warn("Some header user elements missing for update.");
+            // Attempt to query again if needed, or return if critical elements are missing
+            // return;
+         }
+
          if (isLoggedIn) {
-            elements.userNameSpan.textContent = username;
-            [elements.authActionLink, elements.registerActionLink, elements.forgotActionLink].forEach(link => { if (link) link.style.display = 'none'; });
-            elements.logoutLink.style.display = 'flex';
-            // Use the isAdmin flag fetched from the backend
-            elements.adminDropdownSection.style.display = isAdmin ? 'block' : 'none';
+            if (userNameEl) userNameEl.textContent = username;
+            authLinks.forEach(link => { if (link) link.style.display = 'none'; });
+            if (logoutLinkEl) logoutLinkEl.style.display = 'flex';
+            if (adminSectionEl) adminSectionEl.style.display = isAdmin ? 'block' : 'none';
             localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false'); // Store admin status
         } else {
-            elements.userNameSpan.textContent = 'Khách';
-            [elements.authActionLink, elements.registerActionLink, elements.forgotActionLink].forEach(link => { if (link) link.style.display = 'flex'; });
-            elements.logoutLink.style.display = 'none';
-            elements.adminDropdownSection.style.display = 'none';
+            if (userNameEl) userNameEl.textContent = 'Khách';
+            authLinks.forEach(link => { if (link) link.style.display = 'flex'; });
+            if (logoutLinkEl) logoutLinkEl.style.display = 'none';
+            if (adminSectionEl) adminSectionEl.style.display = 'none';
             localStorage.removeItem('isAdmin'); // Clear admin status on logout
         }
      }
      // Check Login Status on Load (Fetches user info)
      const checkLoginAndToken = () => {
+         console.log("checkLoginAndToken triggered"); // Debug log
          const userId = localStorage.getItem('userId');
          if (userId) {
+             console.log("User ID found in localStorage, fetching user info..."); // Debug log
              fetchAndUpdateUserInfo(); // Fetch full info if userId exists
          } else {
+             console.log("No User ID found in localStorage, setting logged out state."); // Debug log
              updateUserStatus(false);
              updateSidebarUserArea(false);
          }
          const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) { tokenInput.value = resetToken; } else { console.warn("Reset token input field not found."); } window.history.replaceState({}, document.title, window.location.pathname); }
      };
-     checkLoginAndToken();
+     checkLoginAndToken(); // Run on initial load
 }
 
 // --- Fetch and Update User Info (Now uses fetchData) ---
@@ -172,7 +196,7 @@ async function fetchAndUpdateUserInfo() {
         console.log("No userId found in localStorage, skipping user info fetch.");
         updateUserStatus(false); // Ensure UI is logged out
         updateSidebarUserArea(false);
-        return;
+        return; // Exit if no user ID
     }
 
     console.log("Fetching user info for userId:", userId);
@@ -183,18 +207,25 @@ async function fetchAndUpdateUserInfo() {
             // No need to manually add header here, fetchData handles it
         });
 
-        console.log("User data received:", userData);
+        console.log("User data received:", userData); // Debug: Check the received data structure
+
+        // Ensure critical data exists before updating UI
+        if (!userData || !userData.username) {
+            throw new Error("Received invalid user data from /users/me");
+        }
+
+        // Store retrieved data (even if balance/isAdmin are null/undefined, store them as such)
         localStorage.setItem('username', userData.username);
-        localStorage.setItem('balance', userData.balance); // Store balance
-        localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false'); // Store admin status
+        localStorage.setItem('balance', userData.balance ?? 0); // Default balance to 0 if missing
+        localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false'); // Default isAdmin to false if missing
 
         // Update UI elements with fetched data
-        updateUserStatus(true, userData.username, userData.isAdmin);
-        updateSidebarUserArea(true, userData.username, userData.balance);
+        updateUserStatus(true, userData.username, !!userData.isAdmin); // Use boolean conversion for safety
+        updateSidebarUserArea(true, userData.username, userData.balance ?? 0); // Use default balance if missing
 
     } catch (error) {
-        console.error("Error fetching user info:", error);
-        // If fetching fails (e.g., invalid ID, server error), log out the user
+        console.error("Error fetching or processing user info:", error);
+        // If fetching fails (e.g., invalid ID, server error, invalid data), log out the user
         localStorage.removeItem('userId');
         localStorage.removeItem('username');
         localStorage.removeItem('balance');
@@ -207,6 +238,7 @@ async function fetchAndUpdateUserInfo() {
 
 // --- Sidebar Update Function (Now uses real balance) ---
 function updateSidebarUserArea(isLoggedIn, username = 'Khách', balance = 0) {
+    console.log(`Updating sidebar: loggedIn=${isLoggedIn}, username=${username}, balance=${balance}`); // Debug log
     const sidebarUserInfoDiv = document.getElementById('sidebar-user-info'); if (!sidebarUserInfoDiv) return; const loginBtn = document.getElementById('sidebar-login-btn'); const registerBtn = document.getElementById('sidebar-register-btn'); const depositBtn = document.getElementById('sidebar-deposit-btn'); const logoutBtn = document.getElementById('sidebar-logout-btn'); const usernameSpan = document.getElementById('sidebar-username'); const balanceSpan = document.getElementById('sidebar-balance'); if (!loginBtn || !registerBtn || !depositBtn || !logoutBtn || !usernameSpan || !balanceSpan) { console.warn("Sidebar elements missing for update."); return; }
     if (isLoggedIn) {
         usernameSpan.textContent = username;
@@ -260,14 +292,49 @@ function hideModal(modalId) { const modal = document.getElementById(modalId); if
 
 // ----- Initialization -----
 function initializePage() {
-    console.log("Initializing page (v1.9 - Reverted Shopping JS)...");
-    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); /* setupAdminPanel only in admin.js */ setupActionButtons(); // Sets up auth forms/buttons
-    setupDropdownActions(); // Handles simple buy alerts now
-    setupClickDropdowns(); setupBackToTopButton(); // setupPurchaseModals(); // REMOVED
-    // REMOVED check for shopping page and loadShoppingPageData call
-     if (document.body.classList.contains('history-page')) { console.log("History page detected, loadHistoryPageData() needs implementation."); /* if (typeof loadHistoryPageData === 'function') { loadHistoryPageData(); } */ }
-    const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } else { console.warn("Header donate button not found"); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete.");
+    console.log("Initializing page (v1.9.1)..."); // Update version
+    updateYear();
+    setupHeaderScrollEffect();
+    setupMobileMenuToggle();
+    setupUserDropdown();
+    setupThemeToggle();
+    setupLanguageToggle();
+    setupProfessionalAnimations();
+    setupActionButtons(); // Sets up auth forms/buttons AND checks initial login state
+    setupDropdownActions(); // Handles simple buy alerts etc.
+    setupClickDropdowns();
+    setupBackToTopButton();
+
+     // Check specific page states AFTER main setup
+     if (document.body.classList.contains('history-page')) {
+        console.log("History page detected, loadHistoryPageData() needs implementation.");
+        // Add any future history-specific JS init here
+     }
+
+    // Donate button listener
+    const donateButtonHeader = document.getElementById('donate-button-header');
+    if (donateButtonHeader) {
+        donateButtonHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Donate function coming soon!');
+        });
+    } else {
+        console.warn("Header donate button not found");
+    }
+
+    // Age calculation
+    const ageSpan = document.getElementById('age');
+    if (ageSpan) {
+        try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; }
+    }
+
+    console.log("Page initialization complete.");
 }
 
 // --- Run Initialization ---
-document.addEventListener('DOMContentLoaded', initializePage);
+// Ensure DOM is fully loaded before running initialization
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+    initializePage(); // DOMContentLoaded has already fired
+}
