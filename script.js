@@ -751,15 +751,14 @@ async function loadCategoryPageData() {
             // If the response itself is the array
             console.log("Received direct array of products.");
             productsArray = response;
-            // Category name might need separate fetch or lookup if only array is sent
-        } else if (typeof response === 'object' && response !== null && Array.isArray(response.products)) {
+        } else if (typeof response === 'object' && response !== null && response.hasOwnProperty('products') && Array.isArray(response.products)) {
             // If the response is an object containing the products array
             console.log("Received object containing products array.");
             productsArray = response.products;
-            categoryNameFromResponse = response.categoryName; // Get category name if backend sent it
+            categoryNameFromResponse = response.categoryName; 
         } else {
             // If it's neither a direct array nor the expected object structure
-             console.error("Invalid product data received for category. Expected array or object with products array:", response);
+             console.error("Invalid product data received for category. Expected array or object with 'products' array property:", response);
              throw new Error("Invalid product data structure received for category.");
         }
         
