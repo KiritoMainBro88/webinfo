@@ -1,0 +1,159 @@
+/* Basic Admin Panel Styles */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    line-height: 1.6;
+    padding: 1rem; /* Remove default body padding */
+}
+
+.admin-page-wrapper {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 2rem;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-lg);
+}
+
+.admin-page-wrapper h1,
+.admin-page-wrapper h2 {
+    color: var(--text-primary);
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+}
+.admin-page-wrapper h1 { font-size: 1.8rem; }
+.admin-page-wrapper h2 { font-size: 1.4rem; }
+
+#admin-auth-check {
+    padding: 1rem;
+    background-color: var(--bg-warning-box);
+    color: var(--text-warning-box);
+    border: 1px solid var(--border-warning-box);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+#admin-auth-check.error { background-color: var(--bg-warning-box); color: var(--text-warning-box); border-color: var(--border-warning-box);}
+
+
+#admin-content section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background-color: rgba(0,0,0,0.1); /* Slightly darker section bg */
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-primary);
+}
+
+#admin-content form {
+    display: grid;
+    gap: 1rem 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    margin-top: 1rem;
+}
+
+ #admin-content form h3 {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border-secondary);
+    font-size: 1.2rem;
+    color: var(--text-link);
+ }
+
+
+#admin-content form .form-group {
+    /* Add specific styling if needed, default browser layout is okay */
+}
+
+#admin-content form label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+ #admin-content form input,
+ #admin-content form select,
+ #admin-content form textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-sm); /* Smaller radius for form elements */
+ }
+  #admin-content form input:focus,
+  #admin-content form select:focus,
+  #admin-content form textarea:focus {
+     border-color: var(--accent-primary);
+     background-color: var(--bg-secondary);
+     box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.2);
+     outline: none;
+  }
+
+.form-group-full { grid-column: 1 / -1; }
+
+.admin-form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+    align-items: center; /* Align button and message */
+}
+.admin-form-actions .cta-button {
+    padding: 0.7rem 1.5rem;
+}
+
+
+.admin-message {
+    /* Displayed within .admin-form-actions or standalone */
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-height: 1.2em;
+    margin: 0; /* Remove default margin if inside flex */
+    padding: 0.5rem 0;
+    display: none; /* Hidden by default */
+}
+.admin-message.success { color: var(--success-color); }
+.admin-message.error { color: var(--danger-color); }
+
+
+/* Styling for lists/tables */
+#category-list ul, #product-list ul { list-style: none; padding: 0; margin-top: 1rem; }
+#category-list li, #product-list li { background-color: var(--bg-tertiary); padding: 0.8rem 1rem; margin-bottom: 0.5rem; border-radius: var(--border-radius-sm); border: 1px solid var(--border-primary); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.95rem; }
+#category-list li span:first-child { margin-right: 1rem; font-weight: 500; flex-grow: 1; } /* Allow text to take space */
+#category-list li .actions, #product-list li .actions { display: flex; gap: 0.5rem; flex-shrink: 0; /* Prevent shrinking */ }
+#category-list li .actions button, #product-list li .actions button { padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: none; border-radius: var(--border-radius-sm); color: white; }
+
+#product-list table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+#product-list th, #product-list td { border: 1px solid var(--border-primary); padding: 0.7rem 0.9rem; text-align: left; vertical-align: middle; }
+#product-list th { background-color: var(--bg-tertiary); font-weight: 600; color: var(--text-primary); }
+#product-list td img.product-thumb { max-width: 45px; height: auto; margin-right: 10px; vertical-align: middle; border-radius: var(--border-radius-sm); border: 1px solid var(--border-primary); }
+#product-list td .actions { display: flex; gap: 0.5rem; }
+#product-list td .actions button { padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: none; border-radius: var(--border-radius-sm); color: white; transition: opacity 0.2s ease; }
+#product-list td .actions button:hover { opacity: 0.85; }
+.edit-btn { background-color: var(--accent-secondary); }
+.delete-btn { background-color: var(--danger-color); }
+
+
+/* Light Theme Overrides for Admin */
+body.light-theme .admin-page-wrapper { background-color: var(--bg-primary); border-color: var(--border-primary); }
+body.light-theme #admin-auth-check { background-color: var(--bg-warning-box); color: var(--text-warning-box); border-color: var(--border-warning-box);}
+body.light-theme #admin-content section { background-color: var(--bg-secondary); border-color: var(--border-primary); }
+body.light-theme #admin-content form h3 { border-bottom-color: var(--border-primary); }
+body.light-theme #admin-content form input, body.light-theme #admin-content form select, body.light-theme #admin-content form textarea { background-color: #fff; border-color: var(--border-secondary); color: var(--text-primary);}
+body.light-theme #admin-content form input:focus, body.light-theme #admin-content form select:focus, body.light-theme #admin-content form textarea:focus { border-color: var(--accent-primary); background-color: #fff; }
+body.light-theme #category-list li, body.light-theme #product-list li { background-color: #fff; border-color: var(--border-primary); }
+body.light-theme #product-list th, body.light-theme #product-list td { border-color: var(--border-primary); }
+body.light-theme #product-list th { background-color: var(--bg-tertiary); color: var(--text-primary);}

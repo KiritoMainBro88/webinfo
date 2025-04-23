@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters long']
   },
+  isAdmin: { // <-- ADD THIS FIELD
+    type: Boolean,
+    default: false
+  },
+  balance: { // <-- ADD THIS FIELD (For real balance eventually)
+    type: Number,
+    required: true,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

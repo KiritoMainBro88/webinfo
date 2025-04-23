@@ -1,4 +1,4 @@
-console.log("Script version 1.4 running!"); // Updated version
+console.log("Script version 1.5 running!"); // Updated version
 
 // --- GSAP and Helpers ---
 gsap.registerPlugin(ScrollTrigger);
@@ -22,18 +22,19 @@ function setupThemeToggle() { const themeButton = document.getElementById('theme
 function setupLanguageToggle() { const langButton = document.getElementById('language-toggle'); if(langButton) { langButton.addEventListener('click', () => { alert('Language switching coming soon!'); }); } }
 
 // --- GSAP Animations ---
-function setupProfessionalAnimations() { const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" }; const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']"); const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']"); const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']"); if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); } if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); } if (heroCta) { gsap.from(heroCta, { ...defaultOnLoadAnimation, delay: parseFloat(heroCta.dataset.delay) || 0.7 }); } gsap.utils.toArray(document.querySelectorAll('[data-animate]:not(.hero-title):not(.hero-subtitle):not(.hero-cta)')).forEach(element => { const delay = parseFloat(element.dataset.delay) || 0; let staggerAmount = parseFloat(element.dataset.stagger) || 0; const animType = element.dataset.animate; let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay }; if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; } let target = element; if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('info-box') || element.classList.contains('notification-bar') || element.classList.contains('warning-box') ) { if (element.children.length > 0) { target = element.children; if (staggerAmount === 0) staggerAmount = 0.05; if (staggerAmount > 0) animProps.stagger = staggerAmount; } } if (target === element && animProps.stagger) delete animProps.stagger; gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } }); }); gsap.utils.toArray(document.querySelectorAll('.content-row .image-card')).forEach(card => { gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9 } }); }); document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn, .footer-link-button, #back-to-top-btn, .modal-close-btn') .forEach(button => { button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 })); button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 })); if (!button.matches('#donate-button-header') && !button.matches('.header-nav-link')) { button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); } }); }
+function setupProfessionalAnimations() { const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" }; const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']"); const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']"); const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']"); if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); } if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); } if (heroCta) { gsap.from(heroCta, { ...defaultOnLoadAnimation, delay: parseFloat(heroCta.dataset.delay) || 0.7 }); } gsap.utils.toArray(document.querySelectorAll('[data-animate]:not(.hero-title):not(.hero-subtitle):not(.hero-cta)')).forEach(element => { const delay = parseFloat(element.dataset.delay) || 0; let staggerAmount = parseFloat(element.dataset.stagger) || 0; const animType = element.dataset.animate; let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay }; if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; } let target = element; if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('info-box') || element.classList.contains('notification-bar') || element.classList.contains('warning-box') || element.classList.contains('product-category-section') /* Add section */ ) { if (element.children.length > 0 && !element.classList.contains('product-grid')) { /* Don't stagger grid itself, only direct children of others */ target = element.children; if (staggerAmount === 0) staggerAmount = 0.05; if (staggerAmount > 0) animProps.stagger = staggerAmount; } } if (target === element && animProps.stagger) delete animProps.stagger; gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } }); }); gsap.utils.toArray(document.querySelectorAll('.content-row .image-card')).forEach(card => { gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9 } }); }); document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn, .footer-link-button, #back-to-top-btn, .modal-close-btn') .forEach(button => { button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 })); button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 })); if (!button.matches('#donate-button-header') && !button.matches('.header-nav-link')) { button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); } }); }
 
 // --- Click-based Dropdowns ---
 function setupClickDropdowns() { const wrappers = document.querySelectorAll('.nav-item-wrapper'); wrappers.forEach(wrapper => { const trigger = wrapper.querySelector('.nav-dropdown-trigger'); const menu = wrapper.querySelector('.dropdown-menu'); if (!trigger || !menu) return; trigger.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); wrappers.forEach(otherWrapper => { if (otherWrapper !== wrapper) otherWrapper.classList.remove('open'); }); wrapper.classList.toggle('open'); }); }); document.addEventListener('click', (event) => { wrappers.forEach(wrapper => { if (!wrapper.contains(event.target) && wrapper.classList.contains('open')) wrapper.classList.remove('open'); }); }); document.addEventListener('keydown', (event) => { if (event.key === "Escape") wrappers.forEach(wrapper => wrapper.classList.remove('open')); }); }
 
 // --- Admin Panel Logic ---
-function setupAdminPanel() { /* ... */ }
+function setupAdminPanel() { /* Placeholder */ }
 
 // --- Authentication Logic ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
 function setupActionButtons() {
-    const authContainer = document.getElementById('auth-container'); const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginFormWrapper = document.getElementById('login-form-wrapper'); const registerFormWrapper = document.getElementById('register-form-wrapper'); const forgotFormWrapper = document.getElementById('forgot-form-wrapper'); const resetFormWrapper = document.getElementById('reset-form-wrapper'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); const authActionLink = document.getElementById('auth-action-link'); const registerActionLink = document.getElementById('register-action-link'); const forgotActionLink = document.getElementById('forgot-action-link'); const logoutLink = document.getElementById('logout-link'); const userNameSpan = document.getElementById('user-name'); const userStatusSpan = document.getElementById('user-status'); function showMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } function showForm(formToShow) { if (!authContainer) return; authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => { if(msg) showMessage(msg, ''); }); } window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } }; if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms)); if (loginForm) { loginForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(loginMessage, 'Đăng nhập thành công!', true); localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username); localStorage.setItem('userBalance', Math.floor(Math.random() * 200000) + 10000); /* <<< RANDOM DEMO BALANCE */ updateUserStatus(true, data.username); updateSidebarUserArea(true, data.username); setTimeout(closeAuthForms, 1000); } catch (error) { console.error("Login failed:", error); showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); } }); } if (registerForm) { registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; if (password !== confirmPassword) { showMessage(registerMessage, 'Mật khẩu nhập lại không khớp.'); return; } showMessage(registerMessage, 'Đang đăng ký...'); const username = e.target.username.value; const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error("Registration failed:", error); showMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.'); } }); } if (forgotForm) { forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(forgotMessage, 'Đang xử lý yêu cầu...'); const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); if (!response.ok && response.status !== 200) { throw new Error(data.message || `Error: ${response.status}`); } showMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true); } catch (error) { console.error("Forgot password failed:", error); showMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.'); } }); } if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); } if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('userBalance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); } function updateUserStatus(isLoggedIn, username = 'Khách') { if (!userNameSpan || !userStatusSpan || !authActionLink || !registerActionLink || !forgotActionLink || !logoutLink) { console.warn("Header user area elements not found for UI update."); return; } if (isLoggedIn) { userNameSpan.textContent = username; if(authActionLink) authActionLink.style.display = 'none'; if(registerActionLink) registerActionLink.style.display = 'none'; if(forgotActionLink) forgotActionLink.style.display = 'none'; if(logoutLink) logoutLink.style.display = 'flex'; } else { userNameSpan.textContent = 'Khách'; if(authActionLink) authActionLink.style.display = 'flex'; if(registerActionLink) registerActionLink.style.display = 'flex'; if(forgotActionLink) forgotActionLink.style.display = 'flex'; if(logoutLink) logoutLink.style.display = 'none'; } } const checkLoginAndToken = () => { const userId = localStorage.getItem('userId'); const username = localStorage.getItem('username'); if (userId && username) { updateUserStatus(true, username); updateSidebarUserArea(true, username); } else { updateUserStatus(false); updateSidebarUserArea(false); } const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) { tokenInput.value = resetToken; } else { console.warn("Reset token input field not found."); } window.history.replaceState({}, document.title, window.location.pathname); } }; checkLoginAndToken();
+    // ... (Keep ALL previous Auth setup - login/register/forgot/reset/logout handlers) ...
+     const authContainer = document.getElementById('auth-container'); const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginFormWrapper = document.getElementById('login-form-wrapper'); const registerFormWrapper = document.getElementById('register-form-wrapper'); const forgotFormWrapper = document.getElementById('forgot-form-wrapper'); const resetFormWrapper = document.getElementById('reset-form-wrapper'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); const authActionLink = document.getElementById('auth-action-link'); const registerActionLink = document.getElementById('register-action-link'); const forgotActionLink = document.getElementById('forgot-action-link'); const logoutLink = document.getElementById('logout-link'); const userNameSpan = document.getElementById('user-name'); const userStatusSpan = document.getElementById('user-status'); function showMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } function showForm(formToShow) { if (!authContainer) return; authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => { if(msg) showMessage(msg, ''); }); } window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } }; if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms)); if (loginForm) { loginForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(loginMessage, 'Đăng nhập thành công!', true); localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username); localStorage.setItem('userBalance', Math.floor(Math.random() * 200000) + 10000); updateUserStatus(true, data.username); updateSidebarUserArea(true, data.username); setTimeout(closeAuthForms, 1000); } catch (error) { console.error("Login failed:", error); showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); } }); } if (registerForm) { registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; if (password !== confirmPassword) { showMessage(registerMessage, 'Mật khẩu nhập lại không khớp.'); return; } showMessage(registerMessage, 'Đang đăng ký...'); const username = e.target.username.value; const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error("Registration failed:", error); showMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.'); } }); } if (forgotForm) { forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(forgotMessage, 'Đang xử lý yêu cầu...'); const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); if (!response.ok && response.status !== 200) { throw new Error(data.message || `Error: ${response.status}`); } showMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true); } catch (error) { console.error("Forgot password failed:", error); showMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.'); } }); } if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); } if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('userBalance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); } function updateUserStatus(isLoggedIn, username = 'Khách') { if (!userNameSpan || !userStatusSpan || !authActionLink || !registerActionLink || !forgotActionLink || !logoutLink) { console.warn("Header user area elements not found for UI update."); return; } if (isLoggedIn) { userNameSpan.textContent = username; if(authActionLink) authActionLink.style.display = 'none'; if(registerActionLink) registerActionLink.style.display = 'none'; if(forgotActionLink) forgotActionLink.style.display = 'none'; if(logoutLink) logoutLink.style.display = 'flex'; } else { userNameSpan.textContent = 'Khách'; if(authActionLink) authActionLink.style.display = 'flex'; if(registerActionLink) registerActionLink.style.display = 'flex'; if(forgotActionLink) forgotActionLink.style.display = 'flex'; if(logoutLink) logoutLink.style.display = 'none'; } } const checkLoginAndToken = () => { const userId = localStorage.getItem('userId'); const username = localStorage.getItem('username'); if (userId && username) { updateUserStatus(true, username); updateSidebarUserArea(true, username); } else { updateUserStatus(false); updateSidebarUserArea(false); } const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) { tokenInput.value = resetToken; } else { console.warn("Reset token input field not found."); } window.history.replaceState({}, document.title, window.location.pathname); } }; checkLoginAndToken();
 }
 
 // --- Sidebar Update Function ---
@@ -54,14 +55,250 @@ function showMessageModal(title, message, type = 'info') { const modal = documen
 
 // --- Purchase Flow Logic ---
 function setupPurchaseModals() {
-    const buyButtons = document.querySelectorAll('.product-buy-btn'); const purchaseModal = document.getElementById('purchase-modal'); const confirmModal = document.getElementById('confirm-modal'); const processingModal = document.getElementById('processing-modal'); const purchaseForm = document.getElementById('purchase-form'); if (!purchaseModal || !confirmModal || !processingModal || !purchaseForm) { console.warn("One or more purchase-related modals or form not found."); return; } let currentPurchaseData = {}; buyButtons.forEach(button => { button.addEventListener('click', (e) => { e.preventDefault(); if (!localStorage.getItem('userId')) { showMessageModal('Lỗi', 'Vui lòng đăng nhập để mua hàng!', 'error'); return; } const card = e.target.closest('.product-card'); if (!card) return; const productId = card.dataset.productId; const productName = card.dataset.productName || 'Sản phẩm không rõ'; const productPrice = parseInt(card.dataset.productPrice, 10) || 0; if (productPrice === 0) { showMessageModal('Thông tin', `Vui lòng liên hệ Admin qua Discord hoặc Facebook để ${productName === 'Bán Robux Chính Hãng' ? 'xem bảng giá Robux' : 'biết chi tiết dịch vụ cày thuê'}.`, 'info'); return; } currentPurchaseData = { productId, productName, productPrice }; document.getElementById('purchase-item-name').textContent = productName; document.getElementById('purchase-item-id').value = productId; document.getElementById('purchase-total-price').textContent = formatPrice(productPrice); purchaseForm.reset(); showModal('purchase-modal'); }); }); purchaseForm.addEventListener('submit', (e) => { e.preventDefault(); if (!document.getElementById('purchase-confirm-details').checked) { showMessageModal('Lỗi', 'Bạn cần xác nhận đã cung cấp đúng thông tin.', 'warning'); return; } hideModal('purchase-modal'); document.getElementById('confirm-modal-text').textContent = `Bạn sẽ mua "${currentPurchaseData.productName}" với giá ${formatPrice(currentPurchaseData.productPrice)}?`; showModal('confirm-modal'); }); document.getElementById('confirm-agree-btn')?.addEventListener('click', () => { hideModal('confirm-modal'); showModal('processing-modal'); const formData = new FormData(purchaseForm); const purchaseDetails = Object.fromEntries(formData.entries()); console.log("Attempting Purchase:", { ...currentPurchaseData, ...purchaseDetails }); let currentBalance = parseInt(localStorage.getItem('userBalance') || '0', 10); let itemPrice = currentPurchaseData.productPrice; let isSuccess = false; if (currentBalance >= itemPrice) { let newBalance = currentBalance - itemPrice; localStorage.setItem('userBalance', newBalance.toString()); console.log(`DEMO: Balance updated. Old: ${formatPrice(currentBalance)}, New: ${formatPrice(newBalance)}`); updateSidebarUserArea(true, localStorage.getItem('username')); isSuccess = true; } else { console.log(`DEMO: Insufficient balance. Needed: ${formatPrice(itemPrice)}, Has: ${formatPrice(currentBalance)}`); isSuccess = false; } setTimeout(() => { hideModal('processing-modal'); if (isSuccess) { showMessageModal('Thành công!', 'Mua vật phẩm thành công! Vui lòng kiểm tra tài khoản của bạn.', 'success'); } else { showMessageModal('Thất bại!', 'Số dư không đủ hoặc đã xảy ra lỗi. Vui lòng nạp thêm hoặc liên hệ hỗ trợ.', 'error'); } }, 2000); }); document.getElementById('confirm-cancel-btn')?.addEventListener('click', () => { hideModal('confirm-modal'); }); document.querySelectorAll('.modal-overlay .modal-close-btn').forEach(button => { button.addEventListener('click', (e) => { const modal = e.target.closest('.modal-overlay'); if (modal) { hideModal(modal.id); } }); }); document.getElementById('message-ok-btn')?.addEventListener('click', () => hideModal('message-modal')); document.getElementById('notification-ok-btn')?.addEventListener('click', () => hideModal('notification-modal')); document.querySelector('#purchase-modal .modal-cancel-btn')?.addEventListener('click', () => hideModal('purchase-modal')); document.querySelectorAll('.modal-overlay').forEach(overlay => { overlay.addEventListener('click', (e) => { if (e.target === overlay && overlay.id !== 'processing-modal' && overlay.id !== 'confirm-modal') { hideModal(overlay.id); } }); });
+    // Use event delegation on a parent container for dynamically added buttons
+    const productArea = document.getElementById('dynamic-product-area');
+    const purchaseModal = document.getElementById('purchase-modal');
+    const confirmModal = document.getElementById('confirm-modal');
+    const processingModal = document.getElementById('processing-modal');
+    const purchaseForm = document.getElementById('purchase-form');
+
+    if (!productArea || !purchaseModal || !confirmModal || !processingModal || !purchaseForm) {
+        console.warn("One or more essential elements for purchase flow not found (product area, modals, form).");
+        return;
+    }
+
+    let currentPurchaseData = {}; // Store data between steps
+
+    // Event listener on the main content area
+    productArea.addEventListener('click', (e) => {
+        // Check if the clicked element is a buy button
+        if (e.target.classList.contains('product-buy-btn')) {
+            e.preventDefault();
+
+            if (!localStorage.getItem('userId')) {
+                showMessageModal('Lỗi', 'Vui lòng đăng nhập để mua hàng!', 'error');
+                return;
+            }
+
+            const card = e.target.closest('.product-card'); if (!card) return;
+            const productId = card.dataset.productId;
+            const productName = card.dataset.productName || 'Sản phẩm không rõ';
+            const productPrice = parseInt(card.dataset.productPrice, 10) || 0;
+
+            if (productPrice === 0 || card.dataset.stockStatus === 'contact' || card.dataset.stockStatus === 'check_price') {
+                 let contactMsg = `Vui lòng liên hệ Admin qua Discord hoặc Facebook để ${productName === 'Bán Robux Chính Hãng' ? 'xem bảng giá Robux' : 'biết chi tiết dịch vụ này'}.`;
+                if(card.dataset.stockStatus === 'out_of_stock'){
+                    contactMsg = `Sản phẩm "${productName}" hiện đã hết hàng. Vui lòng quay lại sau hoặc liên hệ Admin.`;
+                }
+                showMessageModal('Thông tin', contactMsg, 'info');
+                return;
+            }
+
+             if (card.dataset.stockStatus === 'out_of_stock') {
+                 showMessageModal('Thông báo', `Sản phẩm "${productName}" hiện đã hết hàng.`, 'warning');
+                 return;
+             }
+
+
+            currentPurchaseData = { productId, productName, productPrice };
+
+            document.getElementById('purchase-item-name').textContent = productName;
+            document.getElementById('purchase-item-id').value = productId;
+            document.getElementById('purchase-total-price').textContent = formatPrice(productPrice);
+            purchaseForm.reset();
+            showModal('purchase-modal');
+        }
+    });
+
+    // --- Handle Purchase Form Submission ---
+     purchaseForm.addEventListener('submit', (e) => { e.preventDefault(); if (!document.getElementById('purchase-confirm-details').checked) { showMessageModal('Lỗi', 'Bạn cần xác nhận đã cung cấp đúng thông tin.', 'warning'); return; } hideModal('purchase-modal'); document.getElementById('confirm-modal-text').textContent = `Bạn sẽ mua "${currentPurchaseData.productName}" với giá ${formatPrice(currentPurchaseData.productPrice)}?`; showModal('confirm-modal'); });
+
+    // --- Handle Confirmation ---
+    document.getElementById('confirm-agree-btn')?.addEventListener('click', () => {
+        hideModal('confirm-modal');
+        showModal('processing-modal');
+        const formData = new FormData(purchaseForm);
+        const purchaseDetails = Object.fromEntries(formData.entries());
+        console.log("Attempting Purchase:", { ...currentPurchaseData, ...purchaseDetails });
+        let currentBalance = parseInt(localStorage.getItem('userBalance') || '0', 10);
+        let itemPrice = currentPurchaseData.productPrice;
+        let isSuccess = false;
+        if (currentBalance >= itemPrice) {
+            let newBalance = currentBalance - itemPrice;
+            localStorage.setItem('userBalance', newBalance.toString());
+            console.log(`DEMO: Balance updated. Old: ${formatPrice(currentBalance)}, New: ${formatPrice(newBalance)}`);
+            updateSidebarUserArea(true, localStorage.getItem('username'));
+            isSuccess = true;
+        } else {
+             console.log(`DEMO: Insufficient balance. Needed: ${formatPrice(itemPrice)}, Has: ${formatPrice(currentBalance)}`);
+            isSuccess = false;
+        }
+        setTimeout(() => {
+             hideModal('processing-modal');
+             if (isSuccess) { showMessageModal('Thành công!', 'Mua vật phẩm thành công! Vui lòng kiểm tra tài khoản của bạn.', 'success'); }
+             else { showMessageModal('Thất bại!', 'Số dư không đủ hoặc đã xảy ra lỗi. Vui lòng nạp thêm hoặc liên hệ hỗ trợ.', 'error'); }
+        }, 2000);
+    });
+
+    // --- Modal Close Handlers ---
+    document.getElementById('confirm-cancel-btn')?.addEventListener('click', () => { hideModal('confirm-modal'); });
+    document.querySelectorAll('.modal-overlay .modal-close-btn').forEach(button => { button.addEventListener('click', (e) => { const modal = e.target.closest('.modal-overlay'); if (modal) { hideModal(modal.id); } }); });
+    document.getElementById('message-ok-btn')?.addEventListener('click', () => hideModal('message-modal'));
+    document.getElementById('notification-ok-btn')?.addEventListener('click', () => hideModal('notification-modal'));
+    document.querySelector('#purchase-modal .modal-cancel-btn')?.addEventListener('click', () => hideModal('purchase-modal'));
+    document.querySelectorAll('.modal-overlay').forEach(overlay => { overlay.addEventListener('click', (e) => { if (e.target === overlay && overlay.id !== 'processing-modal' && overlay.id !== 'confirm-modal') { hideModal(overlay.id); } }); });
+}
+
+
+// --- NEW: Load Dynamic Shopping Page Data ---
+async function loadShoppingPageData() {
+    const productArea = document.getElementById('dynamic-product-area');
+    if (!productArea) {
+        console.error("Dynamic product area container not found!");
+        return;
+    }
+    productArea.innerHTML = '<p style="text-align: center; padding: 2rem 0;">Đang tải sản phẩm...</p>'; // Loading state
+
+    const API_BASE = 'https://webinfo-zbkq.onrender.com/api';
+
+    try {
+        // Fetch categories and products in parallel
+        const [categories, products] = await Promise.all([
+            fetchData('/categories'),
+            fetchData('/products')
+        ]);
+
+        productArea.innerHTML = ''; // Clear loading message
+
+        if (!categories || categories.length === 0) {
+             productArea.innerHTML = '<p style="text-align: center; padding: 2rem 0;">Không tìm thấy danh mục nào.</p>';
+            return;
+        }
+
+        // Group products by category ID for easier rendering
+        const productsByCategory = products.reduce((acc, product) => {
+            const categoryId = product.category?._id || 'uncategorized'; // Use category ID or fallback
+            if (!acc[categoryId]) {
+                acc[categoryId] = [];
+            }
+            acc[categoryId].push(product);
+            return acc;
+        }, {});
+
+        // Render categories and their products
+        categories.forEach(category => {
+            const categorySection = document.createElement('section');
+            categorySection.className = 'product-category-section';
+            categorySection.id = `category-${category._id}`;
+            categorySection.dataset.animate = "fade-up"; // Add animation trigger
+
+            const categoryTitle = document.createElement('h2');
+            categoryTitle.className = 'category-title';
+            categoryTitle.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`;
+            categorySection.appendChild(categoryTitle);
+
+            const productGrid = document.createElement('div');
+            productGrid.className = 'product-grid';
+             productGrid.dataset.animate="fade-up"; // Add animation trigger for grid items
+             productGrid.dataset.stagger="0.05";
+
+            const categoryProducts = productsByCategory[category._id] || [];
+
+            if (categoryProducts.length > 0) {
+                categoryProducts.forEach(product => {
+                    productGrid.appendChild(createProductCardElement(product));
+                });
+            } else {
+                productGrid.innerHTML = '<p>Chưa có sản phẩm nào trong danh mục này.</p>';
+            }
+
+            categorySection.appendChild(productGrid);
+            productArea.appendChild(categorySection);
+        });
+
+         // Re-initialize GSAP animations for the newly added elements
+         // We need to tell ScrollTrigger to refresh because new trigger elements were added
+         ScrollTrigger.refresh();
+         // We might need to re-run part of the animation setup if direct targeting was used,
+         // but data-animate with ScrollTrigger should ideally pick up new elements on refresh.
+         // If animations still fail, explicitly re-run relevant parts of setupProfessionalAnimations targeting the new content.
+
+
+    } catch (error) {
+        console.error("Failed to load shopping page data:", error);
+        productArea.innerHTML = `<p class="error" style="text-align: center; padding: 2rem 0;">Lỗi tải dữ liệu sản phẩm. Vui lòng thử lại. (${error.message})</p>`;
+    }
+}
+
+function createProductCardElement(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    // Add data attributes for JS interaction (like purchase modal)
+    card.dataset.productId = product._id;
+    card.dataset.productName = product.name;
+    card.dataset.productPrice = product.price;
+     card.dataset.stockStatus = product.stockStatus; // Store stock status
+
+    let tagsHTML = '';
+    if (product.tags && product.tags.length > 0) {
+        product.tags.forEach(tag => {
+            let tagClass = '';
+            if (tag === 'hot') tagClass = 'hot-tag';
+            else if (tag === 'sale') tagClass = 'sale-tag';
+            // Add more tag types if needed
+            if (tagClass) {
+                 tagsHTML += `<span class="product-tag ${tagClass}">${tag}</span>`;
+            }
+        });
+    }
+
+    let priceHTML = '';
+    if (product.stockStatus === 'contact' || product.stockStatus === 'check_price') {
+        priceHTML = `<span class="sale-price">${product.stockStatus === 'contact' ? 'Liên hệ' : 'Xem giá'}</span>`;
+    } else if (product.originalPrice && product.originalPrice > product.price) {
+        priceHTML = `
+            <span class="original-price">${formatPrice(product.originalPrice)}</span>
+            <span class="sale-price">${formatPrice(product.price)}</span>
+        `;
+    } else {
+        priceHTML = `<span class="sale-price">${formatPrice(product.price)}</span>`;
+    }
+
+    let buttonText = "Mua ngay";
+    if (product.stockStatus === 'contact') buttonText = "Xem chi tiết";
+    if (product.stockStatus === 'check_price') buttonText = "Xem bảng giá";
+    if (product.stockStatus === 'out_of_stock') buttonText = "Hết hàng";
+
+
+    card.innerHTML = `
+        <div class="product-image-placeholder">
+            <img src="${product.imageUrl || 'images/product-placeholder.png'}" alt="${product.name}">
+            ${tagsHTML}
+        </div>
+        <div class="product-info">
+            <h3 class="product-title">${product.name}</h3>
+            <p class="product-meta">Đã bán: ${product.purchaseCount || 0}</p>
+            <p class="product-price">
+                ${priceHTML}
+            </p>
+            <button class="cta-button product-buy-btn" ${product.stockStatus === 'out_of_stock' ? 'disabled' : ''}>${buttonText}</button>
+        </div>
+    `;
+    return card;
 }
 
 
 // ----- Initialization -----
 function initializePage() {
-    console.log("Initializing page (v1.4)..."); // Update log
-    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); setupAdminPanel(); setupActionButtons(); setupDropdownActions(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModals(); const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } else { console.warn("Header donate button not found"); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete.");
+    console.log("Initializing page (v1.5)...");
+    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); setupAdminPanel(); setupActionButtons(); setupDropdownActions(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModals();
+     // Load shopping data ONLY if on the shopping page
+     if (document.body.classList.contains('shopping-page')) {
+         if (typeof loadShoppingPageData === 'function') {
+             loadShoppingPageData();
+         } else { console.error("loadShoppingPageData function not found!"); }
+     }
+    const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } else { console.warn("Header donate button not found"); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete.");
 }
 
 // --- Run Initialization ---
