@@ -80,23 +80,12 @@ function updateUserStatus(isLoggedIn, username = 'Khách', isAdmin = false) {
        authLinks.forEach(link => { if (link) link.style.display = 'none'; });
        logoutLink.style.display = 'flex';
        adminDropdownSection.style.display = isAdmin ? 'block' : 'none';
-       if (isAdmin && adminDropdownSection) {
-           adminDropdownSection.innerHTML = `
-               <a href="admin-shop.html" class="dropdown-link">
-                   <i class="fas fa-store icon-left"></i>Shop Admin
-               </a>
-               <a href="#" class="dropdown-link" onclick="alert('Admin Settings coming soon!'); return false;">
-                   <i class="fas fa-cog icon-left"></i>Admin Settings
-               </a>
-           `;
-       }
        localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
    } else {
        userNameSpan.textContent = 'Khách';
        authLinks.forEach(link => { if (link) link.style.display = 'flex'; });
        logoutLink.style.display = 'none';
        adminDropdownSection.style.display = 'none';
-       adminDropdownSection.innerHTML = '';
        localStorage.removeItem('isAdmin');
    }
 }
@@ -215,10 +204,31 @@ async function loadAndDisplayShoppingData() {
              console.error("Received invalid data for categories:", categories);
              throw new Error("Invalid category data received from server.");
         }
-         if (!products || !Array.isArray(products)) { // Add check for array type
-             console.error("Received invalid data for products:", products);
-             throw new Error("Invalid product data received from server.");
-         }
+
+        // --- MODIFIED: Check for products array ---
+        let productArray = []; // Initialize as empty array
+
+        if (Array.isArray(products)) {
+            productArray = products; // Use directly if it's an array
+        } else if (typeof products === 'object' && products !== null) {
+            // Check for common nested array keys
+            if (Array.isArray(products.products)) {
+                console.log("Received object, extracting products from 'products' key.");
+                productArray = products.products;
+            } else if (Array.isArray(products.items)) {
+                console.log("Received object, extracting products from 'items' key.");
+                productArray = products.items;
+            } else {
+                // If it's an object but doesn't contain a known array key, log error and throw
+                console.error("Received object, but could not find products array inside:", products);
+                throw new Error("Invalid product data structure received from server. Expected an array or object containing 'products'/'items' array.");
+            }
+        } else {
+            // If it's neither an array nor a valid object, throw error
+            console.error("Received invalid data type for products:", products);
+            throw new Error("Invalid product data type received from server. Expected an array or object.");
+        }
+        // --- END MODIFICATION ---
 
 
         if (categories.length === 0) {
@@ -234,7 +244,7 @@ async function loadAndDisplayShoppingData() {
             const productGrid = categorySection.querySelector('.product-grid');
             if (!productGrid) { console.error(`Product grid not found for category: ${category.name}`); return; }
 
-            const categoryProducts = products.filter(product => product.category?._id === category._id);
+            const categoryProducts = productArray.filter(product => product.category?._id === category._id);
              console.log(`Found ${categoryProducts.length} products for category ${category.name}`);
 
             if (categoryProducts.length > 0) {
