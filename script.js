@@ -397,17 +397,18 @@ function createProductCardElement(product, includeBuyButton = false) {
         tagHTML = '<span class="product-tag sale-tag">Sale</span>';
     }
 
-    // --- ADDED: Brand/Category Tag ---
+    // --- MODIFIED: Only add Brand/Category Tag if buy button is included --- 
     let brandTagHTML = '';
-    const categoryName = product.category?.name;
-    const brandName = product.brand; // ASSUMING product.brand exists
-    if (categoryName && brandName) {
-        brandTagHTML = `<span class="product-tag brand-tag">${categoryName} - ${brandName}</span>`;
-    } else if (categoryName) {
-        // Fallback if brand is missing
-        brandTagHTML = `<span class="product-tag brand-tag">${categoryName}</span>`;
+    if (includeBuyButton) { // Only add this tag on pages like category.html
+        const categoryName = product.category?.name;
+        const brandName = product.brand;
+        if (categoryName && brandName) {
+            brandTagHTML = `<span class="product-tag brand-tag">${categoryName} - ${brandName}</span>`;
+        } else if (categoryName) {
+            brandTagHTML = `<span class="product-tag brand-tag">${categoryName}</span>`;
+        }
     }
-    // --- END ADDED ---
+    // --- END MODIFICATION ---
 
     let buttonText = 'Mua ngay';
     let buttonDisabled = false;
