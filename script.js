@@ -1,9 +1,9 @@
 console.log("Script version 1.6 running!"); // Updated version
 
-// --- Fetch Helper (Moved from admin.js) ---
+// --- Fetch Helper ---
 async function fetchData(endpoint, options = {}) {
     // Define API_BASE here or pass it as an argument if needed elsewhere
-    const API_BASE = 'https://webinfo-zbkq.onrender.com/api';
+    const API_BASE = 'https://webinfo-zbkq.onrender.com/api'; // Ensure this matches BACKEND_URL if used interchangeably
     const url = `${API_BASE}${endpoint}`;
 
     // Add Auth headers if needed (using the INSECURE demo method for now)
@@ -18,22 +18,19 @@ async function fetchData(endpoint, options = {}) {
     try {
         const response = await fetch(url, options);
         const isJson = response.headers.get('content-type')?.includes('application/json');
-        const data = isJson ? await response.json().catch(() => null) : await response.text(); // Handle potential non-JSON responses gracefully
+        const data = isJson ? await response.json().catch(() => null) : await response.text();
 
         if (!response.ok) {
-            // Try to parse error message from JSON data, otherwise use statusText
             const errorMessage = (typeof data === 'object' && data?.message) ? data.message : (data || response.statusText);
             console.error(`API Error (${response.status}) on ${endpoint}:`, errorMessage);
             throw new Error(errorMessage);
         }
-        // If response is ok but no JSON body (e.g., DELETE success with 204 No Content)
         if (response.status === 204 || (isJson && data === null)) {
-             return { success: true, message: 'Operation successful (No Content)' }; // Return a success object
+             return { success: true, message: 'Operation successful (No Content)' };
         }
-        return data; // Return JSON data or text data
+        return data;
     } catch (error) {
         console.error(`Network or Fetch Error on ${endpoint}:`, error);
-        // Don't just throw error.message, throw the whole error object for better context
         throw error;
     }
 }
@@ -61,7 +58,7 @@ function setupThemeToggle() { const themeButton = document.getElementById('theme
 function setupLanguageToggle() { const langButton = document.getElementById('language-toggle'); if(langButton) { langButton.addEventListener('click', () => { alert('Language switching coming soon!'); }); } }
 
 // --- GSAP Animations ---
-function setupProfessionalAnimations() { const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" }; const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']"); const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']"); const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']"); if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); } if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); } if (heroCta) { gsap.from(heroCta, { ...defaultOnLoadAnimation, delay: parseFloat(heroCta.dataset.delay) || 0.7 }); } gsap.utils.toArray(document.querySelectorAll('[data-animate]:not(.hero-title):not(.hero-subtitle):not(.hero-cta)')).forEach(element => { const delay = parseFloat(element.dataset.delay) || 0; let staggerAmount = parseFloat(element.dataset.stagger) || 0; const animType = element.dataset.animate; let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay }; if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; } let target = element; if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('info-box') || element.classList.contains('notification-bar') || element.classList.contains('warning-box') || element.classList.contains('product-category-section') ) { if (element.children.length > 0 && !element.classList.contains('product-grid')) { target = Array.from(element.children).filter(child => !child.matches('h2.category-title')); /* Animate children except title */ if (target.length > 0) { if (staggerAmount === 0) staggerAmount = 0.05; if (staggerAmount > 0) animProps.stagger = staggerAmount; } else { target = element; /* Fallback if only title exists */ } } } if (target === element && animProps.stagger) delete animProps.stagger; gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } }); }); gsap.utils.toArray(document.querySelectorAll('.content-row .image-card')).forEach(card => { gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9 } }); }); document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn, .footer-link-button, #back-to-top-btn, .modal-close-btn') .forEach(button => { button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 })); button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 })); if (!button.matches('#donate-button-header') && !button.matches('.header-nav-link')) { button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); } }); }
+function setupProfessionalAnimations() { const defaultOnLoadAnimation = { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" }; const heroTitle = document.querySelector(".hero-title[data-animate='reveal-text']"); const heroSubtitle = document.querySelector(".hero-subtitle[data-animate='fade-up']"); const heroCta = document.querySelector(".hero-cta[data-animate='fade-up']"); if (heroTitle) { gsap.from(heroTitle, { opacity: 0, y: 40, duration: 1, ease: "expo.out", delay: 0.3 }); } if (heroSubtitle) { gsap.from(heroSubtitle, { ...defaultOnLoadAnimation, delay: parseFloat(heroSubtitle.dataset.delay) || 0.5 }); } if (heroCta) { gsap.from(heroCta, { ...defaultOnLoadAnimation, delay: parseFloat(heroCta.dataset.delay) || 0.7 }); } gsap.utils.toArray(document.querySelectorAll('[data-animate]:not(.hero-title):not(.hero-subtitle):not(.hero-cta)')).forEach(element => { const delay = parseFloat(element.dataset.delay) || 0; let staggerAmount = parseFloat(element.dataset.stagger) || 0; const animType = element.dataset.animate; let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay }; if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; } let target = element; if (element.tagName === 'UL' || element.classList.contains('skills-grid') || element.classList.contains('interests-carousel') || element.classList.contains('social-buttons-inline') || element.classList.contains('product-grid') || element.classList.contains('info-box') || element.classList.contains('notification-bar') || element.classList.contains('warning-box') || element.classList.contains('product-category-section') ) { if (element.children.length > 0 && !element.classList.contains('product-grid')) { target = Array.from(element.children).filter(child => !child.matches('h2.category-title')); if (target.length > 0) { if (staggerAmount === 0) staggerAmount = 0.05; if (staggerAmount > 0) animProps.stagger = staggerAmount; } else { target = element; } } } if (target === element && animProps.stagger) delete animProps.stagger; gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } }); }); gsap.utils.toArray(document.querySelectorAll('.content-row .image-card')).forEach(card => { gsap.to(card, { yPercent: -5, ease: "none", scrollTrigger: { trigger: card.closest('.content-row'), start: "top bottom", end: "bottom top", scrub: 1.9 } }); }); document.querySelectorAll('.cta-button, .header-nav-link, .mobile-nav-link, .social-button, .icon-button, .user-dropdown-content a, .auth-link, #donate-button-header, .dropdown-link, .category-button, .product-buy-btn, .footer-link-button, #back-to-top-btn, .modal-close-btn') .forEach(button => { button.addEventListener('mousedown', () => gsap.to(button, { scale: 0.97, duration: 0.1 })); button.addEventListener('mouseup', () => gsap.to(button, { scale: 1, duration: 0.1 })); if (!button.matches('#donate-button-header') && !button.matches('.header-nav-link')) { button.addEventListener('mouseleave', () => gsap.to(button, { scale: 1, duration: 0.1 })); } }); }
 
 // --- Click-based Dropdowns ---
 function setupClickDropdowns() { const wrappers = document.querySelectorAll('.nav-item-wrapper'); wrappers.forEach(wrapper => { const trigger = wrapper.querySelector('.nav-dropdown-trigger'); const menu = wrapper.querySelector('.dropdown-menu'); if (!trigger || !menu) return; trigger.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); wrappers.forEach(otherWrapper => { if (otherWrapper !== wrapper) otherWrapper.classList.remove('open'); }); wrapper.classList.toggle('open'); }); }); document.addEventListener('click', (event) => { wrappers.forEach(wrapper => { if (!wrapper.contains(event.target) && wrapper.classList.contains('open')) wrapper.classList.remove('open'); }); }); document.addEventListener('keydown', (event) => { if (event.key === "Escape") wrappers.forEach(wrapper => wrapper.classList.remove('open')); }); }
@@ -70,6 +67,7 @@ function setupClickDropdowns() { const wrappers = document.querySelectorAll('.na
 function setupAdminPanel() { /* Placeholder */ }
 
 // --- Authentication Logic ---
+const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // Ensure this is defined in the correct scope
 function setupActionButtons() {
     const authContainer = document.getElementById('auth-container'); const loginForm = document.getElementById('login-form'); const registerForm = document.getElementById('register-form'); const forgotForm = document.getElementById('forgot-form'); const resetForm = document.getElementById('reset-form'); const loginFormWrapper = document.getElementById('login-form-wrapper'); const registerFormWrapper = document.getElementById('register-form-wrapper'); const forgotFormWrapper = document.getElementById('forgot-form-wrapper'); const resetFormWrapper = document.getElementById('reset-form-wrapper'); const loginMessage = document.getElementById('login-message'); const registerMessage = document.getElementById('register-message'); const forgotMessage = document.getElementById('forgot-message'); const resetMessage = document.getElementById('reset-message'); const authActionLink = document.getElementById('auth-action-link'); const registerActionLink = document.getElementById('register-action-link'); const forgotActionLink = document.getElementById('forgot-action-link'); const logoutLink = document.getElementById('logout-link'); const userNameSpan = document.getElementById('user-name'); const userStatusSpan = document.getElementById('user-status'); function showMessage(element, message, isSuccess = false) { if (!element) return; element.textContent = message; element.className = 'auth-message ' + (isSuccess ? 'success' : 'error'); } function showForm(formToShow) { if (!authContainer) return; authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); [loginMessage, registerMessage, forgotMessage, resetMessage].forEach(msg => { if(msg) showMessage(msg, ''); }); } window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } }; if (authActionLink) authActionLink.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); }); if (registerActionLink) registerActionLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterForm(); }); if (forgotActionLink) forgotActionLink.addEventListener('click', (e) => { e.preventDefault(); showForgotForm(); }); const closeAuthButtons = document.querySelectorAll('#auth-container .close-auth-btn'); closeAuthButtons.forEach(btn => btn.addEventListener('click', closeAuthForms)); if (loginForm) { loginForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(loginMessage, 'Đang đăng nhập...'); const username = e.target.username.value; const password = e.target.password.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(loginMessage, 'Đăng nhập thành công!', true); localStorage.setItem('userId', data.userId); localStorage.setItem('username', data.username); localStorage.setItem('userBalance', Math.floor(Math.random() * 200000) + 10000); updateUserStatus(true, data.username); updateSidebarUserArea(true, data.username); setTimeout(closeAuthForms, 1000); } catch (error) { console.error("Login failed:", error); showMessage(loginMessage, error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'); } }); } if (registerForm) { registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; if (password !== confirmPassword) { showMessage(registerMessage, 'Mật khẩu nhập lại không khớp.'); return; } showMessage(registerMessage, 'Đang đăng ký...'); const username = e.target.username.value; const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(registerMessage, 'Đăng ký thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 1500); } catch (error) { console.error("Registration failed:", error); showMessage(registerMessage, error.message || 'Đăng ký thất bại. Vui lòng thử lại.'); } }); } if (forgotForm) { forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); showMessage(forgotMessage, 'Đang xử lý yêu cầu...'); const email = e.target.email.value; try { const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); const data = await response.json(); if (!response.ok && response.status !== 200) { throw new Error(data.message || `Error: ${response.status}`); } showMessage(forgotMessage, data.message || 'Nếu email tồn tại, một liên kết đặt lại mật khẩu đã được gửi.', true); } catch (error) { console.error("Forgot password failed:", error); showMessage(forgotMessage, 'Đã xảy ra lỗi. Vui lòng thử lại.'); } }); } if (resetForm) { resetForm.addEventListener('submit', async (e) => { e.preventDefault(); const password = e.target.password.value; const confirmPassword = e.target.confirmPassword.value; const token = e.target.token.value; if (password !== confirmPassword) { showMessage(resetMessage, 'Mật khẩu mới không khớp.'); return; } if (!token) { showMessage(resetMessage, 'Thiếu mã token đặt lại.'); return; } showMessage(resetMessage, 'Đang đặt lại mật khẩu...'); try { const response = await fetch(`${BACKEND_URL}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || `Error: ${response.status}`); showMessage(resetMessage, 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.', true); setTimeout(() => { showLoginForm(); }, 2000); } catch (error) { console.error("Reset password failed:", error); showMessage(resetMessage, error.message || 'Đặt lại mật khẩu thất bại. Token có thể không hợp lệ hoặc đã hết hạn.'); } }); } if (logoutLink) { logoutLink.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('userBalance'); updateUserStatus(false); updateSidebarUserArea(false); console.log("User logged out."); }); } function updateUserStatus(isLoggedIn, username = 'Khách') { if (!userNameSpan || !userStatusSpan || !authActionLink || !registerActionLink || !forgotActionLink || !logoutLink) { console.warn("Header user area elements not found for UI update."); return; } if (isLoggedIn) { userNameSpan.textContent = username; if(authActionLink) authActionLink.style.display = 'none'; if(registerActionLink) registerActionLink.style.display = 'none'; if(forgotActionLink) forgotActionLink.style.display = 'none'; if(logoutLink) logoutLink.style.display = 'flex'; } else { userNameSpan.textContent = 'Khách'; if(authActionLink) authActionLink.style.display = 'flex'; if(registerActionLink) registerActionLink.style.display = 'flex'; if(forgotActionLink) forgotActionLink.style.display = 'flex'; if(logoutLink) logoutLink.style.display = 'none'; } } const checkLoginAndToken = () => { const userId = localStorage.getItem('userId'); const username = localStorage.getItem('username'); if (userId && username) { updateUserStatus(true, username); updateSidebarUserArea(true, username); } else { updateUserStatus(false); updateSidebarUserArea(false); } const urlParams = new URLSearchParams(window.location.search); const resetToken = urlParams.get('token'); if (resetToken) { showResetForm(); const tokenInput = document.getElementById('reset-token'); if (tokenInput) { tokenInput.value = resetToken; } else { console.warn("Reset token input field not found."); } window.history.replaceState({}, document.title, window.location.pathname); } }; checkLoginAndToken();
 }
@@ -96,168 +94,30 @@ function setupPurchaseModals() {
 
 // --- Load Dynamic Shopping Page Data ---
 async function loadShoppingPageData() {
-    const productArea = document.getElementById('dynamic-product-area');
-    if (!productArea) { console.error("Dynamic product area container not found!"); return; }
-    productArea.innerHTML = '<p style="text-align: center; padding: 2rem 0;">Đang tải sản phẩm...</p>';
-
+    const productArea = document.getElementById('dynamic-product-area'); if (!productArea) { console.error("Dynamic product area container not found!"); return; } productArea.innerHTML = '<p style="text-align: center; padding: 2rem 0;">Đang tải sản phẩm...</p>';
     try {
-        // Use the globally available fetchData
-        const [categories, products] = await Promise.all([
-            fetchData('/categories'),
-            fetchData('/products')
-        ]);
+        const [categories, products] = await Promise.all([ fetchData('/categories'), fetchData('/products') ]);
+        productArea.innerHTML = ''; if (!categories || categories.length === 0) { productArea.innerHTML = '<p style="text-align: center; padding: 2rem 0;">Không tìm thấy danh mục nào.</p>'; return; }
+        const productsByCategory = products.reduce((acc, product) => { const categoryId = product.category?._id || 'uncategorized'; if (!acc[categoryId]) acc[categoryId] = []; acc[categoryId].push(product); return acc; }, {});
+        categories.forEach(category => { const categorySection = document.createElement('section'); categorySection.className = 'product-category-section'; categorySection.id = `category-${category._id}`; categorySection.dataset.animate = "fade-up"; const categoryTitle = document.createElement('h2'); categoryTitle.className = 'category-title'; categoryTitle.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`; categorySection.appendChild(categoryTitle); const productGrid = document.createElement('div'); productGrid.className = 'product-grid'; const categoryProducts = productsByCategory[category._id] || []; if (categoryProducts.length > 0) { categoryProducts.sort((a, b) => (a.displayOrder - b.displayOrder) || a.name.localeCompare(b.name)); categoryProducts.forEach(product => { productGrid.appendChild(createProductCardElement(product)); }); } else { productGrid.innerHTML = '<p>Chưa có sản phẩm nào trong danh mục này.</p>'; } categorySection.appendChild(productGrid); productArea.appendChild(categorySection); }); ScrollTrigger.refresh(); // Refresh ScrollTrigger after adding elements
+         // Re-run animations on the dynamic content area only
+         gsap.utils.toArray(productArea.querySelectorAll('[data-animate]')).forEach(element => {
+            // This simplified re-run might be sufficient if ScrollTrigger handles the trigger points correctly after refresh
+             gsap.from(element.children.length > 0 ? element.children : element, { opacity: 0, y: 20, duration: 0.6, ease: "power2.out", stagger: element.dataset.stagger || 0.05, delay: element.dataset.delay || 0 });
+         });
 
-        productArea.innerHTML = ''; // Clear loading
-
-        if (!categories || categories.length === 0) {
-             productArea.innerHTML = '<p style="text-align: center; padding: 2rem 0;">Không tìm thấy danh mục nào.</p>';
-            return;
-        }
-
-        const productsByCategory = products.reduce((acc, product) => {
-            const categoryId = product.category?._id || 'uncategorized';
-            if (!acc[categoryId]) acc[categoryId] = [];
-            acc[categoryId].push(product);
-            return acc;
-        }, {});
-
-        categories.forEach(category => {
-            const categorySection = document.createElement('section');
-            categorySection.className = 'product-category-section';
-            categorySection.id = `category-${category._id}`;
-            categorySection.dataset.animate = "fade-up"; // Add animation trigger
-
-            const categoryTitle = document.createElement('h2');
-            categoryTitle.className = 'category-title';
-            categoryTitle.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`;
-            categorySection.appendChild(categoryTitle);
-
-            const productGrid = document.createElement('div');
-            productGrid.className = 'product-grid';
-            // Animation for grid items applied via CSS/GSAP targeting .product-card inside [data-animate] section
-
-            const categoryProducts = productsByCategory[category._id] || [];
-
-            if (categoryProducts.length > 0) {
-                // Sort products within category by displayOrder, then name
-                categoryProducts.sort((a, b) => (a.displayOrder - b.displayOrder) || a.name.localeCompare(b.name));
-
-                categoryProducts.forEach(product => {
-                    productGrid.appendChild(createProductCardElement(product));
-                });
-            } else {
-                productGrid.innerHTML = '<p>Chưa có sản phẩm nào trong danh mục này.</p>';
-            }
-
-            categorySection.appendChild(productGrid);
-            productArea.appendChild(categorySection);
-        });
-
-        // Refresh ScrollTrigger AFTER new elements are added to the DOM
-        ScrollTrigger.refresh();
-
-        // Re-run animations setup specifically for the new dynamic content if needed
-        // This might be necessary if animations don't trigger automatically on refresh
-        gsap.utils.toArray(productArea.querySelectorAll('[data-animate]')).forEach(element => {
-             const delay = parseFloat(element.dataset.delay) || 0;
-             let staggerAmount = parseFloat(element.dataset.stagger) || 0;
-             const animType = element.dataset.animate;
-             let animProps = { opacity: 0, duration: 0.6, ease: "power2.out", delay: delay, overwrite: 'auto' }; // Use overwrite
-             if (animType === 'fade-left') { animProps.x = -30; } else if (animType === 'fade-right') { animProps.x = 30; } else { animProps.y = 20; }
-             let target = element;
-              if (element.classList.contains('product-grid')) {
-                 target = element.children; // Target cards inside the grid
-                 if (staggerAmount === 0) staggerAmount = 0.05;
-                 if (staggerAmount > 0) animProps.stagger = staggerAmount;
-             }
-            // Apply directly, ensuring ScrollTrigger part is handled by setupProfessionalAnimations or called here too
-            gsap.from(target, animProps);
-            // If ScrollTrigger didn't pick them up, re-add trigger:
-            // gsap.from(target, { ...animProps, scrollTrigger: { trigger: element, start: "top 88%", toggleActions: "play none none none", once: true } });
-        });
-
-
-    } catch (error) {
-        console.error("Failed to load shopping page data:", error);
-        productArea.innerHTML = `<p class="error" style="text-align: center; padding: 2rem 0;">Lỗi tải dữ liệu sản phẩm. Vui lòng thử lại. (${error.message})</p>`;
-    }
+    } catch (error) { console.error("Failed to load shopping page data:", error); productArea.innerHTML = `<p class="error" style="text-align: center; padding: 2rem 0;">Lỗi tải dữ liệu sản phẩm. Vui lòng thử lại. (${error.message})</p>`; }
 }
 
 function createProductCardElement(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.dataset.productId = product._id;
-    card.dataset.productName = product.name;
-    card.dataset.productPrice = product.price;
-    card.dataset.stockStatus = product.stockStatus;
-
-    let tagsHTML = product.tags?.map(tag => {
-        let tagClass = '';
-        if (tag === 'hot') tagClass = 'hot-tag';
-        else if (tag === 'sale') tagClass = 'sale-tag';
-        // Add other tag types if needed
-        return tagClass ? `<span class="product-tag ${tagClass}">${tag}</span>` : '';
-    }).join('') || '';
-
-    let priceHTML = '';
-    let buttonText = "Mua ngay";
-    let buttonDisabled = false;
-
-    switch (product.stockStatus) {
-        case 'contact':
-            priceHTML = `<span class="sale-price">Liên hệ</span>`;
-            buttonText = "Xem chi tiết";
-            break;
-        case 'check_price':
-            priceHTML = `<span class="sale-price">Xem giá</span>`;
-            buttonText = "Xem bảng giá";
-            break;
-        case 'out_of_stock':
-            priceHTML = `<span class="sale-price">${formatPrice(product.price)}</span>`; // Still show price maybe?
-            buttonText = "Hết hàng";
-            buttonDisabled = true;
-            break;
-        default: // in_stock
-            if (product.originalPrice && product.originalPrice > product.price) {
-                priceHTML = `<span class="original-price">${formatPrice(product.originalPrice)}</span> <span class="sale-price">${formatPrice(product.price)}</span>`;
-            } else {
-                priceHTML = `<span class="sale-price">${formatPrice(product.price)}</span>`;
-            }
-            break;
-    }
-
-
-    card.innerHTML = `
-        <div class="product-image-placeholder">
-            <img src="${product.imageUrl || 'images/product-placeholder.png'}" alt="${product.name}" loading="lazy">
-            ${tagsHTML}
-        </div>
-        <div class="product-info">
-            <h3 class="product-title">${product.name}</h3>
-            <p class="product-meta">Đã bán: ${product.purchaseCount || 0}</p>
-            <p class="product-price">
-                ${priceHTML}
-            </p>
-            <button class="cta-button product-buy-btn" ${buttonDisabled ? 'disabled' : ''}>${buttonText}</button>
-        </div>
-    `;
-    return card;
+    const card = document.createElement('div'); card.className = 'product-card'; card.dataset.productId = product._id; card.dataset.productName = product.name; card.dataset.productPrice = product.price; card.dataset.stockStatus = product.stockStatus; let tagsHTML = product.tags?.map(tag => { let tagClass = ''; if (tag === 'hot') tagClass = 'hot-tag'; else if (tag === 'sale') tagClass = 'sale-tag'; return tagClass ? `<span class="product-tag ${tagClass}">${tag}</span>` : ''; }).join('') || ''; let priceHTML = ''; let buttonText = "Mua ngay"; let buttonDisabled = false; switch (product.stockStatus) { case 'contact': priceHTML = `<span class="sale-price">Liên hệ</span>`; buttonText = "Xem chi tiết"; break; case 'check_price': priceHTML = `<span class="sale-price">Xem giá</span>`; buttonText = "Xem bảng giá"; break; case 'out_of_stock': priceHTML = `<span class="sale-price">${formatPrice(product.price)}</span>`; buttonText = "Hết hàng"; buttonDisabled = true; break; default: if (product.originalPrice && product.originalPrice > product.price) { priceHTML = `<span class="original-price">${formatPrice(product.originalPrice)}</span> <span class="sale-price">${formatPrice(product.price)}</span>`; } else { priceHTML = `<span class="sale-price">${formatPrice(product.price)}</span>`; } break; } card.innerHTML = ` <div class="product-image-placeholder"> <img src="${product.imageUrl || 'images/product-placeholder.png'}" alt="${product.name}" loading="lazy"> ${tagsHTML} </div> <div class="product-info"> <h3 class="product-title">${product.name}</h3> <p class="product-meta">Đã bán: ${product.purchaseCount || 0}</p> <p class="product-price"> ${priceHTML} </p> <button class="cta-button product-buy-btn" ${buttonDisabled ? 'disabled' : ''}>${buttonText}</button> </div> `; return card;
 }
 
 
 // ----- Initialization -----
 function initializePage() {
     console.log("Initializing page (v1.6)..."); // Update log
-    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); setupAdminPanel(); setupActionButtons(); setupDropdownActions(); setupClickDropdowns(); setupBackToTopButton();
-    // Initialize purchase modals regardless of page, as auth modal might be on index.html
-    setupPurchaseModals();
-     // Load shopping data ONLY if on the shopping page
-     if (document.body.classList.contains('shopping-page')) {
-         if (typeof loadShoppingPageData === 'function') {
-             loadShoppingPageData();
-         } else { console.error("loadShoppingPageData function not found!"); }
-     }
-    const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } else { console.warn("Header donate button not found"); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete.");
+    updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); setupAdminPanel(); setupActionButtons(); setupDropdownActions(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModals(); if (document.body.classList.contains('shopping-page')) { if (typeof loadShoppingPageData === 'function') { loadShoppingPageData(); } else { console.error("loadShoppingPageData function not found!"); } } const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); } else { console.warn("Header donate button not found"); } const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } } console.log("Page initialization complete.");
 }
 
 // --- Run Initialization ---
