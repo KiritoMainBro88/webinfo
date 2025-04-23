@@ -1,4 +1,4 @@
-console.log("Script version 1.9.7 - Frontend Balance Check & Header Fix"); // Keep version or increment if desired
+console.log("Script version 1.9.7 - Frontend Balance Check & Header Fix"); // Keep version or increment if debugging
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
@@ -27,13 +27,95 @@ function updateYear() { const yearSpan = document.getElementById('year'); if (ye
 function showForm(formToShow) { if (!authContainer || !loginFormWrapper || !registerFormWrapper || !forgotFormWrapper || !resetFormWrapper) { console.error("Auth modal wrappers not initialized!"); return; } authContainer.style.display = 'flex'; authContainer.classList.add('visible'); [loginFormWrapper, registerFormWrapper, forgotFormWrapper, resetFormWrapper].forEach(form => { if(form) form.style.display = form === formToShow ? 'block' : 'none'; }); const messageElements = [ document.getElementById('login-message'), document.getElementById('register-message'), document.getElementById('forgot-message'), document.getElementById('reset-message') ]; messageElements.forEach(msg => { if(msg) { msg.textContent = ''; msg.className = 'auth-message'; } }); }
 window.showLoginForm = () => showForm(loginFormWrapper); window.showRegisterForm = () => showForm(registerFormWrapper); window.showForgotForm = () => showForm(forgotFormWrapper); window.showResetForm = () => showForm(resetFormWrapper); window.closeAuthForms = () => { if(authContainer) { authContainer.classList.remove('visible'); setTimeout(() => { authContainer.style.display = 'none'; }, 300); } };
 
-// --- Shopping Page Dynamic Loading --- (No changes)
-async function loadAndDisplayShoppingData() { /* ... */ }
-function createCategorySectionElement(category) { /* ... */ }
-function createProductCardElement(product) { /* ... */ }
-function handleBuyButtonClick(event) { /* ... */ }
-function openPurchaseModal(id, name, price) { /* ... */ }
-function setupShoppingPageBuyListeners() { /* ... */ }
+// --- MODIFIED: Shopping Page Dynamic Loading with Debugging ---
+async function loadAndDisplayShoppingData() {
+    if (!dynamicProductArea) {
+        console.log("Not on shopping page or dynamic area not found.");
+        return;
+    }
+    console.log("Attempting to load shopping data..."); // DEBUG
+    dynamicProductArea.innerHTML = `
+        <p style="text-align: center; padding: 2rem; background-color: var(--bg-tertiary); border-radius: var(--border-radius-md);">
+            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+            Đang tải sản phẩm...
+        </p>`; // Loading message with better style
+
+    try {
+        console.log("Fetching categories and products..."); // DEBUG
+        // Fetch both categories and products in parallel
+        const [categories, products] = await Promise.all([
+            fetchData('/categories'),
+            fetchData('/products')
+        ]);
+
+        console.log("Fetched Categories:", categories); // DEBUG
+        console.log("Fetched Products:", products);   // DEBUG
+
+        dynamicProductArea.innerHTML = ''; // Clear loading message AFTER successful fetch
+
+        if (!categories || categories.length === 0) {
+            console.log("No categories found."); // DEBUG
+            dynamicProductArea.innerHTML = '<p style="text-align: center; padding: 2rem;">Không tìm thấy danh mục sản phẩm nào.</p>';
+            return;
+        }
+
+        console.log("Rendering categories..."); // DEBUG
+        // Render categories and their products
+        categories.forEach((category, index) => {
+            console.log(`Rendering category ${index}: ${category.name}`); // DEBUG
+            const categorySection = createCategorySectionElement(category);
+            const productGrid = categorySection.querySelector('.product-grid');
+            if (!productGrid) {
+                console.error(`Product grid not found for category: ${category.name}`);
+                return; // Skip this category if grid is missing
+            }
+
+            // Filter products for the current category
+            const categoryProducts = products.filter(product => product.category?._id === category._id);
+             console.log(`Found ${categoryProducts.length} products for category ${category.name}`); // DEBUG
+
+            if (categoryProducts.length > 0) {
+                categoryProducts.forEach(product => {
+                    try { // Add try...catch around element creation
+                        const productCard = createProductCardElement(product);
+                        productGrid.appendChild(productCard);
+                    } catch (cardError) {
+                         console.error(`Error creating product card for ${product.name}:`, cardError);
+                         // Optionally add a placeholder error card to the grid
+                    }
+                });
+            } else {
+                 productGrid.innerHTML = '<p style="font-size: 0.9em; color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Chưa có sản phẩm trong danh mục này.</p>';
+            }
+
+            dynamicProductArea.appendChild(categorySection);
+        });
+        console.log("Finished rendering categories."); // DEBUG
+
+        // Re-apply GSAP animations and listeners
+        console.log("Re-applying animations and listeners..."); // DEBUG
+        setTimeout(() => {
+            // Reset GSAP initiation flags if re-animating is desired
+            gsap.utils.toArray('[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
+            setupProfessionalAnimations();
+            setupShoppingPageBuyListeners();
+            console.log("Animations and listeners re-applied."); // DEBUG
+        }, 150); // Increased delay slightly
+
+
+    } catch (error) {
+        console.error("Error loading or rendering shopping page data:", error); // DEBUG
+        dynamicProductArea.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--danger-color);">Lỗi tải sản phẩm: ${error.message}. Vui lòng kiểm tra Console (F12) và thử lại sau.</p>`;
+    }
+}
+// --- END MODIFIED ---
+
+
+function createCategorySectionElement(category) { const section = document.createElement('section'); section.classList.add('product-category-section'); section.dataset.animate = "fade-up"; const title = document.createElement('h2'); title.classList.add('category-title'); title.innerHTML = `<i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>${category.name}`; const grid = document.createElement('div'); grid.classList.add('product-grid'); section.appendChild(title); section.appendChild(grid); return section; }
+function createProductCardElement(product) { const card = document.createElement('div'); card.classList.add('product-card'); const originalPriceHTML = product.originalPrice && product.originalPrice > product.price ? `<span class="original-price">${formatPrice(product.originalPrice)}</span>` : ''; const salePriceHTML = `<span class="sale-price">${formatPrice(product.price)}</span>`; let tagHTML = ''; if (product.tags?.includes('hot')) { tagHTML = '<span class="product-tag hot-tag">Hot</span>'; } else if (product.tags?.includes('sale') || (product.originalPrice && product.originalPrice > product.price)) { tagHTML = '<span class="product-tag sale-tag">Sale</span>'; } let buttonText = 'Mua ngay'; let buttonDisabled = false; let priceDisplay = `${originalPriceHTML} ${salePriceHTML}`; switch (product.stockStatus) { case 'out_of_stock': buttonText = 'Hết hàng'; buttonDisabled = true; break; case 'contact': buttonText = 'Liên hệ'; priceDisplay = `<span class="sale-price">Liên hệ</span>`; break; case 'check_price': buttonText = 'Xem bảng giá'; priceDisplay = `<span class="sale-price">Giá tốt</span>`; break; } card.innerHTML = `<div class="product-image-placeholder"><img src="${product.imageUrl || 'images/product-placeholder.png'}" alt="${product.name}" loading="lazy">${tagHTML}</div><div class="product-info"><h3 class="product-title">${product.name}</h3><p class="product-meta">Đã bán: ${product.purchaseCount || 0}</p><p class="product-price">${priceDisplay}</p><button class="cta-button product-buy-btn" data-product-id="${product._id}" ${buttonDisabled ? 'disabled' : ''}>${buttonText}</button></div>`; return card; }
+function handleBuyButtonClick(event) { if (!event.target.classList.contains('product-buy-btn')) return; event.preventDefault(); const button = event.target; const productCard = button.closest('.product-card'); if (!productCard) return; const productTitleElement = productCard.querySelector('.product-title'); const productPriceElement = productCard.querySelector('.sale-price'); const productTitle = productTitleElement?.textContent || 'Sản phẩm'; const productId = button.dataset.productId; let productPrice = NaN; const priceText = productPriceElement?.textContent || ''; const priceMatch = priceText.match(/[\d,.]+/); if (priceMatch) { productPrice = parseFloat(priceMatch[0].replace(/[^0-9]/g, '')); } if (button.disabled) { alert(`Sản phẩm "${productTitle}" hiện đang hết hàng hoặc cần liên hệ.`); return; } if (!localStorage.getItem('userId')) { alert('Vui lòng đăng nhập để mua hàng!'); if (typeof showLoginForm === 'function') showLoginForm(); } else { openPurchaseModal(productId, productTitle, productPrice); } }
+function openPurchaseModal(id, name, price) { if (!purchaseModal || !purchaseItemId || !purchaseItemName || !purchaseTotalPrice || !purchaseForm || !purchaseItemPriceInput) { console.error("Purchase modal elements not found!"); alert("Lỗi: Không thể mở form mua hàng."); return; } purchaseForm.reset(); if(purchaseMessage) purchaseMessage.textContent = ''; if(purchaseMessage) purchaseMessage.className = 'auth-message'; purchaseItemId.value = id || ''; purchaseItemName.textContent = name || 'Sản phẩm không xác định'; purchaseItemPriceInput.value = !isNaN(price) ? price : ''; purchaseTotalPrice.textContent = formatPrice(price); showModal('purchase-modal'); }
+function setupShoppingPageBuyListeners() { if (!document.body.classList.contains('shopping-page')) return; const productArea = document.getElementById('dynamic-product-area'); if (!productArea) return; productArea.removeEventListener('click', handleBuyButtonClick); productArea.addEventListener('click', handleBuyButtonClick); }
 
 // --- Header Scroll Effect --- (No changes)
 function setupHeaderScrollEffect() { /* ... */ }
@@ -75,95 +157,17 @@ function setupBackToTopButton() { /* ... */ }
 function showModal(modalId) { /* ... */ }
 function hideModal(modalId) { /* ... */ }
 
-// --- MODIFIED: Setup Listeners for Purchase Modal ---
-function setupPurchaseModalListeners() {
-    if (!purchaseModal || !purchaseForm || !purchaseCloseBtn || !purchaseCancelBtn || !purchaseMessage || !purchaseItemPriceInput) {
-        return; // Exit silently if elements aren't found
-    }
-
-    purchaseCloseBtn.addEventListener('click', () => hideModal('purchase-modal'));
-    purchaseCancelBtn.addEventListener('click', () => hideModal('purchase-modal'));
-
-    purchaseForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log("Purchase form submitted");
-        purchaseMessage.textContent = 'Đang kiểm tra và xử lý...'; // Updated message
-        purchaseMessage.className = 'auth-message';
-
-        const formData = new FormData(purchaseForm);
-        const purchaseData = Object.fromEntries(formData.entries());
-        purchaseData.userId = localStorage.getItem('userId');
-        const itemPrice = parseFloat(purchaseItemPriceInput.value);
-        const currentBalance = parseFloat(localStorage.getItem('balance') || '0');
-        const submitButton = purchaseForm.querySelector('button[type="submit"]');
-
-        // --- Frontend Balance Check (Quick Feedback) ---
-        if (isNaN(itemPrice)) {
-             purchaseMessage.textContent = 'Lỗi: Giá sản phẩm không hợp lệ.';
-             purchaseMessage.className = 'auth-message error';
-             return;
-        }
-        if (currentBalance < itemPrice) {
-            purchaseMessage.textContent = 'Lỗi: Số dư không đủ để thực hiện giao dịch.';
-            purchaseMessage.className = 'auth-message error';
-            return;
-        }
-        // --- End Frontend Balance Check ---
-
-        if(submitButton) submitButton.disabled = true; // Disable button during processing
-
-        try {
-            // --- !!! REPLACE THIS SIMULATION WITH ACTUAL BACKEND CALL !!! ---
-            console.warn("!!! SIMULATING purchase - Backend endpoint needed at /api/purchase/confirm !!!");
-            console.log("Sending to (simulated) backend:", purchaseData);
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-
-            // Hypothetical backend call structure:
-            /*
-            const result = await fetchData('/purchase/confirm', { // Use your actual endpoint
-                 method: 'POST',
-                 body: JSON.stringify({
-                     userId: purchaseData.userId,
-                     itemId: purchaseData.itemId
-                     // Do NOT send price, other form data (robloxUser etc.) unless backend needs it
-                     // Backend should get price from DB based on itemId and verify balance server-side
-                 })
-             });
-            console.log("Actual Backend Purchase result:", result); // Log real result
-            // Check result for success message or specific status
-            if (!result || !result.success) { // Adjust based on backend response structure
-                 throw new Error(result.message || 'Giao dịch thất bại từ máy chủ.');
-            }
-            */
-            // --- END REPLACE SIMULATION ---
-
-            // If backend call was successful (or simulation runs):
-            purchaseMessage.textContent = 'Mua hàng thành công! Cập nhật số dư...'; // Updated success message
-            purchaseMessage.className = 'auth-message success';
-            console.log("Purchase successful (or simulated) for item ID:", purchaseData.itemId);
-
-            // Refresh user balance AFTER successful purchase confirmation from backend
-            await fetchAndUpdateUserInfo();
-
-            setTimeout(() => { hideModal('purchase-modal'); }, 2500); // Slightly longer delay
-
-        } catch (error) {
-            console.error("Purchase failed:", error);
-            purchaseMessage.textContent = `Lỗi: ${error.message || 'Mua hàng thất bại.'}`;
-            purchaseMessage.className = 'auth-message error';
-        } finally {
-             if(submitButton) submitButton.disabled = false; // Re-enable button
-        }
-    });
-}
+// --- Setup Listeners for Purchase Modal --- (No changes)
+function setupPurchaseModalListeners() { if (!purchaseModal || !purchaseForm || !purchaseCloseBtn || !purchaseCancelBtn || !purchaseMessage || !purchaseItemPriceInput) { return; } purchaseCloseBtn.addEventListener('click', () => hideModal('purchase-modal')); purchaseCancelBtn.addEventListener('click', () => hideModal('purchase-modal')); purchaseForm.addEventListener('submit', async (e) => { e.preventDefault(); purchaseMessage.textContent = 'Đang kiểm tra và xử lý...'; purchaseMessage.className = 'auth-message'; const formData = new FormData(purchaseForm); const purchaseData = Object.fromEntries(formData.entries()); purchaseData.userId = localStorage.getItem('userId'); const itemPrice = parseFloat(purchaseItemPriceInput.value); const currentBalance = parseFloat(localStorage.getItem('balance') || '0'); const submitButton = purchaseForm.querySelector('button[type="submit"]'); if (isNaN(itemPrice)) { purchaseMessage.textContent = 'Lỗi: Giá sản phẩm không hợp lệ.'; purchaseMessage.className = 'auth-message error'; return; } if (currentBalance < itemPrice) { purchaseMessage.textContent = 'Lỗi: Số dư không đủ để thực hiện giao dịch.'; purchaseMessage.className = 'auth-message error'; return; } if(submitButton) submitButton.disabled = true; try { console.warn("!!! SIMULATING purchase - Backend endpoint needed at /api/purchase/confirm !!!"); await new Promise(resolve => setTimeout(resolve, 1500)); purchaseMessage.textContent = 'Mua hàng thành công! Cập nhật số dư...'; purchaseMessage.className = 'auth-message success'; await fetchAndUpdateUserInfo(); setTimeout(() => { hideModal('purchase-modal'); }, 2500); } catch (error) { console.error("Purchase failed:", error); purchaseMessage.textContent = `Lỗi: ${error.message || 'Mua hàng thất bại.'}`; purchaseMessage.className = 'auth-message error'; } finally { if(submitButton) submitButton.disabled = false; } }); }
 
 
 // ----- Initialization Function -----
 function initializePage() {
-    console.log(`Initializing page (v1.9.7)...`);
-    initializeDOMElements(); updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupProfessionalAnimations(); setupActionButtons(); setupDropdownActions(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModalListeners();
+    console.log(`Initializing page (v${script.src.split('v=')[1] || 'unknown'})...`); // Log actual version
+    initializeDOMElements(); updateYear(); setupHeaderScrollEffect(); setupMobileMenuToggle(); setupUserDropdown(); setupThemeToggle(); setupLanguageToggle(); setupClickDropdowns(); setupBackToTopButton(); setupPurchaseModalListeners(); setupActionButtons(); setupDropdownActions();
     if (document.body.classList.contains('shopping-page')) { loadAndDisplayShoppingData(); }
     else if (document.body.classList.contains('history-page')) { console.log("History page detected."); }
+    else { /* Logic for index or other pages */ setupProfessionalAnimations(); } // Only run general animations if not shopping page (which runs its own after load)
     const donateButtonHeader = document.getElementById('donate-button-header'); if (donateButtonHeader) { donateButtonHeader.addEventListener('click', (e) => { e.preventDefault(); alert('Donate function coming soon!'); }); }
     const ageSpan = document.getElementById('age'); if (ageSpan) { try { ageSpan.textContent = calculateAge('2006-08-08'); } catch (e) { console.error("Error calculating age:", e); ageSpan.textContent = "??"; } }
     console.log("Page initialization complete.");
@@ -171,4 +175,4 @@ function initializePage() {
 
 // --- Run Initialization on DOM Ready ---
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initializePage); }
-else { initializePage(); }
+else { initializePage(); } // Already loaded
