@@ -32,11 +32,31 @@ function initializeDOMElements() {
 
 // --- fetchData Utility Function ---
 async function fetchData(endpoint, options = {}) {
-    const headers = { 'Content-Type': 'application/json', ...options.headers, };
+    const headers = { ...options.headers }; // Start with optional headers
+
+    // Add the insecure temp user ID header if available
     const tempUserId = localStorage.getItem('userId');
-    if (tempUserId) { headers['x-temp-userid'] = tempUserId; } // Insecure header for demo admin auth
-    const config = { method: options.method || 'GET', headers: headers, };
-    if (options.body) { config.body = options.body; }
+    if (tempUserId) {
+        headers['x-temp-userid'] = tempUserId;
+    }
+
+    // *** CHANGE: Conditionally set Content-Type ***
+    // Only set Content-Type if the body is NOT FormData
+    if (options.body && !(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+    // If body IS FormData, do NOT set Content-Type header; browser will do it.
+    // ******************************************
+
+    const config = {
+        method: options.method || 'GET',
+        headers: headers,
+    };
+
+    if (options.body) {
+        config.body = options.body;
+    }
+
     try {
         const response = await fetch(`${BACKEND_URL}/api${endpoint}`, config);
         const contentType = response.headers.get("content-type");
