@@ -368,7 +368,10 @@ function createProductCardElement(product, includeBuyButton = false) {
     // --- DEBUG LOG --- 
     console.log(`Product: ${product.name}, Category:`, product.category, `Slug: ${categorySlug}, IncludeButton: ${includeBuyButton}`);
     // --------------- 
-    const canLink = !includeBuyButton && categorySlug;
+
+    // MODIFIED: Explicit check for valid slug before deciding to link
+    const canLink = !includeBuyButton && typeof categorySlug === 'string' && categorySlug.length > 0;
+    
     console.log(`  Resulting canLink: ${canLink}`); // Log canLink status
     const wrapperElement = canLink ? document.createElement('a') : document.createElement('div');
 
