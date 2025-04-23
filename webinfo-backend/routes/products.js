@@ -4,10 +4,14 @@ const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const authAdmin = require('../middleware/authAdmin');
+const upload = require('../config/cloudinary'); // <-- IMPORT UPLOAD CONFIG
 const router = express.Router();
 
 // Helper function to parse tags safely (no change)
-const parseTags = (tagsInput) => { /* ... */ };
+const parseTags = (tagsInput) => {
+    if (!tagsInput || typeof tagsInput !== 'string') return [];
+    return tagsInput.split(',').map(tag => tag.trim().toLowerCase()).filter(Boolean);
+};
 
 // --- MODIFIED: GET products - Allow filtering, sorting, searching ---
 router.get('/', async (req, res) => {
@@ -104,66 +108,101 @@ router.get('/', async (req, res) => {
 // GET single product by ID (Public) - (No change)
 router.get('/:id', async (req, res) => { /* ... */ });
 
-// POST create new product (Admin Only) - ** Needs to handle 'brand' **
-router.post('/', authAdmin, async (req, res) => {
+// POST create new product (Admin Only) - Handle image upload
+router.post('/', authAdmin, upload.single('productImage'), async (req, res) => {
+    //                      ^-- Use multer middleware here (matches input name)
     console.log("Received product data for CREATE:", req.body);
-    // ADD 'brand' to destructuring
     const { name, price, category, originalPrice, imageUrl, tags, stockStatus, description, displayOrder, brand } = req.body;
 
+    // Basic validation (keep as is)
     if (!name || price === undefined || !category) { return res.status(400).json({ message: 'Name, price, and category are required' }); }
     if (isNaN(parseFloat(price))) { return res.status(400).json({ message: 'Price must be a valid number.' }); }
     if (!mongoose.Types.ObjectId.isValid(category)) { return res.status(400).json({ message: 'Invalid Category ID provided.' }); }
 
     try {
-        const newProduct = new Product({
+        const newProductData = {
             name,
             price: parseFloat(price),
             category,
-            brand: brand || undefined, // Add brand
+            brand: brand || undefined,
             originalPrice: (originalPrice && !isNaN(parseFloat(originalPrice))) ? parseFloat(originalPrice) : undefined,
-            imageUrl: imageUrl || undefined,
+            // Prioritize uploaded image URL over text input URL
+            imageUrl: req.file ? req.file.path : (imageUrl || undefined),
             tags: parseTags(tags),
             stockStatus: stockStatus || 'in_stock',
-            description,
+            description: description || '', // Ensure description is at least empty string
             displayOrder: (displayOrder && !isNaN(parseInt(displayOrder, 10))) ? parseInt(displayOrder, 10) : 0
-        });
+        };
+
+        // Log if using uploaded file path
+        if (req.file) {
+            console.log('Product Image Uploaded:', req.file.path);
+        }
+
+        const newProduct = new Product(newProductData);
         console.log("Attempting to save product:", newProduct);
         await newProduct.save();
         console.log("Product saved successfully:", newProduct._id);
         const populatedProduct = await Product.findById(newProduct._id).populate('category', 'name iconClass slug');
         res.status(201).json(populatedProduct);
-    } catch (err) { /* ... (error handling no change) ... */ }
+    } catch (err) {
+        console.error("Error creating product:", err);
+        if (err.name === 'ValidationError') {
+            let messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({ message: messages.join('. ') });
+        }
+        res.status(500).json({ message: 'Server error creating product. Check logs.' });
+    }
 });
 
-// PUT update product (Admin Only) - ** Needs to handle 'brand' **
-router.put('/:id', authAdmin, async (req, res) => {
-     if (!mongoose.Types.ObjectId.isValid(req.params.id)) { return res.status(400).json({ message: 'Invalid Product ID format' }); }
+// PUT update product (Admin Only) - Handle image upload
+router.put('/:id', authAdmin, upload.single('productImage'), async (req, res) => {
+    //                      ^-- Use multer middleware here
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) { return res.status(400).json({ message: 'Invalid Product ID format' }); }
     console.log(`Updating product ${req.params.id} with data:`, req.body);
-    // ADD 'brand' to destructuring
     const { name, price, category, originalPrice, imageUrl, tags, stockStatus, description, displayOrder, brand } = req.body;
     const updateData = {};
 
-     if (name !== undefined) updateData.name = name;
-     if (price !== undefined) updateData.price = parseFloat(price);
-     if (category !== undefined) { if (!mongoose.Types.ObjectId.isValid(category)) { return res.status(400).json({ message: 'Invalid Category ID provided.' }); } updateData.category = category; }
-     if (brand !== undefined) updateData.brand = brand; // Add brand update
-     if (originalPrice !== undefined) updateData.originalPrice = (originalPrice && !isNaN(parseFloat(originalPrice))) ? parseFloat(originalPrice) : null;
-     if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
-     if (tags !== undefined) updateData.tags = parseTags(tags);
-     if (stockStatus !== undefined) updateData.stockStatus = stockStatus;
-     if (description !== undefined) updateData.description = description;
-     if (displayOrder !== undefined) updateData.displayOrder = parseInt(displayOrder || '0', 10);
-     updateData.updatedAt = Date.now();
+    // Assign text fields if they exist in the request body
+    if (name !== undefined) updateData.name = name;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    if (category !== undefined) { if (!mongoose.Types.ObjectId.isValid(category)) { return res.status(400).json({ message: 'Invalid Category ID provided.' }); } updateData.category = category; }
+    if (brand !== undefined) updateData.brand = brand;
+    if (originalPrice !== undefined) updateData.originalPrice = (originalPrice && !isNaN(parseFloat(originalPrice))) ? parseFloat(originalPrice) : null;
+    if (tags !== undefined) updateData.tags = parseTags(tags);
+    if (stockStatus !== undefined) updateData.stockStatus = stockStatus;
+    if (description !== undefined) updateData.description = description;
+    if (displayOrder !== undefined) updateData.displayOrder = parseInt(displayOrder || '0', 10);
+    
+    // Handle image URL: Prioritize uploaded file
+    if (req.file) {
+        console.log('Product Image Uploaded for Update:', req.file.path);
+        updateData.imageUrl = req.file.path; // Overwrite imageUrl with uploaded file path
+    } else if (imageUrl !== undefined) {
+        // Only update from text input if NO file was uploaded
+        updateData.imageUrl = imageUrl;
+    }
+    
+    updateData.updatedAt = Date.now();
 
-     if (Object.keys(updateData).length <= 1 && updateData.updatedAt) { // Check if only updatedAt was added
+    // Check if any actual update data exists (other than just updatedAt)
+    const updateKeys = Object.keys(updateData);
+    if (updateKeys.length <= 1 && updateKeys.includes('updatedAt')) {
          return res.status(400).json({ message: 'No fields provided for update.' });
-     }
+    }
 
-     try {
+    try {
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true }).populate('category', 'name iconClass slug');
         if (!updatedProduct) { console.warn(`Product not found for update: ${req.params.id}`); return res.status(404).json({ message: 'Product not found' }); }
         console.log(`Product ${req.params.id} updated successfully.`); res.json(updatedProduct);
-     } catch (err) { /* ... (error handling no change) ... */ }
+     } catch (err) {
+        console.error(`Error updating product ${req.params.id}:`, err);
+         if (err.name === 'ValidationError') {
+             let messages = Object.values(err.errors).map(val => val.message);
+             return res.status(400).json({ message: messages.join('. ') });
+         }
+         res.status(500).json({ message: 'Server error updating product. Check logs.' });
+     }
 });
 
 

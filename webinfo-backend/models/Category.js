@@ -24,6 +24,11 @@ const categorySchema = new mongoose.Schema({
         trim: true,
         default: 'fas fa-tag'
     },
+    iconImageUrl: { // <-- ADD THIS FIELD
+        type: String,
+        required: false,
+        trim: true
+    },
     displayOrder: {
         type: Number,
         default: 0
