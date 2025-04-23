@@ -8,68 +8,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- === CSS LINK (Ensure this is present and correct) === -->
-    <link rel="stylesheet" href="style.css?v=1.9"> <!-- Incremented version -->
-    <!-- === END CSS LINK === -->
+    <!-- === UPDATE CSS VERSION === -->
+    <link rel="stylesheet" href="style.css?v=1.9.3">
 </head>
-<body class="dark-theme shopping-page">
+<body class="dark-theme shopping-page"> <!-- Keep shopping-page class -->
 
     <div class="page-wrapper">
         <div class="main-content-area" id="main-content">
-            <!-- Header -->
+            <!-- Header (no changes needed) -->
             <header class="content-header">
                  <div class="header-inner"> <div class="header-left"> <div class="logo-and-mobile-toggle"> <a href="index.html" class="logo-link"> <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image"> <span class="logo-text">KiritoMainBro</span> </a> <button id="mobile-menu-toggle" class="icon-button mobile-nav-toggle" aria-label="Toggle Mobile Menu" aria-expanded="false"> <i class="fas fa-bars"></i> </button> </div> </div> <nav class="header-nav"> <a href="index.html" class="header-nav-link"> <i class="fas fa-home fa-fw"></i> <span class="nav-link-text">Trang chính</span> </a> <div class="nav-item-wrapper"> <a href="#" class="header-nav-link nav-dropdown-trigger"> <i class="fas fa-cogs fa-fw"></i> <span class="nav-link-text">Dịch vụ</span> <i class="fas fa-chevron-down nav-chevron"></i> </a> <div class="dropdown-menu"> <a href="shopping.html" class="dropdown-link active"> <i class="fas fa-shopping-bag fa-fw icon-left"></i> Mua hàng </a> <a href="#" class="dropdown-link" id="deposit-link"> <i class="fas fa-credit-card fa-fw icon-left"></i> Nạp tiền </a> <a href="history.html" class="dropdown-link" id="history-link"> <i class="fas fa-history fa-fw icon-left"></i> Lịch sử mua hàng </a> </div> </div> </nav> <div class="header-right"> <button id="donate-button-header" class="cta-button donate-header-button"> <i class="fas fa-donate icon-left"></i> <span class="donate-text">Donate</span> </button> <button id="language-toggle" class="icon-button" aria-label="Change Language"> <i class="fas fa-globe"></i> </button> <button id="theme-toggle" class="icon-button" aria-label="Toggle Theme"> <i class="fas fa-moon"></i> </button> <div class="user-area" id="user-area-trigger"> <img id="user-avatar" src="images/cat-avatar-default.jpg" alt="User Avatar" class="user-avatar-img"> <span id="user-status"> <span id="user-name">Khách</span> <i class="fas fa-chevron-down user-area-chevron"></i> </span> <div class="user-dropdown-content" id="user-dropdown"> <a href="#" class="auth-link" id="auth-action-link" style="display: flex;"><i class="fas fa-sign-in-alt icon-left"></i>Đăng Nhập</a> <a href="#" class="auth-link" id="register-action-link" style="display: flex;"><i class="fas fa-user-plus icon-left"></i>Tạo Tài Khoản</a> <a href="#" class="auth-link" id="forgot-action-link" style="display: flex;"><i class="fas fa-key icon-left"></i>Quên Mật Khẩu?</a> <div id="admin-dropdown-section" style="display: none;"> <hr style="margin: 0.5rem 0; border-color: var(--border-primary);"> <a href="admin-page-edit.html" class="admin-link"><i class="fas fa-edit icon-left"></i>Admin Page Edit</a> <a href="admin-shop.html" class="admin-link"><i class="fas fa-store icon-left"></i>Admin Shop Edit</a> <a href="admin-server-edit.html" class="admin-link"><i class="fas fa-server icon-left"></i>Admin Server Edit</a> <hr style="margin: 0.5rem 0; border-color: var(--border-primary);"> </div> <a href="#" id="logout-link" style="display: none;"><i class="fas fa-sign-out-alt icon-left"></i>Đăng Xuất</a> </div> </div> </div> </div>
             </header>
 
-            <!-- Mobile Nav -->
+            <!-- Mobile Nav (no changes needed) -->
             <nav id="mobile-nav" class="mobile-nav-menu"> <a href="index.html" class="mobile-nav-link"><i class="fas fa-home fa-fw"></i> Trang chính</a> <a href="shopping.html" class="mobile-nav-link active"><i class="fas fa-shopping-bag fa-fw"></i> Mua hàng</a> <a href="#" class="mobile-nav-link" id="deposit-link-mobile"><i class="fas fa-credit-card fa-fw"></i> Nạp tiền</a> <a href="history.html" class="mobile-nav-link" id="history-link-mobile"><i class="fas fa-history fa-fw"></i> Lịch sử mua hàng</a> </nav>
 
             <main class="site-main">
-                <!-- Banner Placeholder -->
+                <!-- Banner Placeholder (Keep if desired) -->
                 <section class="shopping-banner-placeholder" data-animate="fade-up"> <img src="images/banner-placeholder-3.png" alt="Shopping Banner Placeholder"> </section>
 
-                <!-- REVERTED Layout -->
+                <!-- Layout Container -->
                 <div class="shopping-layout">
-                    <div class="shopping-main-content">
-                        <!-- Category Section 1 -->
-                        <section class="product-category-section" data-animate="fade-up" data-delay="0.1">
-                            <h2 class="category-title"><i class="fas fa-ghost icon-left"></i>Acc Blox Fruits</h2>
-                            <div class="product-grid" data-animate="fade-up" data-delay="0.1" data-stagger="0.05">
-                                <!-- Hardcoded Product Cards -->
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Acc Mochi V2"> <span class="product-tag hot-tag">Hot</span> </div> <div class="product-info"> <h3 class="product-title">Acc Blox Fruit Max Level Có Mochi V2</h3> <p class="product-meta">Đã bán: 1.234</p> <p class="product-price"> <span class="original-price">150.000đ</span> <span class="sale-price">50.000đ</span> </p> <button class="cta-button product-buy-btn">Mua ngay</button> </div> </div>
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Random Acc 20k"> <span class="product-tag sale-tag">Sale</span> </div> <div class="product-info"> <h3 class="product-title">Random Acc 20k</h3> <p class="product-meta">Đã bán: 5.678</p> <p class="product-price"> <span class="sale-price">20.000đ</span> </p> <button class="cta-button product-buy-btn">Thử vận may</button> </div> </div>
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Acc VIP Random"> </div> <div class="product-info"> <h3 class="product-title">Acc Blox Fruit VIP RANDOM</h3> <p class="product-meta">Đã bán: 750</p> <p class="product-price"> <span class="original-price">300.000đ</span> <span class="sale-price">149.000đ</span> </p> <button class="cta-button product-buy-btn">Mua ngay</button> </div> </div>
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Acc Godhuman"> <span class="product-tag hot-tag">Hot</span> </div> <div class="product-info"> <h3 class="product-title">Acc Max Level + Godhuman</h3> <p class="product-meta">Đã bán: 1.500+</p> <p class="product-price"> <span class="sale-price">75.000đ</span> </p> <button class="cta-button product-buy-btn">Mua ngay</button> </div> </div>
-                            </div>
-                        </section>
-                        <!-- Category Section 2 -->
-                        <section class="product-category-section" data-animate="fade-up" data-delay="0.2">
-                            <h2 class="category-title"><i class="fas fa-random icon-left"></i>Random Blox Fruit</h2>
-                            <div class="product-grid" data-animate="fade-up" data-delay="0.1" data-stagger="0.05">
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Random Fruit"> </div> <div class="product-info"> <h3 class="product-title">Random Trái Ác Quỷ</h3> <p class="product-meta">Đã bán: 2.100+</p> <p class="product-price"> <span class="sale-price">10.000đ</span> </p> <button class="cta-button product-buy-btn">Thử vận may</button> </div> </div>
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Random Fruit VIP"></div> <div class="product-info"> <h3 class="product-title">Random Trái Ác Quỷ VIP</h3> <p class="product-meta">Đã bán: 500+</p> <p class="product-price"> <span class="sale-price">25.000đ</span> </p> <button class="cta-button product-buy-btn">Thử vận may</button> </div> </div>
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Random Fruit Melee"></div> <div class="product-info"> <h3 class="product-title">Random Fruit + Melee</h3> <p class="product-meta">Đã bán: 300+</p> <p class="product-price"> <span class="sale-price">15.000đ</span> </p> <button class="cta-button product-buy-btn">Thử vận may</button> </div> </div>
-                            </div>
-                        </section>
-                        <!-- Category Section 3 -->
-                        <section class="product-category-section" data-animate="fade-up" data-delay="0.3">
-                            <h2 class="category-title"><i class="fas fa-ticket-alt icon-left"></i>Gamepass & Robux</h2>
-                            <div class="product-grid" data-animate="fade-up" data-delay="0.1" data-stagger="0.05">
-                                <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="X2 Money"> </div> <div class="product-info"> <h3 class="product-title">Gamepass - X2 Money</h3> <p class="product-meta">Đã bán: 912</p> <p class="product-price"> <span class="sale-price">99.000đ</span> </p> <button class="cta-button product-buy-btn">Mua ngay</button> </div> </div>
-                                 <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Robux"> </div> <div class="product-info"> <h3 class="product-title">Bán Robux Chính Hãng</h3> <p class="product-meta">Đã bán: 4.000+</p> <p class="product-price"> <span class="sale-price">Giá tốt</span> </p> <button class="cta-button product-buy-btn">Xem bảng giá</button> </div> </div>
-                                 <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Fruit Notifier"> </div> <div class="product-info"> <h3 class="product-title">Gamepass - Fruit Notifier</h3> <p class="product-meta">Đã bán: 150</p> <p class="product-price"> <span class="sale-price">450.000đ</span> </p> <button class="cta-button product-buy-btn">Mua ngay</button> </div> </div>
-                            </div>
-                        </section>
-                         <!-- Category Section 4 -->
-                         <section class="product-category-section" data-animate="fade-up" data-delay="0.4">
-                            <h2 class="category-title"><i class="fas fa-tools icon-left"></i>Dịch vụ Cày Thuê</h2>
-                            <div class="product-grid" data-animate="fade-up" data-delay="0.1" data-stagger="0.05">
-                                 <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Cay Thue"> </div> <div class="product-info"> <h3 class="product-title">Cày Thuê Blox Fruits UY TÍN</h3> <p class="product-meta">Đã bán: 321</p> <p class="product-price"> <span class="sale-price">Liên hệ</span> </p> <button class="cta-button product-buy-btn">Xem chi tiết</button> </div> </div>
-                                 <div class="product-card"> <div class="product-image-placeholder"> <img src="images/product-placeholder.png" alt="Cay Mastery"> </div> <div class="product-info"> <h3 class="product-title">Cày Mastery Vũ Khí / Trái</h3> <p class="product-meta">Đã bán: 200+</p> <p class="product-price"> <span class="sale-price">Liên hệ</span> </p> <button class="cta-button product-buy-btn">Xem chi tiết</button> </div> </div>
-                            </div>
-                        </section>
+                    <!-- === DYNAMIC CONTENT AREA === -->
+                    <div class="shopping-main-content" id="dynamic-product-area">
+                        <!-- Content will be loaded here by script.js -->
+                        <p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); margin-top: 1rem;">
+                             <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                             Đang tải sản phẩm...
+                        </p>
                     </div>
-                    <!-- Sidebar -->
+                    <!-- === END DYNAMIC CONTENT AREA === -->
+
+                    <!-- Sidebar (Keep as is) -->
                     <aside class="shopping-sidebar" data-animate="fade-left" data-delay="0.2">
                          <div class="sidebar-widget"> <h4><i class="fas fa-user-circle icon-left"></i>Thông tin tài khoản</h4> <div id="sidebar-user-info"> <p>Chào mừng, <strong id="sidebar-username">Khách</strong>!</p> <p>Số dư: <strong id="sidebar-balance">0đ</strong></p> <a href="#" class="cta-button sidebar-button" id="sidebar-login-btn" onclick="showLoginForm()">Đăng nhập</a> <a href="#" class="cta-button sidebar-button" id="sidebar-register-btn" onclick="showRegisterForm()">Đăng ký</a> <a href="#" class="cta-button sidebar-button" id="sidebar-deposit-btn" style="display: none;" onclick="document.getElementById('deposit-link').click()">Nạp tiền</a> <a href="#" class="cta-button sidebar-button logout" id="sidebar-logout-btn" style="display: none;" onclick="document.getElementById('logout-link').click()">Đăng xuất</a> </div> </div>
                         <div class="sidebar-widget"> <h4><i class="fas fa-trophy icon-left"></i>Top Nạp Tháng 4</h4> <ul class="top-list"> <li><span>1.</span> Khe***** <span class="amount">2,000,000đ</span></li> <li><span>2.</span> Tis***** <span class="amount">1,825,000đ</span></li> <li><span>3.</span> Dns***** <span class="amount">1,725,000đ</span></li> <li><span>4.</span> Kiy***** <span class="amount">1,600,000đ</span></li> <li><span>5.</span> Jus***** <span class="amount">1,555,000đ</span></li> </ul> </div>
@@ -77,27 +47,23 @@
                     </aside>
                 </div>
             </main>
-            <!-- Footer (Reverted to simpler style) -->
+            <!-- Footer (Keep as is) -->
             <footer class="content-footer">
-                 <div class="footer-social"> <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a> <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok"></i></a> <a href="https://discord.gg/WdSRx4shfT" target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="fab fa-discord"></i></a> <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a> <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a> </div>
+                 <div class="footer-social"> <a href="https://www.youtube.com/@kiritoroblox" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a> <a href="https://www.tiktok.com/@kiritomainbro" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok"></i></a> <a href="https://discord.gg/WdSRx4shT" target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="fab fa-discord"></i></a> <a href="https://github.com/KiritoMainBro88" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a> <a href="https://www.facebook.com/chuong.second" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a> </div>
                 <div class="footer-bottom"> <p>© <span id="year">2024</span> KiritoMainBro. Inspired by the best.</p> </div>
                  <button id="back-to-top-btn" aria-label="Back to top"> <i class="fas fa-arrow-up"></i> </button>
             </footer>
         </div>
     </div>
 
-    <!-- Auth Modal (Keep this) -->
+    <!-- Auth Modal (Keep as is) -->
      <div id="auth-container" style="display: none;"> <div id="login-form-wrapper" class="auth-form-wrapper sky-form"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close login form">×</button> <h3>Đăng Nhập</h3> <p class="auth-subtext">Đăng Nhập Vào Hệ Thống</p> <form id="login-form"> <div class="form-group"> <label for="login-username">Tài Khoản</label> <input type="text" id="login-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="login-password">Mật Khẩu</label> <input type="password" id="login-password" name="password" required placeholder="Nhập Mật Khẩu Của Bạn"> </div> <div class="form-group remember-forgot"> <label class="remember-me"><input type="checkbox" name="remember"> Ghi Nhớ Tài Khoản</label> <a href="#" onclick="showForgotForm()" class="forgot-link">Bạn Quên Mật Khẩu?</a> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Nhập</button> <p id="login-message" class="auth-message"></p> </form> <p class="switch-form-link">BẠN CHƯA CÓ TÀI KHOẢN? <a href="#" onclick="showRegisterForm()">ĐĂNG KÝ NGAY</a></p> </div> <div id="register-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close registration form">×</button> <h3>Đăng Ký</h3> <p class="auth-subtext">Đăng Ký Tài Khoản Mới</p> <form id="register-form"> <div class="form-group"> <label for="register-username">Tài Khoản</label> <input type="text" id="register-username" name="username" required placeholder="Nhập Tên Tài Khoản"> </div> <div class="form-group"> <label for="register-email">Địa Chỉ Email</label> <input type="email" id="register-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <div class="form-group"> <label for="register-password">Mật Khẩu</label> <input type="password" id="register-password" name="password" required minlength="6" placeholder="Ít nhất 6 ký tự, gồm chữ hoa, số, ký tự đặc biệt"> </div> <div class="form-group"> <label for="register-confirm-password">Nhập Lại Mật Khẩu</label> <input type="password" id="register-confirm-password" name="confirmPassword" required placeholder="Nhập Lại Mật Khẩu"> </div> <button type="submit" class="cta-button auth-submit-btn">Đăng Ký</button> <p id="register-message" class="auth-message"></p> </form> <p class="switch-form-link">ĐÃ CÓ TÀI KHOẢN? <a href="#" onclick="showLoginForm()">ĐĂNG NHẬP NGAY</a></p> </div> <div id="forgot-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close forgot password form">×</button> <h3>Đặt Lại Mật Khẩu</h3> <p class="auth-subtext">Nhập Email Của Bạn Để Chúng Tôi Gửi Lại Mật Khẩu Mới</p> <form id="forgot-form"> <div class="form-group"> <label for="forgot-email">Địa Chỉ Email</label> <input type="email" id="forgot-email" name="email" required placeholder="Nhập Địa Chỉ Email"> </div> <button type="submit" class="cta-button auth-submit-btn">Đặt Lại Mật Khẩu</button> <p id="forgot-message" class="auth-message"></p> </form> <p class="switch-form-link"><a href="#" onclick="showLoginForm()">Quay Lại Đăng Nhập</a></p> </div> <div id="reset-form-wrapper" class="auth-form-wrapper sky-form" style="display: none;"> <button class="close-auth-btn" onclick="closeAuthForms()" aria-label="Close reset password form">×</button> <h3>Đặt Mật Khẩu Mới</h3> <p class="auth-subtext">Nhập mã token từ email và mật khẩu mới.</p> <form id="reset-form"> <div class="form-group"> <label for="reset-token">Mã Token</label> <input type="text" id="reset-token" name="token" required placeholder="Nhập mã token từ email"> </div> <div class="form-group"> <label for="reset-password">Mật Khẩu Mới</label> <input type="password" id="reset-password" name="password" required minlength="6" placeholder="Mật khẩu mới (yêu cầu như đăng ký)"> </div> <div class="form-group"> <label for="reset-confirm-password">Nhập Lại Mật Khẩu Mới</label> <input type="password" id="reset-confirm-password" name="confirmPassword" required placeholder="Nhập lại mật khẩu mới"> </div> <button type="submit" class="cta-button auth-submit-btn">Lưu Mật Khẩu</button> <p id="reset-message" class="auth-message"></p> </form> <p class="switch-form-link"><a href="#" onclick="showLoginForm()">Quay Lại Đăng Nhập</a></p> </div> </div>
-     <!-- Purchase flow modals REMOVED -->
 
     <!-- === SCRIPTS === -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="script.js?v=1.9"></script> <!-- Use latest script version -->
-    <script>
-         document.addEventListener('DOMContentLoaded', () => {
-             // Initialization logic runs inside script.js -> initializePage()
-         });
-    </script>
+    <!-- === UPDATE SCRIPT VERSION === -->
+    <script src="script.js?v=1.9.3"></script>
+    <!-- No inline script needed, initializePage handles everything -->
 </body>
 </html>
