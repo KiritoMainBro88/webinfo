@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Server Edit - KMB</title>
+    <title>Admin - Page Edit - KMB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- === UPDATE CSS VERSION === -->
     <link rel="stylesheet" href="style.css?v=1.9.2">
-    <link rel="stylesheet" href="admin-style.css?v=1.1"> <!-- Keep admin style version if unchanged -->
+    <link rel="stylesheet" href="admin-style.css?v=1.1">
 </head>
 <body class="dark-theme">
 
@@ -64,9 +64,9 @@
                          <a href="#" class="auth-link" id="forgot-action-link" style="display: flex;"><i class="fas fa-key icon-left"></i>Quên Mật Khẩu?</a>
                          <div id="admin-dropdown-section" style="display: none;">
                              <hr>
-                             <a href="admin-page-edit.html" class="admin-link"><i class="fas fa-edit icon-left"></i>Admin Page Edit</a>
+                             <a href="admin-page-edit.html" class="admin-link active"><i class="fas fa-edit icon-left"></i>Admin Page Edit</a>
                              <a href="admin-shop.html" class="admin-link"><i class="fas fa-store icon-left"></i>Admin Shop Edit</a>
-                             <a href="admin-server-edit.html" class="admin-link active"><i class="fas fa-server icon-left"></i>Admin Server Edit</a>
+                             <a href="admin-server-edit.html" class="admin-link"><i class="fas fa-server icon-left"></i>Admin Server Edit</a>
                              <hr>
                          </div>
                          <a href="#" id="logout-link" style="display: none;"><i class="fas fa-sign-out-alt icon-left"></i>Đăng Xuất</a>
@@ -81,75 +81,13 @@
         <a href="#" class="mobile-nav-link" id="deposit-link-mobile"><i class="fas fa-credit-card fa-fw"></i> Nạp tiền</a>
         <a href="history.html" class="mobile-nav-link" id="history-link-mobile"><i class="fas fa-history fa-fw"></i> Lịch sử mua hàng</a>
         <hr>
-        <a href="admin-page-edit.html" class="mobile-nav-link"><i class="fas fa-edit fa-fw"></i> Admin Page</a>
+        <a href="admin-page-edit.html" class="mobile-nav-link active"><i class="fas fa-edit fa-fw"></i> Admin Page</a>
         <a href="admin-shop.html" class="mobile-nav-link"><i class="fas fa-store fa-fw"></i> Admin Shop</a>
-        <a href="admin-server-edit.html" class="mobile-nav-link active"><i class="fas fa-server fa-fw"></i> Admin Server</a>
+        <a href="admin-server-edit.html" class="mobile-nav-link"><i class="fas fa-server fa-fw"></i> Admin Server</a>
     </nav>
     <!-- ======================= -->
 
     <div class="admin-page-wrapper">
-        <h1><i class="fas fa-server"></i> Admin - Server/User Management</h1>
+        <h1><i class="fas fa-edit"></i> Admin - Edit Page Content</h1>
 
-         <div id="admin-auth-check" style="display: block; text-align: center; padding: 1rem; background-color: var(--bg-tertiary); border-radius: var(--border-radius-md); margin-bottom: 1rem;">
-            Checking authorization... (NOTE: Real security needed!)
-        </div>
-
-        <div id="admin-content" style="display: none;">
-            <!-- Add Balance Section -->
-             <section id="balance-management">
-                <h2><i class="fas fa-coins"></i> Add Balance to User</h2>
-                <form id="add-balance-form">
-                     <h3>Add Funds</h3>
-                     <div class="form-group">
-                         <label for="balance-user-id">User ID or Username</label>
-                         <input type="text" id="balance-user-id" name="userId" required placeholder="Enter username or database ID">
-                     </div>
-                      <div class="form-group">
-                         <label for="balance-amount">Amount to Add (VND)</label>
-                         <input type="number" id="balance-amount" name="amount" required min="1000" step="1000" placeholder="e.g., 50000">
-                     </div>
-                      <div class="form-group admin-form-actions">
-                         <button type="submit" class="cta-button primary">Add Balance</button>
-                         <p id="balance-message" class="admin-message"></p>
-                     </div>
-                </form>
-            </section>
-
-             <hr>
-              <p><a href="index.html" class="cta-button secondary"><i class="fas fa-arrow-left"></i> Back to Main Site</a></p>
-
-
-            <!-- Add other server management sections here later -->
-        </div>
-    </div>
-
-    <!-- Load main script first -->
-     <!-- === UPDATE SCRIPT VERSION === -->
-    <script src="script.js?v=1.9.2"></script>
-    <!-- Load admin script (contains balance logic) -->
-    <script src="admin.js?v=1.2.1"></script> <!-- Updated admin script version -->
-     <script>
-         // This inline script can be simplified or removed as admin.js now handles the check
-         // Keeping it doesn't hurt, but the check in admin.js is primary
-         document.addEventListener('DOMContentLoaded', () => {
-            const adminContent = document.getElementById('admin-content');
-            const authCheckDiv = document.getElementById('admin-auth-check');
-            const userId = localStorage.getItem('userId');
-            const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
-             if (!userId || !isAdmin) {
-                // Auth check already done in admin.js's initializeAdminPanel
-                // This just ensures the message shows if that fails early
-                 if (authCheckDiv.style.display !== 'none') { // Only update if admin.js didn't hide it
-                    authCheckDiv.innerHTML = '<p class="error">Access Denied. Admin privileges required.</p>';
-                 }
-                 if (adminContent) adminContent.style.display = 'none';
-            } else {
-                 // Content display is handled by admin.js now
-                 // authCheckDiv.style.display = 'none';
-                 // adminContent.style.display = 'block';
-            }
-         });
-     </script>
-</body>
-</html>
+        <div id="admin-auth-check" style="display: block; text-align: center; padding: 1rem; background-color: var(--bg-tertiary); border-radius: var(--border-radius-md); margin-bottom: 1rem;"> 

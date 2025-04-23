@@ -105,8 +105,22 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET single product by ID (Public) - (No change)
-router.get('/:id', async (req, res) => { /* ... */ });
+// GET single product by ID (Public)
+router.get('/:id', async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ message: 'Invalid Product ID format' });
+    }
+    try {
+        const product = await Product.findById(req.params.id).populate('category', 'name slug'); // Populate category name/slug
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json(product);
+    } catch (err) {
+        console.error(`Error fetching product ${req.params.id}:`, err);
+        res.status(500).json({ message: `Server error fetching product: ${err.message}` });
+    }
+});
 
 // POST create new product (Admin Only) - Handle image upload
 router.post('/', authAdmin, upload.single('productImage'), async (req, res) => {

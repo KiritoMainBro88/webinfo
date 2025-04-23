@@ -11,6 +11,91 @@
 </head>
 <body class="dark-theme">
 
+    <!-- ===== ADDED HEADER ===== -->
+    <header class="content-header">
+        <div class="header-inner">
+             <div class="header-left">
+                <div class="logo-and-mobile-toggle">
+                     <a href="index.html" class="logo-link">
+                        <img src="images/logo-cat.jpg" alt="KMB Logo" class="logo-image">
+                        <span class="logo-text">KiritoMainBro</span>
+                     </a>
+                     <button id="mobile-menu-toggle" class="icon-button mobile-nav-toggle" aria-label="Toggle Mobile Menu" aria-expanded="false">
+                         <i class="fas fa-bars"></i>
+                     </button>
+                </div>
+             </div>
+             <nav class="header-nav">
+                 <a href="index.html" class="header-nav-link">
+                     <i class="fas fa-home fa-fw"></i> <span class="nav-link-text">Trang chính</span>
+                 </a>
+                 <div class="nav-item-wrapper"> <!-- Wrapper for dropdown -->
+                     <a href="#" class="header-nav-link nav-dropdown-trigger">
+                         <i class="fas fa-cogs fa-fw"></i>
+                         <span class="nav-link-text">Dịch vụ</span>
+                         <i class="fas fa-chevron-down nav-chevron"></i>
+                     </a>
+                     <div class="dropdown-menu">
+                         <a href="shopping.html" class="dropdown-link" id="shopping-link">
+                             <i class="fas fa-shopping-bag fa-fw icon-left"></i> Mua hàng
+                         </a>
+                         <a href="#" class="dropdown-link" id="deposit-link">
+                             <i class="fas fa-credit-card fa-fw icon-left"></i> Nạp tiền
+                         </a>
+                         <a href="history.html" class="dropdown-link" id="history-link"> <!-- Link to history page -->
+                             <i class="fas fa-history fa-fw icon-left"></i> Lịch sử mua hàng
+                         </a>
+                     </div>
+                 </div>
+             </nav>
+             <div class="header-right">
+                 <button id="donate-button-header" class="cta-button donate-header-button">
+                    <i class="fas fa-donate icon-left"></i>
+                    <span class="donate-text">Donate</span>
+                </button>
+                 <button id="language-toggle" class="icon-button" aria-label="Change Language"> <i class="fas fa-globe"></i> </button>
+                 <button id="theme-toggle" class="icon-button" aria-label="Toggle Theme"> <i class="fas fa-moon"></i> </button>
+                 <div class="user-area" id="user-area-trigger">
+                     <img id="user-avatar" src="images/cat-avatar-default.jpg" alt="User Avatar" class="user-avatar-img">
+                     <span id="user-status"> <span id="user-name">Khách</span> <i class="fas fa-chevron-down user-area-chevron"></i> </span>
+                     <!-- UPDATED User Dropdown Content -->
+                     <div class="user-dropdown-content" id="user-dropdown">
+                         <!-- Login/Register/Forgot Links (shown when logged out) -->
+                         <a href="#" class="auth-link" id="auth-action-link" style="display: flex;"><i class="fas fa-sign-in-alt icon-left"></i>Đăng Nhập</a>
+                         <a href="#" class="auth-link" id="register-action-link" style="display: flex;"><i class="fas fa-user-plus icon-left"></i>Tạo Tài Khoản</a>
+                         <a href="#" class="auth-link" id="forgot-action-link" style="display: flex;"><i class="fas fa-key icon-left"></i>Quên Mật Khẩu?</a>
+
+                         <!-- Admin Links (shown only to logged-in admins) -->
+                         <div id="admin-dropdown-section" style="display: none;">
+                             <hr style="margin: 0.5rem 0; border-color: var(--border-primary);"> <!-- Separator -->
+                             <a href="admin-page-edit.html" class="admin-link"><i class="fas fa-edit icon-left"></i>Admin Page Edit</a>
+                             <a href="admin-shop.html" class="admin-link active"><i class="fas fa-store icon-left"></i>Admin Shop Edit</a>
+                             <a href="admin-server-edit.html" class="admin-link"><i class="fas fa-server icon-left"></i>Admin Server Edit</a>
+                             <hr style="margin: 0.5rem 0; border-color: var(--border-primary);"> <!-- Separator -->
+                         </div>
+
+                          <!-- Logout Link (shown when logged in) -->
+                         <a href="#" id="logout-link" style="display: none;"><i class="fas fa-sign-out-alt icon-left"></i>Đăng Xuất</a>
+                     </div>
+                     <!-- End UPDATED User Dropdown Content -->
+                 </div>
+             </div>
+         </div> <!-- End header-inner -->
+    </header>
+
+    <!-- Mobile Navigation Menu (Consider adjusting links for admin context) -->
+    <nav id="mobile-nav" class="mobile-nav-menu">
+        <a href="index.html" class="mobile-nav-link"><i class="fas fa-home fa-fw"></i> Trang chính</a>
+        <a href="shopping.html" class="mobile-nav-link"><i class="fas fa-shopping-bag fa-fw"></i> Mua hàng</a>
+        <a href="#" class="mobile-nav-link" id="deposit-link-mobile"><i class="fas fa-credit-card fa-fw"></i> Nạp tiền</a>
+        <a href="history.html" class="mobile-nav-link" id="history-link-mobile"><i class="fas fa-history fa-fw"></i> Lịch sử mua hàng</a>
+        <hr>
+        <a href="admin-page-edit.html" class="mobile-nav-link"><i class="fas fa-edit fa-fw"></i> Admin Page</a>
+        <a href="admin-shop.html" class="mobile-nav-link active"><i class="fas fa-store fa-fw"></i> Admin Shop</a>
+        <a href="admin-server-edit.html" class="mobile-nav-link"><i class="fas fa-server fa-fw"></i> Admin Server</a>
+    </nav>
+    <!-- ======================= -->
+
     <div class="admin-page-wrapper">
         <h1><i class="fas fa-store"></i> KMB Shop Admin Panel</h1>
 
