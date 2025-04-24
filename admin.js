@@ -163,34 +163,31 @@ function setupAdminForms() {
     const addBalanceForm = document.getElementById('add-balance-form');
 
     // Add/Edit Category Handler
-    // Add slug input field (optional, as it's auto-generated but allows override)
     if (addCategoryForm && editCategoryIdField && cancelEditCategoryBtn) {
-        // Add slug field to form if not present (or ensure it is in admin-shop.html)
-        if (!document.getElementById('new-cat-slug')) {
-             const nameGroup = document.getElementById('new-cat-name')?.closest('.form-group');
-             if (nameGroup) {
-                 const slugGroup = document.createElement('div');
-                 slugGroup.className = 'form-group';
-                 slugGroup.innerHTML = `<label for="new-cat-slug">Slug (Optional - Auto-generated if blank)</label> <input type="text" id="new-cat-slug">`;
-                 nameGroup.parentNode.insertBefore(slugGroup, nameGroup.nextSibling);
-             }
-        }
-
         addCategoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(); // Use FormData
+            const formData = new FormData();
 
             // Append regular fields
             formData.append('name', document.getElementById('new-cat-name').value);
-            formData.append('slug', document.getElementById('new-cat-slug').value); // Get slug value
             formData.append('iconClass', document.getElementById('new-cat-icon').value);
             formData.append('displayOrder', parseInt(document.getElementById('new-cat-order').value || '0', 10));
 
             // Append the file if selected
             const iconFile = document.getElementById('category-icon-upload').files[0];
             if (iconFile) {
-                 console.log("Appending category icon file:", iconFile.name);
-                 formData.append('categoryIconImage', iconFile);
+                // Validate file size (1MB limit)
+                if (iconFile.size > 1024 * 1024) {
+                    displayMessage('cat-message', 'Icon image must be less than 1MB', false);
+                    return;
+                }
+                // Validate file type
+                if (!['image/png', 'image/jpeg', 'image/webp'].includes(iconFile.type)) {
+                    displayMessage('cat-message', 'Icon must be PNG, JPG, or WEBP format', false);
+                    return;
+                }
+                console.log("Appending category icon file:", iconFile.name);
+                formData.append('categoryIconImage', iconFile);
             }
 
             const isEditing = !!editCategoryIdField.value;
@@ -198,74 +195,101 @@ function setupAdminForms() {
             const url = isEditing ? `/categories/${categoryId}` : '/categories';
             const method = isEditing ? 'PUT' : 'POST';
             const button = addCategoryForm.querySelector('button[type="submit"]');
-            button.disabled = true; button.textContent = 'Saving...';
+            button.disabled = true;
+            button.textContent = 'Saving...';
+
             try {
-                 // Send FormData - Remove JSON content type header
-                 // Note: fetchData might need adjustment if it STRICTLY enforces JSON content-type
                 await fetchData(url, { 
                     method, 
-                    body: formData // Send formData directly
-                    // headers: {} // Let browser set Content-Type for FormData
+                    body: formData,
+                    // Don't set Content-Type header - browser will set it with boundary for FormData
+                    headers: {} 
                 });
                 displayMessage('cat-message', `Category ${isEditing ? 'updated' : 'added'}!`, true);
-                addCategoryForm.reset(); editCategoryIdField.value = ''; cancelEditCategoryBtn.style.display = 'none'; addCategoryForm.querySelector('h3').textContent = 'Add / Edit Category';
+                addCategoryForm.reset();
+                editCategoryIdField.value = '';
+                cancelEditCategoryBtn.style.display = 'none';
+                addCategoryForm.querySelector('h3').textContent = 'Add / Edit Category';
                 await loadCategories();
-                if (document.getElementById('product-management')) { await loadProducts(); }
-            } catch (error) { displayMessage('cat-message', `Error: ${error.message}`, false); }
-            finally { button.disabled = false; button.textContent = 'Save Category'; }
+                if (document.getElementById('product-management')) {
+                    await loadProducts();
+                }
+            } catch (error) {
+                displayMessage('cat-message', `Error: ${error.message}`, false);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Save Category';
+            }
         });
         cancelEditCategoryBtn.addEventListener('click', () => {
             addCategoryForm.reset(); editCategoryIdField.value = ''; cancelEditCategoryBtn.style.display = 'none'; addCategoryForm.querySelector('h3').textContent = 'Add / Edit Category';
         });
     } else if (document.getElementById('category-management')) { console.warn("Category form elements not fully found."); }
 
-    // Add/Update Product Handler (Uses FormData, includes 'brand' automatically)
+    // Add/Edit Product Handler
     if (addProductForm && editProductIdField && cancelEditProductBtn) {
-         addProductForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            const formData = new FormData(); // Use FormData
-            const isEditing = !!editProductIdField.value;
-            const productId = editProductIdField.value;
+        addProductForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
 
-            // Append all standard fields from the form
+            // Append all text fields
             formData.append('name', document.getElementById('product-name').value);
             formData.append('category', document.getElementById('product-category').value);
             formData.append('price', document.getElementById('product-price').value || '0');
             formData.append('originalPrice', document.getElementById('product-original-price').value || '');
-            formData.append('imageUrl', document.getElementById('product-image').value); // Keep sending original URL field too
-            formData.append('tags', document.getElementById('product-tags').value);
+            formData.append('brand', document.getElementById('product-brand').value || '');
+            formData.append('imageUrl', document.getElementById('product-image').value || '');
+            formData.append('tags', document.getElementById('product-tags').value || '');
             formData.append('stockStatus', document.getElementById('product-stock').value);
             formData.append('displayOrder', document.getElementById('product-order').value || '0');
-            formData.append('description', document.getElementById('product-description').value);
-            formData.append('brand', document.getElementById('product-brand').value); // Append brand
+            formData.append('description', document.getElementById('product-description').value || '');
 
-            // Append the file if selected
-             const imageFile = document.getElementById('product-image-upload').files[0];
-             if (imageFile) {
-                 console.log("Appending product image file:", imageFile.name);
-                 formData.append('productImage', imageFile); // Use the name attribute of the file input
-             }
+            // Handle file upload
+            const imageFile = document.getElementById('product-image-upload').files[0];
+            if (imageFile) {
+                // Validate file size (2MB limit)
+                if (imageFile.size > 2 * 1024 * 1024) {
+                    displayMessage('product-message', 'Product image must be less than 2MB', false);
+                    return;
+                }
+                // Validate file type
+                if (!['image/png', 'image/jpeg', 'image/webp'].includes(imageFile.type)) {
+                    displayMessage('product-message', 'Image must be PNG, JPG, or WEBP format', false);
+                    return;
+                }
+                console.log("Appending product image file:", imageFile.name);
+                formData.append('productImage', imageFile);
+            }
 
-            // No need to manually process tags/prices here, backend should handle it
-            // productData.price = productData.price ? parseFloat(productData.price) : 0; 
-            // ... etc ...
+            const isEditing = !!editProductIdField.value;
+            const productId = editProductIdField.value;
+            const url = isEditing ? `/products/${productId}` : '/products';
+            const method = isEditing ? 'PUT' : 'POST';
+            const button = addProductForm.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Saving...';
 
-            const url = isEditing ? `/products/${productId}` : '/products'; 
-            const method = isEditing ? 'PUT' : 'POST'; 
-            const button = addProductForm.querySelector('button[type="submit"]'); 
-            button.disabled = true; button.textContent = 'Saving...';
             try {
-                 await fetchData(url, { 
+                await fetchData(url, { 
                     method, 
-                    body: formData 
-                    // headers: {} // Let browser set Content-Type for FormData
+                    body: formData,
+                    // Don't set Content-Type header - browser will set it with boundary for FormData
+                    headers: {} 
                 });
-                 displayMessage('product-message', `Product ${isEditing ? 'updated' : 'added'}!`, true); addProductForm.reset(); editProductIdField.value = ''; cancelEditProductBtn.style.display = 'none'; addProductForm.querySelector('h3').textContent = 'Add/Edit Product';
-                 await loadProducts();
-            } catch (error) { displayMessage('product-message', `Error: ${error.message}`, false); }
-            finally { button.disabled = false; button.textContent = 'Save Product'; }
-         });
-         cancelEditProductBtn.addEventListener('click', () => { addProductForm.reset(); editProductIdField.value = ''; cancelEditProductBtn.style.display = 'none'; addProductForm.querySelector('h3').textContent = 'Add/Edit Product'; });
+                displayMessage('product-message', `Product ${isEditing ? 'updated' : 'added'}!`, true);
+                addProductForm.reset();
+                editProductIdField.value = '';
+                cancelEditProductBtn.style.display = 'none';
+                addProductForm.querySelector('h3').textContent = 'Add/Edit Product';
+                await loadProducts();
+            } catch (error) {
+                displayMessage('product-message', `Error: ${error.message}`, false);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Save Product';
+            }
+        });
+        cancelEditProductBtn.addEventListener('click', () => { addProductForm.reset(); editProductIdField.value = ''; cancelEditProductBtn.style.display = 'none'; addProductForm.querySelector('h3').textContent = 'Add/Edit Product'; });
     } else if (document.getElementById('product-management')) { console.warn("Product form elements not fully found."); }
 
      // Add Balance Form Handler (No change needed)

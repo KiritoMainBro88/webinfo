@@ -495,10 +495,8 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
     // Create the card content
     card.innerHTML = `
         <div class="product-card-inner">
-            <div class="product-image">
-                <img src="${product.imageUrl || 'images/product-placeholder.jpg'}" alt="${escapeHtml(product.name)}">
-                ${discountBadge}
-                ${stockBadge}
+            <div class="product-image-placeholder">
+                <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
             </div>
             <div class="product-details">
                 <h3 class="product-name">${escapeHtml(product.name)}</h3>

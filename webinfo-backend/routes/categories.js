@@ -113,22 +113,47 @@ router.put('/:id', authAdmin, upload.single('categoryIconImage'), async (req, re
     }
 });
 
-// DELETE category (Admin Only) - No changes needed here for slug
+// DELETE category (Admin Only)
 router.delete('/:id', authAdmin, async (req, res) => {
-     console.log(`Attempting to delete category ${req.params.id}`);
-     try {
-        const productCount = await Product.countDocuments({ category: req.params.id });
-        if (productCount > 0) {
-            console.warn(`Attempt to delete category ${req.params.id} failed: ${productCount} products found.`);
-            return res.status(400).json({ message: `Cannot delete category: ${productCount} product(s) are still using it. Please reassign products first.` });
-        }
-        const deletedCategory = await Category.findByIdAndDelete(req.params.id);
-        if (!deletedCategory) {
-             console.warn(`Category not found for deletion: ${req.params.id}`);
+    try {
+        // First check if category exists
+        const category = await Category.findById(req.params.id);
+        if (!category) {
+            console.warn(`Category not found for deletion: ${req.params.id}`);
             return res.status(404).json({ message: 'Category not found' });
         }
+
+        // Check for products using this category
+        const products = await Product.find({ category: req.params.id });
+        if (products.length > 0) {
+            // Get default category or create one
+            let defaultCategory = await Category.findOne({ slug: 'uncategorized' });
+            if (!defaultCategory) {
+                defaultCategory = new Category({
+                    name: 'Uncategorized',
+                    slug: 'uncategorized',
+                    iconClass: 'fas fa-folder',
+                    displayOrder: 9999
+                });
+                await defaultCategory.save();
+            }
+
+            // Move all products to default category
+            await Product.updateMany(
+                { category: req.params.id },
+                { $set: { category: defaultCategory._id } }
+            );
+
+            console.log(`Moved ${products.length} products to 'uncategorized' category`);
+        }
+
+        // Now safe to delete the category
+        const deletedCategory = await Category.findByIdAndDelete(req.params.id);
         console.log(`Category ${req.params.id} deleted successfully.`);
-        res.status(200).json({ message: 'Category deleted successfully' });
+        
+        res.status(200).json({ 
+            message: `Category deleted successfully. ${products.length} products were moved to 'uncategorized' category.`
+        });
     } catch (err) {
         console.error(`Error deleting category ${req.params.id}:`, err);
         res.status(500).json({ message: 'Server error deleting category. Check logs.' });
