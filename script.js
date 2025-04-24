@@ -955,8 +955,7 @@ async function loadCategoryPageData() {
             throw new Error('Invalid products data received');
         }
         
-        // Setup filters and buy button listeners
-        setupCategoryFilters();
+        // Setup buy button listeners
         setupCategoryPageBuyListeners();
         
     } catch (error) {
@@ -976,12 +975,25 @@ async function loadCategoryPageData() {
 
 // --- NEW: Setup listeners specific to category page grid ---
 function setupCategoryPageBuyListeners() {
-    if (!document.body.classList.contains('category-detail-page')) return;
     const productGrid = document.getElementById('category-product-grid');
     if (!productGrid) return;
-    console.log("Setting up buy listeners for category page grid...");
-    productGrid.removeEventListener('click', handleBuyButtonClick); // Prevent duplicates if called multiple times
-    productGrid.addEventListener('click', handleBuyButtonClick); // Use event delegation
+
+    productGrid.addEventListener('click', (e) => {
+        const buyButton = e.target.closest('.product-buy-btn');
+        if (!buyButton) return;
+
+        e.preventDefault();
+        const productCard = buyButton.closest('.product-card');
+        if (!productCard) return;
+
+        const productId = productCard.dataset.productId;
+        const productName = productCard.querySelector('.product-title')?.textContent;
+        const productPrice = parseFloat(productCard.dataset.price);
+
+        if (productId && productName && !isNaN(productPrice)) {
+            openPurchaseModal(productId, productName, productPrice);
+        }
+    });
 }
 
 // Function to load and display categories on the home page

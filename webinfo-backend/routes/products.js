@@ -219,8 +219,25 @@ router.put('/:id', authAdmin, upload.single('productImage'), async (req, res) =>
      }
 });
 
+// DELETE product (Admin Only)
+router.delete('/:id', authAdmin, async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ message: 'Invalid Product ID format' });
+    }
 
-// DELETE product (Admin Only) - (No change needed here)
-router.delete('/:id', authAdmin, async (req, res) => { /* ... */ });
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        await Product.findByIdAndDelete(req.params.id);
+        console.log(`Product ${req.params.id} deleted successfully.`);
+        res.json({ message: 'Product deleted successfully' });
+    } catch (err) {
+        console.error(`Error deleting product ${req.params.id}:`, err);
+        res.status(500).json({ message: `Server error deleting product: ${err.message}` });
+    }
+});
 
 module.exports = router;

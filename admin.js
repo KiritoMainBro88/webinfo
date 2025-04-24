@@ -319,23 +319,47 @@ function handleCategoryActions(e) {
     }
 }
 async function handleProductActions(e) {
-     const target = e.target; const prodId = target.dataset.id; const addProductForm = document.getElementById('add-product-form'); const editProductIdField = document.getElementById('edit-product-id'); const cancelEditProductBtn = document.getElementById('cancel-edit-product');
-     if (!addProductForm || !editProductIdField || !cancelEditProductBtn) { console.warn("Cannot handle product action, form elements missing."); return; }
+     const target = e.target; 
+     const prodId = target.dataset.id; 
+     const addProductForm = document.getElementById('add-product-form'); 
+     const editProductIdField = document.getElementById('edit-product-id'); 
+     const cancelEditProductBtn = document.getElementById('cancel-edit-product');
+     
+     if (!addProductForm || !editProductIdField || !cancelEditProductBtn) { 
+         console.warn("Cannot handle product action, form elements missing."); 
+         return; 
+     }
 
      if (target.classList.contains('delete-btn') && prodId) {
-         const tableRow = target.closest('tr'); const prodName = tableRow ? tableRow.querySelector('td:nth-child(2)')?.textContent.trim() : prodId;
-         if (confirm(`DELETE Product "${prodName}"?`)) { try { await fetchData(`/products/${prodId}`, { method: 'DELETE' }); displayMessage('product-message', 'Product deleted.', true); loadProducts(); } catch (error) { displayMessage('product-message', `Error deleting: ${error.message}`, false); } }
+         const tableRow = target.closest('tr'); 
+         const prodName = tableRow ? tableRow.querySelector('td:nth-child(2)')?.textContent.trim() : prodId;
+         
+         if (confirm(`DELETE Product "${prodName}"?`)) { 
+             try {
+                 const response = await fetchData(`/products/${prodId}`, { 
+                     method: 'DELETE',
+                     headers: {
+                         'Content-Type': 'application/json'
+                     }
+                 });
+                 displayMessage('product-message', 'Product deleted successfully.', true);
+                 await loadProducts(); // Reload the product list
+             } catch (error) {
+                 console.error("Error deleting product:", error);
+                 displayMessage('product-message', `Error deleting: ${error.message}`, false);
+             }
+         }
      }
      else if (target.classList.contains('edit-btn') && prodId) {
-        console.log(`Attempting to edit product ID: ${prodId}`); // Log the ID being edited
+        console.log(`Attempting to edit product ID: ${prodId}`);
         try {
             const product = await fetchData(`/products/${prodId}`); 
-            console.log("Fetched product data for edit:", product); // Log the fetched data
+            console.log("Fetched product data for edit:", product);
             if (!product) throw new Error('Product data not found or invalid structure');
             
             editProductIdField.value = product._id;
             document.getElementById('product-name').value = product.name || '';
-            document.getElementById('product-brand').value = product.brand || ''; // Populate brand
+            document.getElementById('product-brand').value = product.brand || '';
             document.getElementById('product-category').value = product.category?._id || '';
             document.getElementById('product-price').value = product.price ?? '';
             document.getElementById('product-original-price').value = product.originalPrice ?? '';
@@ -344,7 +368,11 @@ async function handleProductActions(e) {
             document.getElementById('product-stock').value = product.stockStatus || 'in_stock';
             document.getElementById('product-order').value = product.displayOrder ?? 0;
             document.getElementById('product-description').value = product.description || '';
-            addProductForm.querySelector('h3').textContent = 'Edit Product'; cancelEditProductBtn.style.display = 'inline-block'; addProductForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (error) { displayMessage('product-message', `Error loading product for edit: ${error.message}`, false); }
+            addProductForm.querySelector('h3').textContent = 'Edit Product';
+            cancelEditProductBtn.style.display = 'inline-block';
+            addProductForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (error) {
+            displayMessage('product-message', `Error loading product for edit: ${error.message}`, false);
+        }
      }
 }
