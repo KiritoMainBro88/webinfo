@@ -420,10 +420,10 @@ function createCategorySectionElement(categoryData) {
 
 // --- NEW: Create Category Summary Card Element (for main shopping page) ---
 function createCategorySummaryCardElement(category, minPrice, maxPrice) {
-    const cardLink = document.createElement('a');
-    cardLink.href = `category.html?slug=${category.slug || 'unknown'}`;
-    cardLink.classList.add('category-summary-card'); // Add a class for styling
+    const cardLink = document.createElement('div'); // Changed from <a> to <div>
+    cardLink.className = 'category-summary-card'; // Add a class for styling
     cardLink.dataset.animate = "fade-up"; // Optional animation
+    cardLink.dataset.slug = category.slug || 'unknown'; // Store slug as data attribute
 
     let priceRangeHTML = '';
     // Check if minPrice and maxPrice are valid numbers
@@ -435,12 +435,12 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
             // If min and max are the same, just show that price
             priceRangeHTML = `<p class="category-price-range">Giá: ${formatPrice(minPrice)}</p>`;
         } else {
-            // Use the requested format "Start from: ..."
-            priceRangeHTML = `<p class="category-price-range">Start from: ${formatPrice(minPrice)} - ${formatPrice(maxPrice)}</p>`;
+            // Use the requested format
+            priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: Min Price of all product on this category</p>`;
         }
     } else if (isMinPriceNumeric) {
          // Only min price is available
-         priceRangeHTML = `<p class="category-price-range">Start from: ${formatPrice(minPrice)}</p>`;
+         priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: Min Price of all product on this category</p>`;
     } else {
         // Handle cases with no numeric prices or only special prices
         priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`; // Or "Liên hệ giá", etc.
@@ -459,6 +459,24 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
              <i class="fas fa-chevron-right"></i>
         </div>
     `;
+
+    // Add click handler - show a modal or popup instead of direct navigation
+    cardLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const slug = this.dataset.slug;
+        
+        // Option 1: Show a modal with category info (you'll need to create this modal)
+        // showCategoryModal(slug);
+        
+        // Option 2: For now, just log and alert to show it's working
+        console.log(`Category ${category.name} clicked. Slug: ${slug}`);
+        alert(`You clicked on category: ${category.name}. This would show a modal instead of navigating directly.`);
+        
+        // Option 3: Navigate after confirmation 
+        // if (confirm(`Go to ${category.name} category?`)) {
+        //     window.location.href = `category.html?slug=${slug}`;
+        // }
+    });
 
     return cardLink;
 }
@@ -483,13 +501,8 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
     const minPrice = product.minPrice || product.price;
     const maxPrice = product.maxPrice || product.price;
     
-    // Format price range string
-    let priceRangeText = '';
-    if (minPrice === maxPrice) {
-        priceRangeText = `Start From: ${formatCurrency(minPrice)}`;
-    } else {
-        priceRangeText = `Start From: ${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
-    }
+    // Changed format to match screenshot
+    let priceRangeText = 'Giá chỉ từ: Min Price of all product on this category';
 
     // Generate stars HTML based on rating
     const rating = product.rating || 0; // Assuming rating exists, default to 0
@@ -510,6 +523,8 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
         <div class="product-card-inner">
             <div class="product-image-placeholder">
                 <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
+                <span class="best-seller-tag">Best Seller</span>
+                <span class="vn-badge">VN</span>
             </div>
             <div class="product-details">
                 <h3 class="product-name">${escapeHtml(product.name)}</h3>
@@ -1036,23 +1051,16 @@ function createProductCard(product) {
     const discountBadge = product.originalPrice ? `<span class="product-tag sale-tag">Giảm ${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : '';
     const stockBadge = product.stockStatus === 'out_of_stock' ? '<span class="product-tag hot-tag">Hết hàng</span>' : '';
 
-    // Get min and max price if available
-    const minPrice = product.minPrice || product.price;
-    const maxPrice = product.maxPrice || product.price;
-    
-    // Format price range string
-    let priceRangeText = '';
-    if (minPrice === maxPrice) {
-        priceRangeText = `Start From: ${formatCurrency(minPrice)}`;
-    } else {
-        priceRangeText = `Start From: ${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
-    }
+    // Changed format to match screenshot
+    let priceRangeText = 'Giá chỉ từ: Min Price of all product on this category';
 
     card.innerHTML = `
         <div class="product-image-placeholder">
             <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
             ${discountBadge}
             ${stockBadge}
+            <span class="best-seller-tag">Best Seller</span>
+            <span class="vn-badge">VN</span>
         </div>
         <div class="product-info">
             ${product.brand ? `<div class="product-brand">${escapeHtml(product.brand)}</div>` : ''}
