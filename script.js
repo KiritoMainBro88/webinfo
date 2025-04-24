@@ -424,13 +424,21 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
     cardLink.dataset.animate = "fade-up"; // Optional animation
 
     let priceRangeHTML = '';
-    if (minPrice !== null && maxPrice !== null) {
+    // Check if minPrice and maxPrice are valid numbers
+    const isMinPriceNumeric = typeof minPrice === 'number' && !isNaN(minPrice);
+    const isMaxPriceNumeric = typeof maxPrice === 'number' && !isNaN(maxPrice);
+
+    if (isMinPriceNumeric && isMaxPriceNumeric) {
         if (minPrice === maxPrice) {
             // If min and max are the same, just show that price
             priceRangeHTML = `<p class="category-price-range">Giá: ${formatPrice(minPrice)}</p>`;
         } else {
-            priceRangeHTML = `<p class="category-price-range">Từ: ${formatPrice(minPrice)} - ${formatPrice(maxPrice)}</p>`;
+            // Use the requested format "Start from: ..."
+            priceRangeHTML = `<p class="category-price-range">Start from: ${formatPrice(minPrice)} - ${formatPrice(maxPrice)}</p>`;
         }
+    } else if (isMinPriceNumeric) {
+         // Only min price is available
+         priceRangeHTML = `<p class="category-price-range">Start from: ${formatPrice(minPrice)}</p>`;
     } else {
         // Handle cases with no numeric prices or only special prices
         priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`; // Or "Liên hệ giá", etc.
@@ -441,7 +449,7 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
         <div class="category-summary-info">
             <h3 class="category-summary-title">
                 <i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>
-                ${category.name}
+                ${escapeHtml(category.name)}
             </h3>
             ${priceRangeHTML}
         </div>
@@ -459,46 +467,46 @@ function createProductCardElement(product, includeBuyButton = false) {
         console.error('Invalid product data:', product);
         return document.createElement('div'); // Return empty div to prevent errors
     }
-    
+
     const productId = product._id || product.id;
     const card = document.createElement('div');
     card.className = 'product-card';
     card.dataset.productId = productId;
-    
+
     // Format the price with commas for thousands
     const formattedPrice = formatCurrency(product.price);
-    
+
     // Generate stars HTML based on rating
-    const rating = product.rating || 0;
+    const rating = product.rating || 0; // Assuming rating exists, default to 0
     const starsHtml = generateStarRating(rating);
-    
-    const discountBadge = product.discounted ? 
+
+    // Discount and stock badges (assuming these properties might exist)
+    const discountBadge = product.discounted ?
         `<span class="discount-badge">-${product.discountPercent || 10}%</span>` : '';
-        
-    const oldPrice = product.discounted ? 
-        `<span class="old-price">${formatCurrency(product.oldPrice)}</span>` : '';
-    
-    // Check if the product is out of stock
-    const isOutOfStock = product.stock <= 0;
-    const stockBadge = isOutOfStock ? 
-        '<span class="stock-badge out-of-stock">Hết hàng</span>' : 
-        (product.stock < 5 ? `<span class="stock-badge low-stock">Còn ${product.stock}</span>` : '');
-    
+    const oldPrice = product.discounted ?
+        `<span class="old-price">${formatCurrency(product.originalPrice)}</span>` : ''; // Assuming originalPrice exists
+    const isOutOfStock = product.stockStatus === 'out_of_stock'; // Check stock status
+    const stockBadge = isOutOfStock ?
+        '<span class="stock-badge out-of-stock">Hết hàng</span>' :
+        (product.stock && product.stock < 5 ? `<span class="stock-badge low-stock">Còn ${product.stock}</span>` : ''); // Assuming stock number exists
+
     // Create the card content
     card.innerHTML = `
         <div class="product-card-inner">
             <div class="product-image">
-                <img src="${product.image || 'images/product-placeholder.jpg'}" alt="${product.name}">
+                <img src="${product.imageUrl || 'images/product-placeholder.jpg'}" alt="${escapeHtml(product.name)}">
                 ${discountBadge}
                 ${stockBadge}
             </div>
             <div class="product-details">
-                <h3 class="product-name">${product.name}</h3>
+                <h3 class="product-name">${escapeHtml(product.name)}</h3>
                 <div class="product-meta">
                     <div class="product-rating">
                         ${starsHtml}
-                        <span class="rating-count">(${product.reviewCount || 0})</span>
+                        <span class="rating-count">(${product.reviewCount || 0})</span> <!-- Assuming reviewCount exists -->
                     </div>
+                    <!-- Add brand if available -->
+                    ${product.brand ? `<span class="product-brand">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
                 <div class="product-price">
                     ${oldPrice}
@@ -511,26 +519,42 @@ function createProductCardElement(product, includeBuyButton = false) {
             </div>
         </div>
     `;
-    
-    // Make the product card clickable - redirect to category page when clicked
+
+    // --- MODIFIED CLICK LISTENER ---
+    // Make the entire card (except the buy button) navigate to the category page
     card.addEventListener('click', (e) => {
-        // Don't navigate if clicked on the buy button
+        // Prevent navigation if the click target is the buy button or inside it
         if (e.target.closest('.buy-now-btn')) {
             return;
         }
-        
-        // Get the category slug from the product
+
+        // Get the category slug from the product data
         const categorySlug = product.category?.slug;
-        
+
         if (categorySlug) {
-            // Navigate to category page
+            // Navigate to the category page using the slug
             window.location.href = `category.html?slug=${categorySlug}`;
         } else {
-            // Fallback to product detail page if no category slug is available
-            window.location.href = `product.html?id=${productId}`;
+            // If slug is missing, log an error or do nothing, don't navigate to product.html
+            console.warn(`Category slug missing for product ID: ${productId}. Cannot navigate.`);
+            // Optionally, you could still navigate to shopping.html or show a message
+            // window.location.href = 'shopping.html';
         }
     });
-    
+    // --- END MODIFIED CLICK LISTENER ---
+
+    // Add buy button listener separately if needed (using event delegation is often better)
+    if (includeBuyButton) {
+        const buyButton = card.querySelector('.buy-now-btn');
+        if (buyButton) {
+            buyButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent card click listener from firing
+                handleBuyButtonClick(e); // Call your existing buy handler
+            });
+        }
+    }
+
+
     return card;
 }
 
