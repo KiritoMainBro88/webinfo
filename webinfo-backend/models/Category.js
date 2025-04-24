@@ -8,15 +8,12 @@ const categorySchema = new mongoose.Schema({
         trim: true,
         unique: true
     },
-    slug: { // <-- ADD THIS FIELD
+    slug: {
         type: String,
         required: [true, 'Category slug is required'],
         trim: true,
         unique: true,
-        lowercase: true,
-        // Example generator (can be refined) - creates slug from name on creation
-        // You might want to generate this manually or in the route handler instead
-        // default: function() { return this.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''); }
+        lowercase: true
     },
     iconClass: {
         type: String,
@@ -24,7 +21,7 @@ const categorySchema = new mongoose.Schema({
         trim: true,
         default: 'fas fa-tag'
     },
-    iconImageUrl: { // <-- ADD THIS FIELD
+    iconImageUrl: {
         type: String,
         required: false,
         trim: true
@@ -43,26 +40,28 @@ const categorySchema = new mongoose.Schema({
 categorySchema.index({ slug: 1 });
 categorySchema.index({ displayOrder: 1, name: 1 });
 
-// Simple slug generation middleware (run BEFORE validation)
-// IMPORTANT: This basic slugify might need improvement for complex names/languages
+// Improved slug generation middleware
 categorySchema.pre('validate', function(next) {
-  if (this.isModified('name') && !this.isModified('slug')) { // Only generate if name changes and slug isn't manually set
-    this.slug = this.name
-      .toString()
-      .toLowerCase()
-      .normalize('NFD') // Handle diacritics (Vietnamese characters)
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-      .replace(/\s+/g, '-')        // Replace spaces with -
-      .replace(/đ/g, 'd')          // Replace đ with d
-      .replace(/[^\w-]+/g, '')     // Remove all non-word chars except hyphen
-      .replace(/--+/g, '-')        // Replace multiple - with single -
-      .replace(/^-+/, '')          // Trim - from start of text
-      .replace(/-+$/, '');         // Trim - from end of text
-     console.log(`Generated slug: ${this.slug} from name: ${this.name}`);
-  }
-  next();
+    // Only generate slug if name is modified and slug isn't manually set
+    if (this.isModified('name') && !this.isModified('slug')) {
+        this.slug = this.name
+            .toString()
+            .toLowerCase()
+            .normalize('NFD') // Handle diacritics (Vietnamese characters)
+            .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+            .replace(/đ/g, 'd')          // Replace đ with d
+            .replace(/[^\w\s-]/g, '')    // Remove all non-word chars except spaces and hyphens
+            .replace(/\s+/g, '-')        // Replace spaces with hyphens
+            .replace(/-+/g, '-')         // Replace multiple hyphens with single hyphen
+            .replace(/^-+/, '')          // Trim hyphens from start
+            .replace(/-+$/, '');         // Trim hyphens from end
+        
+        console.log(`Generated slug: ${this.slug} from name: ${this.name}`);
+    }
+    
+    // If no slug exists at this point (neither generated nor provided), error will be caught by required: true
+    next();
 });
-
 
 const Category = mongoose.model('Category', categorySchema);
 module.exports = Category;
