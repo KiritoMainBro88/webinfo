@@ -498,7 +498,7 @@ function setupActionButtons() { const loginForm = document.getElementById('login
 async function fetchAndUpdateUserInfo() { const userId = localStorage.getItem('userId'); if (!userId) { updateUserStatus(false); updateSidebarUserArea(false); return; } try { const userData = await fetchData('/users/me'); if (!userData || !userData.username) { throw new Error("Received invalid user data"); } localStorage.setItem('username', userData.username); localStorage.setItem('balance', userData.balance ?? 0); localStorage.setItem('isAdmin', userData.isAdmin ? 'true' : 'false'); updateUserStatus(true, userData.username, !!userData.isAdmin); updateSidebarUserArea(true, userData.username, userData.balance ?? 0); } catch (error) { console.error("Error fetching or processing user info:", error); localStorage.removeItem('userId'); localStorage.removeItem('username'); localStorage.removeItem('balance'); localStorage.removeItem('isAdmin'); updateUserStatus(false); updateSidebarUserArea(false); } }
 
 // --- Basic Dropdown Actions ---
-function setupDropdownActions() { const depositLink = document.getElementById('deposit-link'); const historyLink = document.getElementById('history-link'); const depositLinkMobile = document.getElementById('deposit-link-mobile'); const historyLinkMobile = document.getElementById('history-link-mobile'); const handleDepositClick = (e) => { e.preventDefault(); alert('Nạp tiền function coming soon!'); }; const handleHistoryClick = (e) => { e.preventDefault(); window.location.href = 'history.html'; }; if(depositLink) depositLink.addEventListener('click', handleDepositClick); if(historyLink) historyLink.addEventListener('click', handleHistoryClick); if(depositLinkMobile) depositLinkMobile.addEventListener('click', handleDepositClick); if(historyLinkMobile) historyLinkMobile.addEventListener('click', handleHistoryClick); }
+function setupDropdownActions() { const depositLink = document.getElementById('deposit-link'); const historyLink = document.getElementById('history-link'); const depositLinkMobile = document.getElementById('deposit-link-mobile'); const historyLinkMobile = document.getElementById('history-link-mobile'); const handleDepositClick = (e) => { e.preventDefault(); alert('Nạp tiền function coming soon!'); }; const handleHistoryClick = (e) => { e.preventDefault(); window.location.href = 'pages/purchase-history.html'; }; if(depositLink) depositLink.addEventListener('click', handleDepositClick); if(historyLink) historyLink.addEventListener('click', handleHistoryClick); if(depositLinkMobile) depositLinkMobile.addEventListener('click', handleDepositClick); if(historyLinkMobile) historyLinkMobile.addEventListener('click', handleHistoryClick); }
 
 // --- Back to Top Button ---
 function setupBackToTopButton() { const backToTopButton = document.getElementById("back-to-top-btn"); if (!backToTopButton) { return; } const scrollThreshold = 200; const checkScroll = () => { if (!backToTopButton) return; if (window.scrollY > scrollThreshold) { backToTopButton.classList.add("visible"); } else { backToTopButton.classList.remove("visible"); } }; window.addEventListener("scroll", checkScroll, { passive: true }); checkScroll(); backToTopButton.addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }); }
@@ -1088,66 +1088,55 @@ function setupCategoryPage() {
 function initializePage() {
     console.log('Initializing page...');
 
-    // Initialize DOM elements
+    // Set current page flag for potential page-specific logic
+    const currentPage = window.location.pathname.split('/').pop().toLowerCase();
+    console.log("Current page:", currentPage);
+
+    // Initialize DOM elements that exist on any/most pages
     initializeDOMElements();
-
-    // Initialize badge configurations
-    initializeBadgeConfigurations().catch(error => {
-        console.error('Error initializing badge configurations:', error);
-    });
-
-    // Set up general UI elements
-    setupBackToTopButton();
+    
+    // Setup common UI functionality
+    setupHeaderScrollEffect();
     setupMobileMenuToggle();
-    setupThemeToggle();
     setupUserDropdown();
+    setupThemeToggle();
     setupLanguageToggle();
     setupClickDropdowns();
     setupActionButtons();
-    setupProfessionalAnimations();
     setupDropdownActions();
-    setupHeaderScrollEffect();
-
-    // Load data for specific page types
-    const currentPage = window.location.pathname.split('/').pop();
+    setupBackToTopButton();
+    setupProfessionalAnimations();
     
-    if (currentPage === 'index.html' || currentPage === '') {
-        console.log('Loading home page data...');
-        loadHomePageCategories().catch(error => {
-            console.error('Error loading home page data:', error);
-        });
-        
-        // Load top depositors data
-        loadTopDepositors().catch(error => {
-            console.error('Error loading top depositors data:', error);
-        });
-        
-        // Load recent transactions
-        loadRecentTransactions().catch(error => {
-            console.error('Error loading recent transactions:', error);
-        });
-    } else if (currentPage === 'category.html') {
-        console.log('Loading category page data...');
+    // Page specific initializations
+    if (currentPage === 'category.html') {
+        // Category page initialization
+        console.log("Initializing category page...");
         setupCategoryPage();
-        loadCategoryPageData().catch(error => {
-            console.error('Error loading category page data:', error);
-        });
     } else if (currentPage === 'shopping.html') {
-        console.log('Loading shopping page data...');
-        loadAndDisplayShoppingData().catch(error => {
-            console.error('Error loading shopping data:', error);
-        });
-    } else if (currentPage === 'history-buy.html') { // Changed from history.html to history-buy.html
-        console.log('Loading purchase history data...');
-        loadUserPurchaseHistory().catch(error => {
-            console.error('Error loading purchase history:', error);
-        });
-    } else if (currentPage.includes('admin')) {
-        console.log('Admin page detected. Initializing admin panel...');
+        // Shopping page initialization
+        console.log("Initializing shopping page...");
+        loadAndDisplayShoppingData();
+        setupShoppingPageBuyListeners();
+    } else if (currentPage === 'index.html' || currentPage === '') {
+        // Home page initialization
+        console.log("Initializing home page...");
+        loadHomePageCategories();
+    } else if (currentPage === 'purchase-history.html') { // Changed from history.html to purchase-history.html
+        // Purchase history page initialization
+        console.log("Initializing purchase history page...");
+        // loadUserPurchaseHistory(); // Uncomment when implemented
+    } else if (currentPage === 'admin-shop.html' || currentPage === 'admin-page-edit.html' || currentPage === 'admin-server-edit.html') {
+        console.log("Initializing admin page...");
+        // initializeAdminPanel is in admin.js
         if (typeof initializeAdminPanel === 'function') {
             initializeAdminPanel();
+        } else {
+            console.warn("Admin functionality not found.");
         }
     }
+
+    // Initialize Global Badge Configurations for reuse
+    initializeBadgeConfigurations().catch(err => console.error("Failed to initialize badge configurations:", err));
 
     // Update copyright year
     updateYear();
