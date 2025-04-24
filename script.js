@@ -331,156 +331,6 @@ async function loadAndDisplayShoppingData() {
     }
 }
 
-// --- MODIFIED: Create Category Section Element ---
-function createCategorySectionElement(categoryData) {
-    const { products, categoryName, slug, iconClass, minPrice, maxPrice } = categoryData;
-    
-    // Create section container
-    const section = document.createElement('section');
-    section.className = 'product-category-section';
-    
-    // Create category title - check if it's Uncategorized to make it non-clickable
-    if (categoryName === 'Uncategorized' || slug === 'uncategorized') {
-        // For Uncategorized, create a non-clickable title
-        const titleWrapper = document.createElement('div');
-        titleWrapper.className = 'category-title-wrapper';
-        
-        // Format the price range
-        const formattedMinPrice = formatPrice(minPrice || 0);
-        const formattedMaxPrice = formatPrice(maxPrice || 0);
-        const priceRangeText = minPrice === maxPrice ? 
-            `${formattedMinPrice}` : 
-            `${formattedMinPrice} - ${formattedMaxPrice}`;
-            
-        titleWrapper.innerHTML = `
-            <h2 class="category-title">
-                <i class="${iconClass || 'fas fa-folder'} icon-left"></i>
-                ${categoryName}
-                <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
-                    ${priceRangeText}
-                </span>
-            </h2>
-        `;
-        
-        section.appendChild(titleWrapper);
-    } else {
-        // For other categories, keep the clickable link
-        const titleLink = document.createElement('a');
-        titleLink.href = `category.html?slug=${slug}`;
-        titleLink.className = 'category-title-link';
-        
-        // Format the price range
-        const formattedMinPrice = formatPrice(minPrice || 0);
-        const formattedMaxPrice = formatPrice(maxPrice || 0);
-        const priceRangeText = minPrice === maxPrice ? 
-            `${formattedMinPrice}` : 
-            `${formattedMinPrice} - ${formattedMaxPrice}`;
-        
-        titleLink.innerHTML = `
-            <h2 class="category-title">
-                <i class="${iconClass || 'fas fa-tag'} icon-left"></i>
-                ${categoryName}
-                <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
-                    ${priceRangeText}
-                </span>
-            </h2>
-        `;
-        
-        section.appendChild(titleLink);
-    }
-    
-    // Create product grid
-    const grid = document.createElement('div');
-    grid.className = 'product-grid';
-    
-    // Add products
-    if (products && products.length > 0) {
-        products.forEach(product => {
-            try {
-                const productCard = createProductCardElement(product, true, slug);
-                if (productCard) {
-                    grid.appendChild(productCard);
-                }
-            } catch (error) {
-                console.error('Error creating product card:', error);
-            }
-        });
-    } else {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
-                <i class="fas fa-box-open" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
-                <p>Chưa có sản phẩm nào trong danh mục này.</p>
-            </div>
-        `;
-    }
-    
-    section.appendChild(grid);
-    return section;
-}
-
-// --- NEW: Create Category Summary Card Element (for main shopping page) ---
-function createCategorySummaryCardElement(category, minPrice, maxPrice) {
-    const cardLink = document.createElement('div'); // Changed from <a> to <div>
-    cardLink.className = 'category-summary-card'; // Add a class for styling
-    cardLink.dataset.animate = "fade-up"; // Optional animation
-    cardLink.dataset.slug = category.slug || 'unknown'; // Store slug as data attribute
-
-    let priceRangeHTML = '';
-    // Check if minPrice and maxPrice are valid numbers
-    const isMinPriceNumeric = typeof minPrice === 'number' && !isNaN(minPrice);
-    const isMaxPriceNumeric = typeof maxPrice === 'number' && !isNaN(maxPrice);
-
-    if (isMinPriceNumeric && isMaxPriceNumeric) {
-        if (minPrice === maxPrice) {
-            // If min and max are the same, just show that price
-            priceRangeHTML = `<p class="category-price-range">Giá: ${formatPrice(minPrice)}</p>`;
-        } else {
-            // Use the requested format
-            priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: Min Price of all product on this category</p>`;
-        }
-    } else if (isMinPriceNumeric) {
-         // Only min price is available
-         priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: Min Price of all product on this category</p>`;
-    } else {
-        // Handle cases with no numeric prices or only special prices
-        priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`; // Or "Liên hệ giá", etc.
-    }
-
-    // Basic structure - adjust classes and content as needed for styling
-    cardLink.innerHTML = `
-        <div class="category-summary-info">
-            <h3 class="category-summary-title">
-                <i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>
-                ${escapeHtml(category.name)}
-            </h3>
-            ${priceRangeHTML}
-        </div>
-        <div class="category-summary-arrow">
-             <i class="fas fa-chevron-right"></i>
-        </div>
-    `;
-
-    // Add click handler - show a modal or popup instead of direct navigation
-    cardLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        const slug = this.dataset.slug;
-        
-        // Option 1: Show a modal with category info (you'll need to create this modal)
-        // showCategoryModal(slug);
-        
-        // Option 2: For now, just log and alert to show it's working
-        console.log(`Category ${category.name} clicked. Slug: ${slug}`);
-        alert(`You clicked on category: ${category.name}. This would show a modal instead of navigating directly.`);
-        
-        // Option 3: Navigate after confirmation 
-        // if (confirm(`Go to ${category.name} category?`)) {
-        //     window.location.href = `category.html?slug=${slug}`;
-        // }
-    });
-
-    return cardLink;
-}
-
 // --- MODIFIED: Create Product Card Element ---
 // *** MODIFIED: Added categorySlug parameter ***
 function createProductCardElement(product, includeBuyButton = false, categorySlug = null) { 
@@ -499,50 +349,45 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
     
     // Get min and max price if available
     const minPrice = product.minPrice || product.price;
-    const maxPrice = product.maxPrice || product.price;
     
-    // Changed format to match screenshot
-    let priceRangeText = 'Giá chỉ từ: Min Price of all product on this category';
+    // Changed format to match screenshot - cleaner format
+    let priceRangeText = `Giá chỉ từ: ${formatCurrency(minPrice)}`;
 
     // Generate stars HTML based on rating
     const rating = product.rating || 0; // Assuming rating exists, default to 0
     const starsHtml = generateStarRating(rating);
 
-    // Discount and stock badges (assuming these properties might exist)
-    const discountBadge = product.discounted ?
-        `<span class="discount-badge">-${product.discountPercent || 10}%</span>` : '';
-    const oldPrice = product.discounted ?
-        `<span class="old-price">${formatCurrency(product.originalPrice)}</span>` : ''; // Assuming originalPrice exists
-    const isOutOfStock = product.stockStatus === 'out_of_stock'; // Check stock status
-    const stockBadge = isOutOfStock ?
-        '<span class="stock-badge out-of-stock">Hết hàng</span>' :
-        (product.stock && product.stock < 5 ? `<span class="stock-badge low-stock">Còn ${product.stock}</span>` : ''); 
+    // Get badge type information from the product if available
+    const badgeType = product.badgeType || "best-seller"; // Default to best-seller if not specified
+    const badgeColor = product.badgeColor || ""; // Get badge color if specified 
+    const badgeStyle = badgeColor ? `style="background-color:${badgeColor}"` : "";
+    
+    // Get country/brand badge if available
+    const brandBadge = product.brandBadge || "VN"; // Default to VN
+    const brandBadgeColor = product.brandBadgeColor || ""; // Get brand badge color if specified
+    const brandBadgeStyle = brandBadgeColor ? `style="background-color:${brandBadgeColor}"` : "";
 
     // Create the card content
     card.innerHTML = `
         <div class="product-card-inner">
             <div class="product-image-placeholder">
                 <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
-                <span class="best-seller-tag">Best Seller</span>
-                <span class="vn-badge">VN</span>
+                <span class="product-badge ${badgeType}" ${badgeStyle}>Best Seller</span>
+                <span class="brand-badge" ${brandBadgeStyle}>${brandBadge}</span>
             </div>
             <div class="product-details">
                 <h3 class="product-name">${escapeHtml(product.name)}</h3>
                 <div class="product-meta">
                     <div class="product-rating">
                         ${starsHtml}
-                        <span class="rating-count">(${product.reviewCount || 0})</span> <!-- Assuming reviewCount exists -->
+                        <span class="rating-count">(${product.reviewCount || 0})</span>
                     </div>
-                    <!-- Add price range -->
                     <div class="product-price-range">${priceRangeText}</div>
-                    <!-- Add brand if available -->
                     ${product.brand ? `<span class="product-brand">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
                 <div class="product-price">
-                    ${oldPrice}
                     <span class="current-price">${formattedPrice}</span>
                 </div>
-                <!-- Buy button removed -->
             </div>
         </div>
     `;
@@ -1048,19 +893,36 @@ function createProductCard(product) {
     // Format prices
     const formattedPrice = formatCurrency(product.price);
     const formattedOriginalPrice = product.originalPrice ? formatCurrency(product.originalPrice) : '';
-    const discountBadge = product.originalPrice ? `<span class="product-tag sale-tag">Giảm ${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : '';
-    const stockBadge = product.stockStatus === 'out_of_stock' ? '<span class="product-tag hot-tag">Hết hàng</span>' : '';
+    
+    // Get min price for range display
+    const minPrice = product.minPrice || product.price;
+    
+    // Changed format to match screenshot - cleaner format
+    let priceRangeText = `Giá chỉ từ: ${formatCurrency(minPrice)}`;
+    
+    // Get badge type information from the product if available
+    const badgeType = product.badgeType || "best-seller"; // Default to best-seller if not specified
+    const badgeColor = product.badgeColor || ""; // Get badge color if specified 
+    const badgeStyle = badgeColor ? `style="background-color:${badgeColor}"` : "";
+    
+    // Get country/brand badge if available
+    const brandBadge = product.brandBadge || "VN"; // Default to VN
+    const brandBadgeColor = product.brandBadgeColor || ""; // Get brand badge color if specified
+    const brandBadgeStyle = brandBadgeColor ? `style="background-color:${brandBadgeColor}"` : "";
 
-    // Changed format to match screenshot
-    let priceRangeText = 'Giá chỉ từ: Min Price of all product on this category';
+    // Calculate discount percentage if original price exists
+    const discountBadge = product.originalPrice ? 
+        `<span class="product-badge sale" style="background-color: #f44336;">-${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : '';
+    
+    // Out of stock badge
+    const stockBadge = product.stockStatus === 'out_of_stock' ? 
+        '<span class="product-badge out-of-stock" style="background-color: #616161;">Hết hàng</span>' : '';
 
     card.innerHTML = `
         <div class="product-image-placeholder">
             <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
-            ${discountBadge}
-            ${stockBadge}
-            <span class="best-seller-tag">Best Seller</span>
-            <span class="vn-badge">VN</span>
+            ${discountBadge || stockBadge || `<span class="product-badge ${badgeType}" ${badgeStyle}>Best Seller</span>`}
+            <span class="brand-badge" ${brandBadgeStyle}>${brandBadge}</span>
         </div>
         <div class="product-info">
             ${product.brand ? `<div class="product-brand">${escapeHtml(product.brand)}</div>` : ''}
@@ -1073,7 +935,6 @@ function createProductCard(product) {
                 ${formattedOriginalPrice ? `<span class="original-price">${formattedOriginalPrice}</span>` : ''}
                 <span class="sale-price">${formattedPrice}</span>
             </div>
-            <!-- Buy button removed -->
         </div>
     `;
 
@@ -1223,58 +1084,242 @@ function setupCategoryPage() {
     });
 }
 
-// ----- Initialization Function -----
+// Main function to run once DOM is ready
 function initializePage() {
-    const scriptTag = document.querySelector('script[src*="script.js"]');
-    const version = scriptTag ? scriptTag.src.split('v=')[1] : 'unknown';
-    console.log(`Initializing page (v${version})...`);
+    console.log('Initializing page...');
 
+    // Initialize DOM elements
     initializeDOMElements();
-    updateYear();
-    setupHeaderScrollEffect();
+
+    // Initialize badge configurations
+    initializeBadgeConfigurations().catch(error => {
+        console.error('Error initializing badge configurations:', error);
+    });
+
+    // Set up general UI elements
+    setupBackToTopButton();
     setupMobileMenuToggle();
-    setupUserDropdown();
     setupThemeToggle();
+    setupUserDropdown();
     setupLanguageToggle();
     setupClickDropdowns();
-    setupBackToTopButton();
-    setupPurchaseModalListeners();
     setupActionButtons();
+    setupProfessionalAnimations();
     setupDropdownActions();
+    setupHeaderScrollEffect();
 
-    // --- Page-Specific Logic ---
-    if (document.body.classList.contains('shopping-page')) {
-        console.log("Shopping page detected. Loading overview data...");
-        loadAndDisplayShoppingData();
-    } else if (document.body.classList.contains('category-detail-page')) {
-        console.log("Category detail page detected. Loading specific data...");
-        loadCategoryPageData(); // New: Load category-specific products WITH buy buttons
-    } else if (document.body.classList.contains('history-page')) {
-        console.log("History page detected.");
-        setupProfessionalAnimations();
-    } else {
-        setupProfessionalAnimations();
-    }
-
-    const donateButtonHeader = document.getElementById('donate-button-header');
-    if (donateButtonHeader) {
-        donateButtonHeader.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Donate function coming soon!');
+    // Load data for specific page types
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    if (currentPage === 'index.html' || currentPage === '') {
+        console.log('Loading home page data...');
+        loadHomePageCategories().catch(error => {
+            console.error('Error loading home page data:', error);
         });
-    }
-
-    const ageSpan = document.getElementById('age');
-    if (ageSpan) {
-        try {
-            ageSpan.textContent = calculateAge('2006-08-08');
-        } catch (e) {
-            console.error("Error calculating age:", e);
-            ageSpan.textContent = "??";
+    } else if (currentPage === 'category.html') {
+        console.log('Loading category page data...');
+        setupCategoryPage();
+        loadCategoryPageData().catch(error => {
+            console.error('Error loading category page data:', error);
+        });
+    } else if (currentPage === 'shopping.html') {
+        console.log('Loading shopping page data...');
+        loadAndDisplayShoppingData().catch(error => {
+            console.error('Error loading shopping data:', error);
+        });
+    } else if (currentPage === 'history.html') {
+        console.log('History page loaded. Awaiting future implementation.');
+        // History page implementation will come later
+    } else if (currentPage.includes('admin')) {
+        console.log('Admin page detected. Initializing admin panel...');
+        if (typeof initializeAdminPanel === 'function') {
+            initializeAdminPanel();
         }
     }
-    console.log("Page initialization complete.");
+
+    // Update copyright year
+    updateYear();
+    
+    console.log('Page initialization complete.');
 }
 
 // --- Run Initialization on DOM Ready ---
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initializePage); } else { initializePage(); }
+
+// --- MODIFIED: Create Category Section Element ---
+function createCategorySectionElement(categoryData) {
+    const { products, categoryName, slug, iconClass, minPrice, maxPrice } = categoryData;
+    
+    // Create section container
+    const section = document.createElement('section');
+    section.className = 'product-category-section';
+    
+    // Create a non-clickable title for all categories
+    const titleWrapper = document.createElement('div');
+    titleWrapper.className = 'category-title-wrapper';
+    
+    // Format the price range
+    const formattedMinPrice = formatPrice(minPrice || 0);
+    const formattedMaxPrice = formatPrice(maxPrice || 0);
+    const priceRangeText = minPrice === maxPrice ? 
+        `${formattedMinPrice}` : 
+        `${formattedMinPrice} - ${formattedMaxPrice}`;
+        
+    titleWrapper.innerHTML = `
+        <h2 class="category-title">
+            <i class="${iconClass || 'fas fa-folder'} icon-left"></i>
+            ${categoryName}
+            <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
+                ${priceRangeText}
+            </span>
+        </h2>
+    `;
+    
+    section.appendChild(titleWrapper);
+    
+    // Create product grid
+    const grid = document.createElement('div');
+    grid.className = 'product-grid';
+    
+    // Add products
+    if (products && products.length > 0) {
+        products.forEach(product => {
+            try {
+                const productCard = createProductCardElement(product, true, slug);
+                if (productCard) {
+                    grid.appendChild(productCard);
+                }
+            } catch (error) {
+                console.error('Error creating product card:', error);
+            }
+        });
+    } else {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <i class="fas fa-box-open" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                <p>Chưa có sản phẩm nào trong danh mục này.</p>
+            </div>
+        `;
+    }
+    
+    section.appendChild(grid);
+    return section;
+}
+
+// --- MODIFIED: Create Category Summary Card Element (for main shopping page) ---
+function createCategorySummaryCardElement(category, minPrice, maxPrice) {
+    const cardLink = document.createElement('div'); // Changed from <a> to <div>
+    cardLink.className = 'category-summary-card'; // Add a class for styling
+    cardLink.dataset.animate = "fade-up"; // Optional animation
+    cardLink.dataset.slug = category.slug || 'unknown'; // Store slug as data attribute
+
+    let priceRangeHTML = '';
+    // Check if minPrice and maxPrice are valid numbers
+    const isMinPriceNumeric = typeof minPrice === 'number' && !isNaN(minPrice);
+    
+    // Use actual price value in the display
+    if (isMinPriceNumeric) {
+        priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: ${formatPrice(minPrice)}</p>`;
+    } else {
+        // Handle cases with no numeric prices or only special prices
+        priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`; // Or "Liên hệ giá", etc.
+    }
+
+    // Basic structure - adjust classes and content as needed for styling
+    cardLink.innerHTML = `
+        <div class="category-summary-info">
+            <h3 class="category-summary-title">
+                <i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>
+                ${escapeHtml(category.name)}
+            </h3>
+            ${priceRangeHTML}
+        </div>
+        <div class="category-summary-arrow">
+             <i class="fas fa-chevron-right"></i>
+        </div>
+    `;
+
+    // Add click handler - show a modal or popup instead of direct navigation
+    cardLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const slug = this.dataset.slug;
+        
+        // Option 1: Show a modal with category info
+        if (typeof showCategoryModal === 'function') {
+            showCategoryModal(category);
+        } else {
+            // Option 2: Navigate after confirmation
+            if (confirm(`Xem danh mục ${category.name}?`)) {
+                window.location.href = `category.html?slug=${slug}`;
+            }
+        }
+    });
+
+    return cardLink;
+}
+
+// Function to fetch badge configurations from backend
+async function fetchBadgeConfigurations() {
+    try {
+        const response = await fetchData('/admin/badge-configs');
+        if (response && response.badgeTypes) {
+            // Store badge configurations in localStorage for quick access
+            localStorage.setItem('badgeConfigs', JSON.stringify(response.badgeTypes));
+            console.log('Badge configurations fetched successfully');
+        }
+        return response?.badgeTypes || [];
+    } catch (error) {
+        console.error('Error fetching badge configurations:', error);
+        // Try to get from localStorage if fetch fails
+        const cachedConfigs = localStorage.getItem('badgeConfigs');
+        return cachedConfigs ? JSON.parse(cachedConfigs) : [];
+    }
+}
+
+// Function to get badge configuration for a product
+function getBadgeConfig(badgeType) {
+    try {
+        // Try to get from localStorage first for performance
+        const cachedConfigs = localStorage.getItem('badgeConfigs');
+        const configs = cachedConfigs ? JSON.parse(cachedConfigs) : [];
+        
+        // Find the matching badge config
+        const config = configs.find(c => c.type === badgeType);
+        
+        // Return with defaults if not found
+        return config || {
+            type: badgeType,
+            backgroundColor: getBadgeDefaultColor(badgeType),
+            textColor: '#FFFFFF',
+            text: badgeType.charAt(0).toUpperCase() + badgeType.slice(1).replace(/-/g, ' ')
+        };
+    } catch (error) {
+        console.error('Error getting badge configuration:', error);
+        return {
+            type: badgeType,
+            backgroundColor: getBadgeDefaultColor(badgeType),
+            textColor: '#FFFFFF',
+            text: badgeType.charAt(0).toUpperCase() + badgeType.slice(1).replace(/-/g, ' ')
+        };
+    }
+}
+
+// Helper function to get default color for badge types
+function getBadgeDefaultColor(badgeType) {
+    const colorMap = {
+        'best-seller': '#ff9800',
+        'new': '#4caf50',
+        'sale': '#f44336',
+        'out-of-stock': '#616161',
+        'limited': '#9c27b0',
+        'featured': '#2196F3'
+    };
+    
+    return colorMap[badgeType] || '#212121';
+}
+
+// Function to initialize badge configurations when the page loads
+async function initializeBadgeConfigurations() {
+    await fetchBadgeConfigurations();
+    console.log('Badge configurations initialized');
+}
