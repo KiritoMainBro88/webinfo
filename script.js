@@ -328,7 +328,8 @@ async function loadAndDisplayShoppingData() {
                         categoryProducts.forEach(product => {
                             try {
                                 // Pass FALSE to prevent buy button on main shopping page previews
-                                const productCard = createProductCardElement(product, false);
+                                // *** MODIFIED: Pass category.slug explicitly ***
+                                const productCard = createProductCardElement(product, false, category.slug); 
                                 if (productCard) { // Check if card creation was successful
                                     productGrid.appendChild(productCard);
                                 } else {
@@ -462,7 +463,8 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
 }
 
 // --- MODIFIED: Create Product Card Element ---
-function createProductCardElement(product, includeBuyButton = false) {
+// *** MODIFIED: Added categorySlug parameter ***
+function createProductCardElement(product, includeBuyButton = false, categorySlug = null) { 
     if (!product || (!product.id && !product._id)) {
         console.error('Invalid product data:', product);
         return document.createElement('div'); // Return empty div to prevent errors
@@ -528,15 +530,15 @@ function createProductCardElement(product, includeBuyButton = false) {
             return;
         }
 
-        // Get the category slug from the product data
-        const categorySlug = product.category?.slug;
+        // *** MODIFIED: Use passed categorySlug first, fallback to product.category.slug ***
+        const slugToUse = categorySlug || product.category?.slug; 
 
-        if (categorySlug) {
+        if (slugToUse) {
             // Navigate to the category page using the slug
-            window.location.href = `category.html?slug=${categorySlug}`;
+            window.location.href = `category.html?slug=${slugToUse}`;
         } else {
             // If slug is missing, log an error or do nothing, don't navigate to product.html
-            console.warn(`Category slug missing for product ID: ${productId}. Cannot navigate.`);
+            console.warn(`Category slug missing for product ID: ${productId}. Cannot navigate.`); // Keep warning
             // Optionally, you could still navigate to shopping.html or show a message
             // window.location.href = 'shopping.html';
         }
@@ -765,28 +767,24 @@ function getCategoryIcon(slug) {
 }
 
 // Function to render products for a category section
-function renderCategoryProducts(categoryData, targetElement, limit = 6) {
+function renderCategoryProducts(products, targetElement) { // Simplified signature based on usage
     // Validate inputs
-    if (!categoryData || !targetElement) {
-        console.error('Missing required parameters for renderCategoryProducts:', { categoryData, targetElement });
+    if (!products || !targetElement) {
+        console.error('Missing required parameters for renderCategoryProducts:', { products, targetElement });
         return;
     }
     
-    // Clear existing content if needed
-    let productsContainer = targetElement.querySelector('.products-grid');
+    let productsContainer = targetElement.querySelector('.product-grid'); // Changed selector
     if (!productsContainer) {
         productsContainer = document.createElement('div');
-        productsContainer.className = 'products-grid';
+        productsContainer.className = 'product-grid';
         targetElement.appendChild(productsContainer);
     } else {
         productsContainer.innerHTML = '';
     }
-    
-    // Get products to display
-    const products = Array.isArray(categoryData.products) ? categoryData.products : [];
-    
+
     // Show empty state if no products
-    if (products.length === 0) {
+    if (!products || products.length === 0) {
         const emptyState = document.createElement('div');
         emptyState.className = 'empty-products-message';
         emptyState.innerHTML = `
@@ -796,29 +794,18 @@ function renderCategoryProducts(categoryData, targetElement, limit = 6) {
         productsContainer.appendChild(emptyState);
         return;
     }
-    
-    // Limit the number of products to show
-    const productsToShow = limit > 0 ? products.slice(0, limit) : products;
-    
-    // Create and append product cards
-    productsToShow.forEach(product => {
-        const productCard = createProductCardElement(product);
-        productsContainer.appendChild(productCard);
+
+    // Create and append product cards - PASS FALSE FOR BUY BUTTON as requested
+    products.forEach(product => {
+        // --- MODIFIED CALL: Set includeBuyButton to false ---
+        const productCard = createProductCardElement(product, false); 
+        // --- END MODIFIED CALL ---
+        if (productCard) { // Add check if card is valid
+            productsContainer.appendChild(productCard);
+        } else {
+            console.warn(`Failed to create product card for product ID: ${product?._id} in renderCategoryProducts`);
+        }
     });
-    
-    // Add "view all" button if there are more products than the limit
-    if (limit > 0 && products.length > limit && categoryData.slug) {
-        const viewAllContainer = document.createElement('div');
-        viewAllContainer.className = 'view-all-container';
-        
-        const viewAllButton = document.createElement('a');
-        viewAllButton.className = 'view-all-button';
-        viewAllButton.href = `category.html?slug=${categoryData.slug}`;
-        viewAllButton.innerHTML = `<i class="fas fa-chevron-right"></i> Xem tất cả ${products.length} sản phẩm`;
-        
-        viewAllContainer.appendChild(viewAllButton);
-        targetElement.appendChild(viewAllContainer);
-    }
 }
 
 // Function to apply filters and sorting
