@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sản phẩm - KiritoMainBro</title> <!-- Title will be set dynamically -->
+    <title>Danh Mục Sản Phẩm - KiritoMainBro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="style.css?v=1.9.10">
 </head>
 <body class="dark-theme category-detail-page">
-
     <div class="page-wrapper">
         <div class="main-content-area" id="main-content">
             <!-- Header -->
@@ -23,19 +22,20 @@
 
             <main class="site-main">
                 <div class="container">
-                     <!-- Breadcrumbs/Title -->
+                     <!-- Category Header -->
                      <div class="category-header">
-                         <!-- Use H2 structure like shyunrb for consistency -->
-                         <h2 class="page-title" data-animate="fade-up"><span id="category-breadcrumb">Vật Phẩm</span> / <span id="category-name-display">Đang tải...</span></h2>
+                         <h2 class="page-title" data-animate="fade-up">
+                             <span id="category-breadcrumb">Vật Phẩm</span> / 
+                             <span id="category-name-display">Đang tải...</span>
+                         </h2>
                      </div>
 
-                     <!-- Filter Bar - Updated Structure -->
+                     <!-- Filter Bar -->
                      <div class="filter-bar" data-animate="fade-up" data-delay="0.1">
                         <div class="filter-group">
                             <label for="filter-price">Chọn Mức Giá:</label>
                             <select id="filter-price" name="price">
                                 <option value="all">Tất cả</option>
-                                <!-- Price options loaded by JS or hardcoded -->
                                 <option value="0-100000">Dưới 100.000đ</option>
                                 <option value="100000-500000">100.000đ - 500.000đ</option>
                                 <option value="500000-1000000">500.000đ - 1.000.000đ</option>
@@ -58,19 +58,40 @@
                             <input type="search" id="filter-search-input" name="search" placeholder="Tìm kiếm mã hoặc tên...">
                         </div>
                         <div class="filter-actions">
-                            <button id="filter-search-btn" class="cta-button primary"><i class="fas fa-search icon-left"></i>Tìm Kiếm</button>
+                            <button id="filter-search-btn" class="cta-button primary">
+                                <i class="fas fa-search icon-left"></i>Tìm Kiếm
+                            </button>
                             <button id="filter-reset-btn" class="cta-button secondary">Đặt Lại</button>
                         </div>
                     </div>
-                    <!-- End of Filter Bar -->
 
-                    <!-- Product Grid Area -->
-                     <section class="product-grid-section" id="category-product-grid-container" data-animate="fade-up" data-delay="0.2">
-                         <div class="product-grid" id="category-product-grid">
-                             <p style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); margin-top: 1rem; grid-column: 1 / -1;"> <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Đang tải sản phẩm... </p>
-                         </div>
-                         <div class="pagination-controls" style="text-align: center; margin-top: 2rem; display: none;"> <button class="cta-button secondary disabled" id="prev-page-btn">< Trước</button> <span id="page-info" style="margin: 0 1rem;">Trang 1 / 1</span> <button class="cta-button secondary" id="next-page-btn">Sau ></button> </div>
-                     </section>
+                    <!-- Product Grid -->
+                    <section class="product-grid-section" id="category-product-grid-container" data-animate="fade-up" data-delay="0.2">
+                        <div class="product-grid" id="category-product-grid">
+                            <!-- Loading State -->
+                            <div class="loading-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Đang tải sản phẩm...</p>
+                            </div>
+                        </div>
+                        <!-- Pagination -->
+                        <div class="pagination-controls" style="text-align: center; margin-top: 2rem; display: none;">
+                            <button class="cta-button secondary disabled" id="prev-page-btn">
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </button>
+                            <span id="page-info" style="margin: 0 1rem;">Trang 1 / 1</span>
+                            <button class="cta-button secondary" id="next-page-btn">
+                                Sau <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- No Results State -->
+                    <div id="no-results" style="display: none; text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: var(--border-radius-md); margin-top: 2rem;">
+                        <i class="fas fa-search" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                        <h3>Không tìm thấy sản phẩm</h3>
+                        <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm của bạn</p>
+                    </div>
                 </div>
             </main>
             <!-- Footer -->
@@ -90,9 +111,8 @@
     <script src="script.js?v=1.9.10"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("Category detail page loaded - DOM ready.");
-            // The main initializePage in script.js should handle calling loadCategoryPageData
-            // if the body class 'category-detail-page' is detected.
+            // Initialize page
+            console.log("Category detail page loaded. Awaiting data...");
         });
     </script>
 </body>

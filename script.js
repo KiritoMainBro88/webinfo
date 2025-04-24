@@ -1063,6 +1063,195 @@ function loadHomePageCategories() {
         });
 }
 
+// Function to create product card element
+function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.dataset.productId = product._id;
+
+    // Format prices
+    const formattedPrice = formatCurrency(product.price);
+    const formattedOriginalPrice = product.originalPrice ? formatCurrency(product.originalPrice) : '';
+    const discountBadge = product.originalPrice ? `<span class="product-tag sale-tag">Giảm ${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : '';
+    const stockBadge = product.stockStatus === 'out_of_stock' ? '<span class="product-tag hot-tag">Hết hàng</span>' : '';
+
+    card.innerHTML = `
+        <div class="product-image-placeholder">
+            <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
+            ${discountBadge}
+            ${stockBadge}
+        </div>
+        <div class="product-info">
+            ${product.brand ? `<div class="product-brand">${escapeHtml(product.brand)}</div>` : ''}
+            <h3 class="product-title">${escapeHtml(product.name)}</h3>
+            <div class="product-meta">
+                ${product.category ? `<span class="category">${escapeHtml(product.category.name)}</span>` : ''}
+            </div>
+            <div class="product-price">
+                ${formattedOriginalPrice ? `<span class="original-price">${formattedOriginalPrice}</span>` : ''}
+                <span class="sale-price">${formattedPrice}</span>
+            </div>
+            <button class="product-buy-btn" ${product.stockStatus === 'out_of_stock' ? 'disabled' : ''}>
+                ${product.stockStatus === 'out_of_stock' ? 'Hết hàng' : 'Mua ngay'}
+            </button>
+        </div>
+    `;
+
+    // Add click handler for buy button
+    const buyButton = card.querySelector('.product-buy-btn');
+    if (buyButton && !buyButton.disabled) {
+        buyButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPurchaseModal(product._id, product.name, product.price);
+        });
+    }
+
+    return card;
+}
+
+// Function to load and display category products
+async function loadCategoryProducts(categorySlug, page = 1, filters = {}) {
+    const gridContainer = document.getElementById('category-product-grid');
+    const noResults = document.getElementById('no-results');
+    const paginationControls = document.querySelector('.pagination-controls');
+    
+    if (!gridContainer) return;
+
+    // Show loading state
+    gridContainer.innerHTML = `
+        <div class="loading-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Đang tải sản phẩm...</p>
+        </div>
+    `;
+    noResults.style.display = 'none';
+
+    try {
+        // Build query parameters
+        const params = new URLSearchParams({
+            page: page,
+            ...filters
+        });
+
+        // Fetch products for category
+        const data = await fetchData(`/api/categories/${categorySlug}/products?${params}`);
+        
+        // Update category name
+        const categoryNameDisplay = document.getElementById('category-name-display');
+        if (categoryNameDisplay) {
+            categoryNameDisplay.textContent = data.categoryName || 'Không tìm thấy';
+        }
+
+        // Clear grid and show products or no results message
+        gridContainer.innerHTML = '';
+        
+        if (!data.products || data.products.length === 0) {
+            noResults.style.display = 'block';
+            paginationControls.style.display = 'none';
+            return;
+        }
+
+        // Create and append product cards
+        data.products.forEach(product => {
+            const card = createProductCard(product);
+            gridContainer.appendChild(card);
+        });
+
+        // Update pagination
+        if (data.pagination) {
+            const { currentPage, totalPages } = data.pagination;
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-page-btn');
+            const nextBtn = document.getElementById('next-page-btn');
+
+            if (pageInfo) pageInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
+            if (prevBtn) prevBtn.disabled = currentPage === 1;
+            if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+            paginationControls.style.display = totalPages > 1 ? 'block' : 'none';
+        }
+
+    } catch (error) {
+        console.error('Error loading category products:', error);
+        gridContainer.innerHTML = `
+            <div class="error-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                <p>Có lỗi xảy ra khi tải sản phẩm. Vui lòng thử lại sau.</p>
+            </div>
+        `;
+    }
+}
+
+// Setup category page functionality
+function setupCategoryPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categorySlug = urlParams.get('slug');
+    
+    if (!categorySlug) {
+        window.location.href = 'shopping.html';
+        return;
+    }
+
+    // Load initial products
+    loadCategoryProducts(categorySlug);
+
+    // Setup filter handlers
+    const filterForm = document.querySelector('.filter-bar');
+    const searchInput = document.getElementById('filter-search-input');
+    const searchBtn = document.getElementById('filter-search-btn');
+    const resetBtn = document.getElementById('filter-reset-btn');
+    const priceSelect = document.getElementById('filter-price');
+    const sortSelect = document.getElementById('filter-sort');
+
+    if (filterForm) {
+        // Search button click
+        searchBtn?.addEventListener('click', () => {
+            const filters = {
+                search: searchInput?.value || '',
+                price: priceSelect?.value || 'all',
+                sort: sortSelect?.value || 'default'
+            };
+            loadCategoryProducts(categorySlug, 1, filters);
+        });
+
+        // Reset filters
+        resetBtn?.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (priceSelect) priceSelect.value = 'all';
+            if (sortSelect) sortSelect.value = 'default';
+            loadCategoryProducts(categorySlug);
+        });
+
+        // Price and sort change
+        priceSelect?.addEventListener('change', () => searchBtn?.click());
+        sortSelect?.addEventListener('change', () => searchBtn?.click());
+    }
+
+    // Setup pagination
+    const prevBtn = document.getElementById('prev-page-btn');
+    const nextBtn = document.getElementById('next-page-btn');
+    let currentPage = 1;
+
+    prevBtn?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadCategoryProducts(categorySlug, currentPage, {
+                search: searchInput?.value || '',
+                price: priceSelect?.value || 'all',
+                sort: sortSelect?.value || 'default'
+            });
+        }
+    });
+
+    nextBtn?.addEventListener('click', () => {
+        currentPage++;
+        loadCategoryProducts(categorySlug, currentPage, {
+            search: searchInput?.value || '',
+            price: priceSelect?.value || 'all',
+            sort: sortSelect?.value || 'default'
+        });
+    });
+}
+
 // ----- Initialization Function -----
 function initializePage() {
     const scriptTag = document.querySelector('script[src*="script.js"]');
