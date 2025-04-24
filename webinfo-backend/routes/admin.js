@@ -3,7 +3,7 @@ const mongoose = require('mongoose'); // Import mongoose
 const User = require('../models/User');
 const authAdmin = require('../middleware/authAdmin');
 const Transaction = require('../models/Transaction');
-const { isAdmin } = require('../middleware/auth');
+const { auth, isAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // === ADD JSON PARSER FOR THIS ROUTER ===
@@ -82,43 +82,44 @@ router.post('/add-balance', authAdmin, async (req, res) => {
 router.get('/user-info/:identifier', isAdmin, async (req, res) => {
     try {
         const { identifier } = req.params;
-        let user;
-
-        // Check if identifier is ObjectId
-        if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
-            user = await User.findById(identifier);
-        } else {
-            user = await User.findOne({ username: identifier });
-        }
+        
+        // Find user by either username or ID
+        const user = await User.findOne({
+            $or: [
+                { _id: identifier.match(/^[0-9a-fA-F]{24}$/) ? identifier : null },
+                { username: identifier.toLowerCase() }
+            ]
+        }).select('-password');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const transactions = await Transaction.find({ userId: user._id })
+        // Get user's last 50 transactions
+        const recentTransactions = await Transaction.find({ userId: user._id })
             .sort({ createdAt: -1 })
             .limit(50);
 
         res.json({
-            user: {
-                _id: user._id,
-                username: user.username,
-                balance: user.balance,
-                email: user.email,
-                createdAt: user.createdAt
-            },
-            transactions
+            user,
+            recentTransactions
         });
+
     } catch (error) {
+        console.error('Error in /admin/user-info:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
-// Add balance to user (updated version)
+// Add balance to user
 router.post('/add-balance', isAdmin, async (req, res) => {
     try {
         const { userId, amount, description } = req.body;
         
+        if (!userId || !amount || isNaN(amount)) {
+            return res.status(400).json({ message: 'Invalid request data' });
+        }
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -133,14 +134,19 @@ router.post('/add-balance', isAdmin, async (req, res) => {
             userId: user._id,
             type: 'admin_adjustment',
             amount: parseFloat(amount),
-            description,
+            description: description || 'Admin balance adjustment',
             balanceBefore,
             balanceAfter: user.balance,
             adminId: req.user._id
         });
 
-        res.json({ message: 'Balance updated successfully', user });
+        res.json({
+            message: 'Balance updated successfully',
+            newBalance: user.balance
+        });
+
     } catch (error) {
+        console.error('Error in /admin/add-balance:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
@@ -162,11 +168,12 @@ router.get('/top-depositors', isAdmin, async (req, res) => {
             {
                 $group: {
                     _id: '$userId',
-                    totalDeposit: { $sum: '$amount' }
+                    totalDeposits: { $sum: '$amount' },
+                    count: { $sum: 1 }
                 }
             },
             {
-                $sort: { totalDeposit: -1 }
+                $sort: { totalDeposits: -1 }
             },
             {
                 $limit: 5
@@ -185,13 +192,16 @@ router.get('/top-depositors', isAdmin, async (req, res) => {
             {
                 $project: {
                     username: '$user.username',
-                    totalDeposit: 1
+                    totalDeposits: 1,
+                    count: 1
                 }
             }
         ]);
 
         res.json(topDepositors);
+
     } catch (error) {
+        console.error('Error in /admin/top-depositors:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
@@ -200,22 +210,21 @@ router.get('/top-depositors', isAdmin, async (req, res) => {
 router.get('/transactions', isAdmin, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 50;
-        const type = req.query.type; // Optional filter by type
-        const userId = req.query.userId; // Optional filter by user
+        const limit = parseInt(req.query.limit) || 20;
+        const type = req.query.type;
+        const userId = req.query.userId;
 
         const query = {};
         if (type) query.type = type;
         if (userId) query.userId = userId;
 
+        const total = await Transaction.countDocuments(query);
         const transactions = await Transaction.find(query)
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .populate('userId', 'username')
             .populate('adminId', 'username');
-
-        const total = await Transaction.countDocuments(query);
 
         res.json({
             transactions,
@@ -226,7 +235,9 @@ router.get('/transactions', isAdmin, async (req, res) => {
                 pages: Math.ceil(total / limit)
             }
         });
+
     } catch (error) {
+        console.error('Error in /admin/transactions:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
