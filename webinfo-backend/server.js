@@ -13,7 +13,6 @@ const purchaseRoutes = require('./routes/purchase'); // <-- IMPORT NEW ROUTE
 const app = express();
 const mongoURI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;
-const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
 
 if (!mongoURI) { console.error("FATAL ERROR: MONGODB_URI is not defined."); process.exit(1); }
 

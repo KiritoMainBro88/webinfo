@@ -3,7 +3,7 @@ console.log("Script version 1.9.12 - Added fallback for API failures"); // Incre
 // --- Global Constants & Variables ---
 // In script.js - replace the hardcoded value
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com'; // Your actual backend URL
-const BACKUP_MODE = true; // Enable backup mode when API is down
+const BACKUP_MODE = false; // Disable backup mode to use real API
 
 // --- Fallback data for demo mode ---
 const FALLBACK_DATA = {
