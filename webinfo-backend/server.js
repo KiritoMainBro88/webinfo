@@ -33,7 +33,7 @@ const corsOptions = {
             const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
-        return callback(null, true);
+        // The line below was unreachable and has been removed.
     },
     credentials: true, // Allow cookies/headers if needed later
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

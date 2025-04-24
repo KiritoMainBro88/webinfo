@@ -767,7 +767,7 @@ function getCategoryIcon(slug) {
 }
 
 // Function to render products for a category section
-function renderCategoryProducts(products, targetElement) { // Simplified signature based on usage
+function renderCategoryProducts(products, targetElement, categorySlug) { // Added categorySlug parameter
     // Validate inputs
     if (!products || !targetElement) {
         console.error('Missing required parameters for renderCategoryProducts:', { products, targetElement });
@@ -795,10 +795,13 @@ function renderCategoryProducts(products, targetElement) { // Simplified signatu
         return;
     }
 
+    // Get category slug from the first product if not provided
+    const slugToUse = categorySlug || products[0]?.category?.slug;
+
     // Create and append product cards - PASS FALSE FOR BUY BUTTON as requested
     products.forEach(product => {
-        // --- MODIFIED CALL: Set includeBuyButton to false ---
-        const productCard = createProductCardElement(product, false); 
+        // --- MODIFIED CALL: Set includeBuyButton to false and pass category slug ---
+        const productCard = createProductCardElement(product, false, slugToUse); 
         // --- END MODIFIED CALL ---
         if (productCard) { // Add check if card is valid
             productsContainer.appendChild(productCard);
@@ -973,10 +976,10 @@ async function loadCategoryPageData() {
         // Render products
         if (data.products && Array.isArray(data.products)) {
             console.log(`Fetched ${data.products.length} products for category '${data.categoryName}'`);
-            renderCategoryProducts(data.products);
+            renderCategoryProducts(data.products, categorySection, categorySlug);
         } else {
             console.error('Invalid products data:', data.products);
-            renderCategoryProducts([]);
+            renderCategoryProducts([], categorySection, categorySlug);
         }
         
         // Set up buy button listeners
