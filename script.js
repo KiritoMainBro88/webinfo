@@ -339,29 +339,55 @@ function createCategorySectionElement(categoryData) {
     const section = document.createElement('section');
     section.className = 'product-category-section';
     
-    // Create category title with link and price range
-    const titleLink = document.createElement('a');
-    titleLink.href = `category.html?slug=${slug}`;
-    titleLink.className = 'category-title-link';
-    
-    // Format the price range
-    const formattedMinPrice = formatPrice(minPrice || 0);
-    const formattedMaxPrice = formatPrice(maxPrice || 0);
-    const priceRangeText = minPrice === maxPrice ? 
-        `${formattedMinPrice}` : 
-        `${formattedMinPrice} - ${formattedMaxPrice}`;
-    
-    titleLink.innerHTML = `
-        <h2 class="category-title">
-            <i class="${iconClass || 'fas fa-tag'} icon-left"></i>
-            ${categoryName}
-            <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
-                ${priceRangeText}
-            </span>
-        </h2>
-    `;
-    
-    section.appendChild(titleLink);
+    // Create category title - check if it's Uncategorized to make it non-clickable
+    if (categoryName === 'Uncategorized' || slug === 'uncategorized') {
+        // For Uncategorized, create a non-clickable title
+        const titleWrapper = document.createElement('div');
+        titleWrapper.className = 'category-title-wrapper';
+        
+        // Format the price range
+        const formattedMinPrice = formatPrice(minPrice || 0);
+        const formattedMaxPrice = formatPrice(maxPrice || 0);
+        const priceRangeText = minPrice === maxPrice ? 
+            `${formattedMinPrice}` : 
+            `${formattedMinPrice} - ${formattedMaxPrice}`;
+            
+        titleWrapper.innerHTML = `
+            <h2 class="category-title">
+                <i class="${iconClass || 'fas fa-folder'} icon-left"></i>
+                ${categoryName}
+                <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
+                    ${priceRangeText}
+                </span>
+            </h2>
+        `;
+        
+        section.appendChild(titleWrapper);
+    } else {
+        // For other categories, keep the clickable link
+        const titleLink = document.createElement('a');
+        titleLink.href = `category.html?slug=${slug}`;
+        titleLink.className = 'category-title-link';
+        
+        // Format the price range
+        const formattedMinPrice = formatPrice(minPrice || 0);
+        const formattedMaxPrice = formatPrice(maxPrice || 0);
+        const priceRangeText = minPrice === maxPrice ? 
+            `${formattedMinPrice}` : 
+            `${formattedMinPrice} - ${formattedMaxPrice}`;
+        
+        titleLink.innerHTML = `
+            <h2 class="category-title">
+                <i class="${iconClass || 'fas fa-tag'} icon-left"></i>
+                ${categoryName}
+                <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
+                    ${priceRangeText}
+                </span>
+            </h2>
+        `;
+        
+        section.appendChild(titleLink);
+    }
     
     // Create product grid
     const grid = document.createElement('div');
@@ -452,6 +478,18 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
 
     // Format the price with commas for thousands
     const formattedPrice = formatCurrency(product.price);
+    
+    // Get min and max price if available
+    const minPrice = product.minPrice || product.price;
+    const maxPrice = product.maxPrice || product.price;
+    
+    // Format price range string
+    let priceRangeText = '';
+    if (minPrice === maxPrice) {
+        priceRangeText = `Start From: ${formatCurrency(minPrice)}`;
+    } else {
+        priceRangeText = `Start From: ${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
+    }
 
     // Generate stars HTML based on rating
     const rating = product.rating || 0; // Assuming rating exists, default to 0
@@ -465,7 +503,7 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
     const isOutOfStock = product.stockStatus === 'out_of_stock'; // Check stock status
     const stockBadge = isOutOfStock ?
         '<span class="stock-badge out-of-stock">Hết hàng</span>' :
-        (product.stock && product.stock < 5 ? `<span class="stock-badge low-stock">Còn ${product.stock}</span>` : ''); // Assuming stock number exists
+        (product.stock && product.stock < 5 ? `<span class="stock-badge low-stock">Còn ${product.stock}</span>` : ''); 
 
     // Create the card content
     card.innerHTML = `
@@ -480,6 +518,8 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
                         ${starsHtml}
                         <span class="rating-count">(${product.reviewCount || 0})</span> <!-- Assuming reviewCount exists -->
                     </div>
+                    <!-- Add price range -->
+                    <div class="product-price-range">${priceRangeText}</div>
                     <!-- Add brand if available -->
                     ${product.brand ? `<span class="product-brand">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
@@ -487,48 +527,10 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
                     ${oldPrice}
                     <span class="current-price">${formattedPrice}</span>
                 </div>
-                ${includeBuyButton ? `
-                <button class="cta-button primary buy-now-btn" data-product-id="${productId}" ${isOutOfStock ? 'disabled' : ''}>
-                    <i class="fas fa-shopping-cart icon-left"></i>${isOutOfStock ? 'Hết hàng' : 'Mua ngay'}
-                </button>` : ''}
+                <!-- Buy button removed -->
             </div>
         </div>
     `;
-
-    // --- MODIFIED CLICK LISTENER ---
-    // Make the entire card (except the buy button) navigate to the category page
-    card.addEventListener('click', (e) => {
-        // Prevent navigation if the click target is the buy button or inside it
-        if (e.target.closest('.buy-now-btn')) {
-            return;
-        }
-
-        // *** MODIFIED: Use passed categorySlug first, fallback to product.category.slug ***
-        const slugToUse = categorySlug || product.category?.slug; 
-
-        if (slugToUse) {
-            // Navigate to the category page using the slug
-            window.location.href = `category.html?slug=${slugToUse}`;
-        } else {
-            // If slug is missing, log an error or do nothing, don't navigate to product.html
-            console.warn(`Category slug missing for product ID: ${productId}. Cannot navigate.`); // Keep warning
-            // Optionally, you could still navigate to shopping.html or show a message
-            // window.location.href = 'shopping.html';
-        }
-    });
-    // --- END MODIFIED CLICK LISTENER ---
-
-    // Add buy button listener separately if needed (using event delegation is often better)
-    if (includeBuyButton) {
-        const buyButton = card.querySelector('.buy-now-btn');
-        if (buyButton) {
-            buyButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click listener from firing
-                handleBuyButtonClick(e); // Call your existing buy handler
-            });
-        }
-    }
-
 
     return card;
 }
@@ -1034,6 +1036,18 @@ function createProductCard(product) {
     const discountBadge = product.originalPrice ? `<span class="product-tag sale-tag">Giảm ${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : '';
     const stockBadge = product.stockStatus === 'out_of_stock' ? '<span class="product-tag hot-tag">Hết hàng</span>' : '';
 
+    // Get min and max price if available
+    const minPrice = product.minPrice || product.price;
+    const maxPrice = product.maxPrice || product.price;
+    
+    // Format price range string
+    let priceRangeText = '';
+    if (minPrice === maxPrice) {
+        priceRangeText = `Start From: ${formatCurrency(minPrice)}`;
+    } else {
+        priceRangeText = `Start From: ${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
+    }
+
     card.innerHTML = `
         <div class="product-image-placeholder">
             <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
@@ -1045,25 +1059,15 @@ function createProductCard(product) {
             <h3 class="product-title">${escapeHtml(product.name)}</h3>
             <div class="product-meta">
                 ${product.category ? `<span class="category">${escapeHtml(product.category.name)}</span>` : ''}
+                <div class="product-price-range">${priceRangeText}</div>
             </div>
             <div class="product-price">
                 ${formattedOriginalPrice ? `<span class="original-price">${formattedOriginalPrice}</span>` : ''}
                 <span class="sale-price">${formattedPrice}</span>
             </div>
-            <button class="product-buy-btn" ${product.stockStatus === 'out_of_stock' ? 'disabled' : ''}>
-                ${product.stockStatus === 'out_of_stock' ? 'Hết hàng' : 'Mua ngay'}
-            </button>
+            <!-- Buy button removed -->
         </div>
     `;
-
-    // Add click handler for buy button
-    const buyButton = card.querySelector('.product-buy-btn');
-    if (buyButton && !buyButton.disabled) {
-        buyButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openPurchaseModal(product._id, product.name, product.price);
-        });
-    }
 
     return card;
 }
