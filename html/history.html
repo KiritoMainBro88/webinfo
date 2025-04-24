@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase History | Your Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/history.css">
+</head>
+<body>
+    <header class="site-header">
+        <!-- Header content will be loaded via JavaScript -->
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">Purchase History</h1>
+
+        <section class="filter-section">
+            <h2 class="filter-title">Filter Orders</h2>
+            <form class="filter-form" id="filterForm">
+                <div class="filter-group">
+                    <label for="startDate" class="filter-label">Start Date</label>
+                    <input type="date" id="startDate" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label for="endDate" class="filter-label">End Date</label>
+                    <input type="date" id="endDate" class="filter-input">
+                </div>
+                <div class="filter-buttons">
+                    <button type="button" id="applyFilterBtn" class="btn btn-primary">Apply Filter</button>
+                    <button type="button" id="clearFilterBtn" class="btn btn-secondary">Clear Filter</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="purchaseHistorySection">
+            <table class="purchase-history-table" id="purchaseHistoryTable">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="purchaseHistoryBody">
+                    <!-- Purchase history will be loaded here via JavaScript -->
+                </tbody>
+            </table>
+
+            <div class="empty-history" id="emptyHistory">
+                <div class="empty-history-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="empty-history-message">No purchase history found</div>
+                <div class="empty-history-submessage">Orders you place will appear here</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="orderDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Order Details</h3>
+                <button class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Order details will be loaded here via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-check-circle" id="notificationIcon"></i>
+        </div>
+        <div class="notification-message" id="notificationMessage"></div>
+    </div>
+
+    <footer class="site-footer">
+        <!-- Footer content will be loaded via JavaScript -->
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/history.js"></script>
+</body>
+</html> 

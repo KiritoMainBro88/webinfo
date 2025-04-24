@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Mua Hàng | Shopcred</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/history.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+</head>
+<body class="bg-main">
+    <!-- Header Section -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-wrapper">
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="images/logo.png" alt="Shopcred Logo">
+                    </a>
+                </div>
+                
+                <nav class="navigation">
+                    <ul class="nav-links">
+                        <li><a href="index.html">Trang Chủ</a></li>
+                        <li><a href="shopping.html">Mua Sắm</a></li>
+                        <li><a href="history-buy.html" class="active">Lịch Sử</a></li>
+                        <li><a href="faq.html">Hỗ Trợ</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="action-item theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="action-item language-toggle" id="language-toggle">
+                        <span>VI</span>
+                        <i class="fas fa-globe"></i>
+                        <div class="dropdown-menu">
+                            <a href="#" data-lang="vi" class="active">Tiếng Việt</a>
+                            <a href="#" data-lang="en">English</a>
+                        </div>
+                    </div>
+                    <div class="action-item user-dropdown" id="user-dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="user-balance"><i class="fas fa-wallet"></i> <span id="user-balance-amount">0₫</span></span>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item profile-section">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-info">
+                                    <h4 id="dropdown-username">Tài khoản</h4>
+                                    <p id="dropdown-balance">Số dư: 0₫</p>
+                                </div>
+                            </div>
+                            <a href="#" class="dropdown-item" id="deposit-btn">
+                                <i class="fas fa-money-bill-wave"></i> Nạp Tiền
+                            </a>
+                            <a href="history-buy.html" class="dropdown-item active">
+                                <i class="fas fa-history"></i> Lịch Sử Mua Hàng
+                            </a>
+                            <a href="#" class="dropdown-item" id="account-settings">
+                                <i class="fas fa-cog"></i> Thiết Lập Tài Khoản
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" id="login-btn">
+                                <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+                            </a>
+                            <a href="#" class="dropdown-item" id="register-btn">
+                                <i class="fas fa-user-plus"></i> Đăng Ký
+                            </a>
+                            <a href="#" class="dropdown-item hidden" id="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+                            </a>
+                        </div>
+                    </div>
+                    <div class="action-item mobile-menu-toggle" id="mobile-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Lịch Sử Mua Hàng</h1>
+                <p>Xem chi tiết các giao dịch mua hàng của bạn</p>
+            </div>
+            
+            <div class="login-required-notice" id="login-required">
+                <div class="notice-content">
+                    <i class="fas fa-lock"></i>
+                    <h3>Đăng nhập để xem lịch sử mua hàng</h3>
+                    <p>Bạn cần đăng nhập để xem lịch sử mua hàng của mình.</p>
+                    <div class="notice-actions">
+                        <button class="btn btn-primary" id="notice-login-btn">Đăng Nhập</button>
+                        <button class="btn btn-secondary" id="notice-register-btn">Đăng Ký</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="purchase-history-section" id="purchase-history-section">
+                <div class="section-header">
+                    <h2>Các giao dịch đã thực hiện</h2>
+                </div>
+                
+                <div class="purchase-history-filter">
+                    <div class="filter-item">
+                        <label for="filter-date">Thời gian:</label>
+                        <select id="filter-date" class="form-control">
+                            <option value="all">Tất cả</option>
+                            <option value="today">Hôm nay</option>
+                            <option value="week">Tuần này</option>
+                            <option value="month">Tháng này</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="filter-type">Loại sản phẩm:</label>
+                        <select id="filter-type" class="form-control">
+                            <option value="all">Tất cả</option>
+                            <option value="account">Tài khoản</option>
+                            <option value="code">Mã kích hoạt</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <button class="btn btn-primary" id="apply-filter-btn">
+                            <i class="fas fa-filter"></i> Lọc
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="purchase-history-container" id="purchase-history-container">
+                    <!-- Purchase history items will be loaded here via JavaScript -->
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Đang tải dữ liệu...</span>
+                    </div>
+                </div>
+                
+                <div class="empty-state hidden" id="empty-history">
+                    <i class="fas fa-history"></i>
+                    <h3>Không có giao dịch nào</h3>
+                    <p>Bạn chưa thực hiện giao dịch mua hàng nào.</p>
+                    <a href="shopping.html" class="btn btn-primary">Khám Phá Sản Phẩm</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <img src="images/logo.png" alt="Shopcred Logo">
+                    </div>
+                    <p class="footer-description">
+                        Chúng tôi cung cấp các sản phẩm kỹ thuật số chất lượng cao với giá cả cạnh tranh. 
+                        Mua sắm an toàn và tiện lợi với Shopcred.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3 class="footer-title">Liên Kết</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Trang Chủ</a></li>
+                        <li><a href="shopping.html">Mua Sắm</a></li>
+                        <li><a href="history-buy.html">Lịch Sử</a></li>
+                        <li><a href="faq.html">Hỗ Trợ</a></li>
+                        <li><a href="terms.html">Điều Khoản</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3 class="footer-title">Hỗ Trợ</h3>
+                    <ul class="footer-links">
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="support.html">Liên Hệ</a></li>
+                        <li><a href="refund.html">Chính Sách Hoàn Tiền</a></li>
+                        <li><a href="privacy.html">Chính Sách Bảo Mật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3 class="footer-title">Liên Hệ</h3>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-envelope"></i> support@shopcred.com</li>
+                        <li><i class="fab fa-telegram"></i> @shopcred_support</li>
+                        <li><i class="fab fa-discord"></i> discord.gg/shopcred</li>
+                    </ul>
+                    <div class="payment-methods">
+                        <span class="payment-label">Phương thức thanh toán:</span>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-bitcoin"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">© <span id="copyright-year">2023</span> Shopcred. All Rights Reserved.</p>
+                <div class="footer-badges">
+                    <span class="footer-badge"><i class="fas fa-shield-alt"></i> Secure Payment</span>
+                    <span class="footer-badge"><i class="fas fa-clock"></i> 24/7 Support</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top-btn">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+    
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Đăng Nhập</h3>
+                <button class="modal-close" data-modal="login-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Tên đăng nhập</label>
+                        <input type="text" id="login-username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Mật khẩu</label>
+                        <div class="password-input">
+                            <input type="password" id="login-password" class="form-control" placeholder="Nhập mật khẩu" required>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-options">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="remember-me">
+                            <label for="remember-me">Ghi nhớ đăng nhập</label>
+                        </div>
+                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Đăng Nhập</button>
+                </form>
+                <div class="modal-divider">
+                    <span>Hoặc</span>
+                </div>
+                <div class="social-login">
+                    <button class="btn btn-google">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button class="btn btn-facebook">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </button>
+                </div>
+                <div class="modal-footer-text">
+                    Chưa có tài khoản? <a href="#" id="switch-to-register">Đăng ký ngay</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Đăng Ký</h3>
+                <button class="modal-close" data-modal="register-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">Tên đăng nhập</label>
+                        <input type="text" id="register-username" class="form-control" placeholder="Tạo tên đăng nhập" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" class="form-control" placeholder="Nhập email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Mật khẩu</label>
+                        <div class="password-input">
+                            <input type="password" id="register-password" class="form-control" placeholder="Tạo mật khẩu" required>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">Xác nhận mật khẩu</label>
+                        <div class="password-input">
+                            <input type="password" id="register-confirm-password" class="form-control" placeholder="Nhập lại mật khẩu" required>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-options">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="agree-terms" required>
+                            <label for="agree-terms">Tôi đồng ý với <a href="terms.html">Điều khoản sử dụng</a></label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Đăng Ký</button>
+                </form>
+                <div class="modal-divider">
+                    <span>Hoặc</span>
+                </div>
+                <div class="social-login">
+                    <button class="btn btn-google">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button class="btn btn-facebook">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </button>
+                </div>
+                <div class="modal-footer-text">
+                    Đã có tài khoản? <a href="#" id="switch-to-login">Đăng nhập</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal" id="deposit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nạp Tiền</h3>
+                <button class="modal-close" data-modal="deposit-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="deposit-methods">
+                    <div class="deposit-method-tabs">
+                        <button class="deposit-tab active" data-method="bank">Chuyển khoản</button>
+                        <button class="deposit-tab" data-method="card">Thẻ cào</button>
+                        <button class="deposit-tab" data-method="crypto">Crypto</button>
+                    </div>
+                    
+                    <div class="deposit-method-content active" id="bank-deposit">
+                        <div class="bank-info">
+                            <div class="bank-account-info">
+                                <div class="bank-logo">
+                                    <img src="images/bank-logo.png" alt="Bank Logo">
+                                </div>
+                                <div class="bank-details">
+                                    <p class="bank-name">TECHCOMBANK</p>
+                                    <p class="account-name">NGUYEN VAN A</p>
+                                    <p class="account-number">19037618298012</p>
+                                </div>
+                                <button class="btn btn-secondary copy-btn" data-copy="19037618298012">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="transfer-instruction">
+                                <p class="instruction-title">Nội dung chuyển khoản:</p>
+                                <div class="transfer-content">
+                                    <span id="transfer-content">shopcred nap abc123</span>
+                                    <button class="btn btn-secondary copy-btn" data-copy="shopcred nap abc123">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <p class="transfer-note">Lưu ý: ABC123 là mã nạp tiền của bạn. Vui lòng sử dụng đúng nội dung này khi chuyển khoản.</p>
+                            </div>
+                        </div>
+                        <div class="manual-confirm">
+                            <p>Đã chuyển khoản nhưng chưa được cộng tiền?</p>
+                            <button class="btn btn-primary">Xác Nhận Giao Dịch</button>
+                        </div>
+                    </div>
+                    
+                    <div class="deposit-method-content" id="card-deposit">
+                        <form id="card-deposit-form">
+                            <div class="form-group">
+                                <label for="card-type">Loại thẻ</label>
+                                <select id="card-type" class="form-control">
+                                    <option value="viettel">Viettel</option>
+                                    <option value="mobifone">Mobifone</option>
+                                    <option value="vinaphone">Vinaphone</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="card-serial">Số serial</label>
+                                <input type="text" id="card-serial" class="form-control" placeholder="Nhập số serial" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="card-number">Mã thẻ</label>
+                                <input type="text" id="card-number" class="form-control" placeholder="Nhập mã thẻ" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Nạp Thẻ</button>
+                        </form>
+                    </div>
+                    
+                    <div class="deposit-method-content" id="crypto-deposit">
+                        <div class="crypto-options">
+                            <div class="crypto-option">
+                                <input type="radio" name="crypto-type" id="bitcoin" checked>
+                                <label for="bitcoin">
+                                    <i class="fab fa-bitcoin"></i>
+                                    <span>Bitcoin</span>
+                                </label>
+                            </div>
+                            <div class="crypto-option">
+                                <input type="radio" name="crypto-type" id="ethereum">
+                                <label for="ethereum">
+                                    <i class="fab fa-ethereum"></i>
+                                    <span>Ethereum</span>
+                                </label>
+                            </div>
+                            <div class="crypto-option">
+                                <input type="radio" name="crypto-type" id="usdt">
+                                <label for="usdt">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    <span>USDT</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="crypto-wallet">
+                            <div class="qr-code">
+                                <img src="images/crypto-qr.png" alt="Crypto QR Code">
+                            </div>
+                            <div class="wallet-address">
+                                <p>Địa chỉ ví:</p>
+                                <div class="address-copy">
+                                    <span id="wallet-address">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</span>
+                                    <button class="btn btn-secondary copy-btn" data-copy="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="manual-confirm">
+                            <p>Sau khi chuyển tiền, vui lòng xác nhận giao dịch:</p>
+                            <button class="btn btn-primary">Xác Nhận Giao Dịch</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

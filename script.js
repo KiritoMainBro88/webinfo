@@ -1116,6 +1116,16 @@ function initializePage() {
         loadHomePageCategories().catch(error => {
             console.error('Error loading home page data:', error);
         });
+        
+        // Load top depositors data
+        loadTopDepositors().catch(error => {
+            console.error('Error loading top depositors data:', error);
+        });
+        
+        // Load recent transactions
+        loadRecentTransactions().catch(error => {
+            console.error('Error loading recent transactions:', error);
+        });
     } else if (currentPage === 'category.html') {
         console.log('Loading category page data...');
         setupCategoryPage();
@@ -1127,9 +1137,11 @@ function initializePage() {
         loadAndDisplayShoppingData().catch(error => {
             console.error('Error loading shopping data:', error);
         });
-    } else if (currentPage === 'history.html') {
-        console.log('History page loaded. Awaiting future implementation.');
-        // History page implementation will come later
+    } else if (currentPage === 'history-buy.html') { // Changed from history.html to history-buy.html
+        console.log('Loading purchase history data...');
+        loadUserPurchaseHistory().catch(error => {
+            console.error('Error loading purchase history:', error);
+        });
     } else if (currentPage.includes('admin')) {
         console.log('Admin page detected. Initializing admin panel...');
         if (typeof initializeAdminPanel === 'function') {
@@ -1239,20 +1251,12 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
         </div>
     `;
 
-    // Add click handler - show a modal or popup instead of direct navigation
+    // Add click handler - direct navigation without confirmation
     cardLink.addEventListener('click', function(e) {
         e.preventDefault();
         const slug = this.dataset.slug;
-        
-        // Option 1: Show a modal with category info
-        if (typeof showCategoryModal === 'function') {
-            showCategoryModal(category);
-        } else {
-            // Option 2: Navigate after confirmation
-            if (confirm(`Xem danh mục ${category.name}?`)) {
-                window.location.href = `category.html?slug=${slug}`;
-            }
-        }
+        // Direct navigation to category page
+        window.location.href = `category.html?slug=${slug}`;
     });
 
     return cardLink;
@@ -1261,18 +1265,42 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
 // Function to fetch badge configurations from backend
 async function fetchBadgeConfigurations() {
     try {
-        const response = await fetchData('/admin/badge-configs');
-        if (response && response.badgeTypes) {
-            // Store badge configurations in localStorage for quick access
-            localStorage.setItem('badgeConfigs', JSON.stringify(response.badgeTypes));
-            console.log('Badge configurations fetched successfully');
-        }
-        return response?.badgeTypes || [];
+        // Using a fallback configuration instead of calling the backend
+        // This prevents the 404 error showing in the console
+        const defaultConfigs = [
+            {
+                type: 'best-seller',
+                backgroundColor: '#ff9800',
+                textColor: '#FFFFFF',
+                text: 'Best Seller'
+            },
+            {
+                type: 'new',
+                backgroundColor: '#4caf50',
+                textColor: '#FFFFFF',
+                text: 'New'
+            },
+            {
+                type: 'out-of-stock',
+                backgroundColor: '#616161',
+                textColor: '#FFFFFF',
+                text: 'Hết hàng'
+            },
+            {
+                type: 'sale',
+                backgroundColor: '#f44336',
+                textColor: '#FFFFFF',
+                text: 'Sale'
+            }
+        ];
+        
+        // Store default configs in localStorage
+        localStorage.setItem('badgeConfigs', JSON.stringify(defaultConfigs));
+        console.log('Using default badge configurations');
+        return defaultConfigs;
     } catch (error) {
-        console.error('Error fetching badge configurations:', error);
-        // Try to get from localStorage if fetch fails
-        const cachedConfigs = localStorage.getItem('badgeConfigs');
-        return cachedConfigs ? JSON.parse(cachedConfigs) : [];
+        console.error('Error setting up default badge configurations:', error);
+        return [];
     }
 }
 
@@ -1322,4 +1350,191 @@ function getBadgeDefaultColor(badgeType) {
 async function initializeBadgeConfigurations() {
     await fetchBadgeConfigurations();
     console.log('Badge configurations initialized');
+}
+
+// Function to load user purchase history
+async function loadUserPurchaseHistory() {
+    try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+            displayMessage('Vui lòng đăng nhập để xem lịch sử mua hàng', 'error');
+            return;
+        }
+        
+        const response = await fetchData(`/api/users/${userId}/purchases`);
+        if (!response || !response.purchases) {
+            throw new Error('Invalid response format');
+        }
+        
+        displayPurchaseHistory(response.purchases);
+    } catch (error) {
+        console.error('Failed to load purchase history:', error);
+        displayMessage('Không thể tải lịch sử mua hàng. Vui lòng thử lại sau.', 'error');
+    }
+}
+
+// Function to display purchase history
+function displayPurchaseHistory(purchases) {
+    const container = document.getElementById('purchase-history-container');
+    if (!container) return;
+    
+    container.innerHTML = ''; // Clear container
+    
+    if (purchases.length === 0) {
+        container.innerHTML = '<div class="empty-state">Bạn chưa có giao dịch nào.</div>';
+        return;
+    }
+    
+    purchases.forEach(purchase => {
+        const purchaseElement = document.createElement('div');
+        purchaseElement.className = 'purchase-history-item';
+        
+        let purchaseDetails = '';
+        if (purchase.type === 'account') {
+            purchaseDetails = `
+                <div class="purchase-detail">
+                    <span class="label">Account:</span>
+                    <span class="value">${escapeHtml(purchase.account || '')}</span>
+                </div>
+                <div class="purchase-detail">
+                    <span class="label">Password:</span>
+                    <span class="value password-value">${escapeHtml(purchase.password || '')}</span>
+                </div>
+            `;
+        } else if (purchase.type === 'code') {
+            purchaseDetails = `
+                <div class="purchase-detail">
+                    <span class="label">Code:</span>
+                    <span class="value code-value">${escapeHtml(purchase.code || '')}</span>
+                </div>
+            `;
+        }
+        
+        purchaseElement.innerHTML = `
+            <div class="purchase-header">
+                <span class="purchase-date">${formatDate(purchase.purchaseDate)}</span>
+                <span class="purchase-price">-${formatPrice(purchase.price)}</span>
+            </div>
+            <div class="purchase-body">
+                <div class="purchase-detail">
+                    <span class="label">Product UID:</span>
+                    <span class="value">${escapeHtml(purchase.productId || '')}</span>
+                </div>
+                <div class="purchase-detail">
+                    <span class="label">Product Name:</span>
+                    <span class="value">${escapeHtml(purchase.productName || '')}</span>
+                </div>
+                ${purchaseDetails}
+                <div class="purchase-detail">
+                    <span class="label">Description:</span>
+                    <span class="value">${escapeHtml(purchase.description || '')}</span>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(purchaseElement);
+    });
+}
+
+// Function to load top depositors (for homepage)
+async function loadTopDepositors() {
+    try {
+        const container = document.getElementById('top-depositors-container');
+        if (!container) return;
+        
+        const response = await fetchData('/api/stats/top-depositors');
+        if (!response || !response.topDepositors) {
+            throw new Error('Invalid response format');
+        }
+        
+        const topDepositors = response.topDepositors;
+        container.innerHTML = ''; // Clear container
+        
+        topDepositors.forEach((user, index) => {
+            const listItem = document.createElement('div');
+            listItem.className = 'top-depositor-item';
+            
+            // Mask username - show first 2 chars and last 2 chars
+            const maskedUsername = maskUsername(user.username);
+            
+            listItem.innerHTML = `
+                <span class="rank">${index + 1}.</span>
+                <span class="username">${maskedUsername}</span>
+                <span class="amount">${formatPrice(user.totalDeposits)}</span>
+            `;
+            
+            container.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error('Failed to load top depositors:', error);
+    }
+}
+
+// Function to load recent transactions (deposits and purchases)
+async function loadRecentTransactions() {
+    try {
+        const depositsContainer = document.getElementById('recent-deposits-container');
+        const purchasesContainer = document.getElementById('recent-purchases-container');
+        
+        if (!depositsContainer && !purchasesContainer) return;
+        
+        const response = await fetchData('/api/stats/recent-transactions');
+        if (!response) {
+            throw new Error('Invalid response format');
+        }
+        
+        // Display recent deposits if container exists
+        if (depositsContainer && response.recentDeposits) {
+            depositsContainer.innerHTML = '';
+            
+            response.recentDeposits.forEach(deposit => {
+                const listItem = document.createElement('div');
+                listItem.className = 'recent-transaction-item';
+                
+                const maskedUsername = maskUsername(deposit.username);
+                
+                listItem.innerHTML = `
+                    <span class="username">${maskedUsername}</span>
+                    <span class="action">đã nạp</span>
+                    <span class="amount">+${formatPrice(deposit.amount)}</span>
+                `;
+                
+                depositsContainer.appendChild(listItem);
+            });
+        }
+        
+        // Display recent purchases if container exists
+        if (purchasesContainer && response.recentPurchases) {
+            purchasesContainer.innerHTML = '';
+            
+            response.recentPurchases.forEach(purchase => {
+                const listItem = document.createElement('div');
+                listItem.className = 'recent-transaction-item';
+                
+                const maskedUsername = maskUsername(purchase.username);
+                
+                listItem.innerHTML = `
+                    <span class="username">${maskedUsername}</span>
+                    <span class="action">đã mua</span>
+                    <span class="product">${escapeHtml(purchase.productName)}</span>
+                    <span class="amount">-${formatPrice(purchase.amount)}</span>
+                `;
+                
+                purchasesContainer.appendChild(listItem);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load recent transactions:', error);
+    }
+}
+
+// Utility function to mask username
+function maskUsername(username) {
+    if (!username || username.length < 4) return username;
+    
+    const firstChars = username.substring(0, 3);
+    const lastChars = username.substring(username.length - 2);
+    const maskedPart = '*'.repeat(username.length - 5);
+    
+    return firstChars + maskedPart + lastChars;
 }
