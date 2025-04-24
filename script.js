@@ -877,8 +877,20 @@ function applyCategoryFilters() {
     renderCategoryProducts(filteredProducts); // Re-render the grid with filtered/sorted products
 }
 
-// --- MODIFIED loadCategoryPageData to ensure listeners are correctly set --- 
+// --- MODIFIED loadCategoryPageData to ensure proper initialization and error handling --- 
 async function loadCategoryPageData() {
+    // Get required DOM elements
+    const contentArea = document.getElementById('category-product-grid');
+    const breadcrumb = document.getElementById('category-breadcrumb');
+    const nameDisplay = document.getElementById('category-name-display');
+    const gridContainer = document.getElementById('category-product-grid-container');
+    
+    // Validate required elements exist
+    if (!contentArea || !breadcrumb || !nameDisplay || !gridContainer) {
+        console.error('Required DOM elements not found for category page');
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const categorySlug = urlParams.get('slug');
     
@@ -888,114 +900,77 @@ async function loadCategoryPageData() {
         return;
     }
     
+    // Show loading state
+    contentArea.innerHTML = `
+        <div class="loading-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Đang tải sản phẩm...</p>
+        </div>
+    `;
+    
     try {
         console.log('Loading category data for slug:', categorySlug);
         
-        // Create a loading indicator
-        const contentArea = document.getElementById('dynamic-product-area');
-        contentArea.innerHTML = `
-            <p style="text-align: center; padding: 3rem 1rem;">
-                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
-                Đang tải danh mục...
-            </p>
-        `;
-        
         // Fetch category data
         const data = await fetchData(`/categories/${categorySlug}`);
-        console.log('Category detail page loaded - DOM ready.', data);
+        console.log('Received category data:', data);
         
-        // Update document title
-        document.title = `${data.categoryName || 'Unknown Category'} - KiritoMainBro`;
-        
-        // Create category section
-        const categoryData = {
-            name: data.categoryName || 'Unknown Category',
-            slug: categorySlug
-        };
-        
-        const categorySection = createCategorySectionElement(categoryData);
-        
-        // Create filter bar
-        const filterBar = document.createElement('div');
-        filterBar.className = 'filter-bar';
-        filterBar.innerHTML = `
-            <div class="filter-group">
-                <label for="sort-select">Sắp xếp</label>
-                <select id="sort-select">
-                    <option value="all">Mặc định</option>
-                    <option value="price-asc">Giá tăng dần</option>
-                    <option value="price-desc">Giá giảm dần</option>
-                    <option value="name-asc">Tên A-Z</option>
-                    <option value="name-desc">Tên Z-A</option>
-                    <option value="bestseller">Bán chạy nhất</option>
-                    <option value="newest">Mới nhất</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="price-select">Giá</label>
-                <select id="price-select">
-                    <option value="all">Tất cả</option>
-                    <option value="0-50000">Dưới 50K</option>
-                    <option value="50000-200000">50K - 200K</option>
-                    <option value="200000-500000">200K - 500K</option>
-                    <option value="500000-1000000">500K - 1M</option>
-                    <option value="1000000-2000000">1M - 2M</option>
-                    <option value="2000000-5000000">2M - 5M</option>
-                    <option value="5000000-10000000">5M - 10M</option>
-                    <option value="10000000-999999999">Trên 10M</option>
-                </select>
-            </div>
-            <div class="filter-group filter-search">
-                <label for="search-input">Tìm kiếm</label>
-                <input type="text" id="search-input" placeholder="Tên sản phẩm...">
-            </div>
-            <div class="filter-actions">
-                <button class="cta-button secondary" id="reset-filter">
-                    <i class="fas fa-sync-alt icon-left"></i>Đặt lại
-                </button>
-            </div>
-        `;
-        
-        // Create product grid (empty at this point)
-        const productGrid = document.createElement('div');
-        productGrid.className = 'product-grid';
-        
-        // Append all elements
-        categorySection.appendChild(filterBar);
-        categorySection.appendChild(productGrid);
-        
-        // Clear content area and append the new section
-        contentArea.innerHTML = '';
-        contentArea.appendChild(categorySection);
-        
-        // Set up filter listeners
-        setupCategoryFilters();
-        
-        // Render products
-        if (data.products && Array.isArray(data.products)) {
-            console.log(`Fetched ${data.products.length} products for category '${data.categoryName}'`);
-            renderCategoryProducts(data.products, categorySection, categorySlug);
-        } else {
-            console.error('Invalid products data:', data.products);
-            renderCategoryProducts([], categorySection, categorySlug);
+        if (!data || !data.categoryName) {
+            throw new Error('Invalid category data received');
         }
         
-        // Set up buy button listeners
+        // Update page title and breadcrumb
+        document.title = `${data.categoryName} - KiritoMainBro`;
+        breadcrumb.textContent = 'Vật Phẩm';
+        nameDisplay.textContent = data.categoryName;
+        
+        // Handle products display
+        if (data.products && Array.isArray(data.products)) {
+            if (data.products.length > 0) {
+                contentArea.innerHTML = ''; // Clear loading state
+                data.products.forEach(product => {
+                    try {
+                        if (!product || !product._id) {
+                            console.warn('Invalid product data:', product);
+                            return;
+                        }
+                        const productCard = createProductCardElement(product, true, categorySlug);
+                        if (productCard) {
+                            contentArea.appendChild(productCard);
+                        }
+                    } catch (cardError) {
+                        console.error('Error creating product card:', cardError);
+                    }
+                });
+            } else {
+                // No products found
+                contentArea.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                        <i class="fas fa-box-open" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                        <p>Chưa có sản phẩm nào trong danh mục này.</p>
+                    </div>
+                `;
+            }
+        } else {
+            throw new Error('Invalid products data received');
+        }
+        
+        // Setup filters and buy button listeners
+        setupCategoryFilters();
         setupCategoryPageBuyListeners();
         
     } catch (error) {
-        console.error('Error loading category page data:', error);
-        const contentArea = document.getElementById('dynamic-product-area');
+        console.error('Error loading category data:', error);
         contentArea.innerHTML = `
-            <div style="text-align: center; padding: 3rem 1rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
-                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--warning-color); margin-bottom: 1rem;"></i>
-                <h2>Không tìm thấy danh mục</h2>
-                <p>Danh mục bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+            <div class="error-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                <p>Không thể tải thông tin danh mục. Vui lòng thử lại sau.</p>
                 <a href="shopping.html" class="cta-button primary" style="margin-top: 1rem;">
                     <i class="fas fa-arrow-left icon-left"></i>Quay lại cửa hàng
                 </a>
             </div>
         `;
+        if (nameDisplay) nameDisplay.textContent = 'Lỗi tải dữ liệu';
     }
 }
 
