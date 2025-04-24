@@ -323,34 +323,19 @@ function formatCurrency(price) {
 
 // Generate star rating HTML
 function generateStarRating(rating) {
-    if (typeof rating !== 'number' || isNaN(rating)) {
-        rating = 0;
-    }
-    
-    // Clamp rating between 0 and 5
-    rating = Math.max(0, Math.min(5, rating));
-    
-    // Round to nearest half star
-    const roundedRating = Math.round(rating * 2) / 2;
-    
     let starsHtml = '';
-    
     // Add full stars
-    for (let i = 1; i <= Math.floor(roundedRating); i++) {
+    for (let i = 0; i < Math.floor(rating); i++) {
         starsHtml += '<i class="fas fa-star"></i>';
     }
-    
     // Add half star if needed
-    if (roundedRating % 1 !== 0) {
+    if (rating % 1 >= 0.5) {
         starsHtml += '<i class="fas fa-star-half-alt"></i>';
     }
-    
     // Add empty stars
-    const emptyStars = 5 - Math.ceil(roundedRating);
-    for (let i = 1; i <= emptyStars; i++) {
+    for (let i = Math.ceil(rating); i < 5; i++) {
         starsHtml += '<i class="far fa-star"></i>';
     }
-    
     return starsHtml;
 }
 
@@ -486,7 +471,6 @@ async function loadAndDisplayShoppingData() {
 }
 
 // --- MODIFIED: Create Product Card Element ---
-// *** MODIFIED: Added categorySlug parameter ***
 function createProductCardElement(product, includeBuyButton = false, categorySlug = null) { 
     if (!product || (!product.id && !product._id)) {
         console.error('Invalid product data:', product);
@@ -504,47 +488,49 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
     // Get min and max price if available
     const minPrice = product.minPrice || product.price;
     
-    // Changed format to match screenshot - cleaner format
+    // Price range text formatting
     let priceRangeText = `Giá chỉ từ: ${formatCurrency(minPrice)}`;
 
     // Generate stars HTML based on rating
-    const rating = product.rating || 0; // Assuming rating exists, default to 0
+    const rating = product.rating || 0;
     const starsHtml = generateStarRating(rating);
 
     // Get badge type information from the product if available
-    const badgeType = product.badgeType || "best-seller"; // Default to best-seller if not specified
-    const badgeColor = product.badgeColor || ""; // Get badge color if specified 
+    const badgeType = product.badgeType || "best-seller";
+    const badgeColor = product.badgeColor || ""; 
     const badgeStyle = badgeColor ? `style="background-color:${badgeColor}"` : "";
     
     // Get country/brand badge if available
-    const brandBadge = product.brandBadge || "VN"; // Default to VN
-    const brandBadgeColor = product.brandBadgeColor || ""; // Get brand badge color if specified
+    const brandBadge = product.brandBadge || "VN";
+    const brandBadgeColor = product.brandBadgeColor || "";
     const brandBadgeStyle = brandBadgeColor ? `style="background-color:${brandBadgeColor}"` : "";
 
-    // Create the card content
+    // Create the card content matching the image design
     card.innerHTML = `
-        <div class="product-card-inner">
-            <div class="product-image-placeholder">
-                <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
-                <span class="product-badge ${badgeType}" ${badgeStyle}>Best Seller</span>
-                <span class="brand-badge" ${brandBadgeStyle}>${brandBadge}</span>
+        <div class="product-image-placeholder">
+            <img src="${product.imageUrl || 'https://placehold.co/400x225/191c26/e9ecef?text=No+Image'}" alt="${escapeHtml(product.name)}">
+            <span class="product-badge ${badgeType}" ${badgeStyle}>Best Seller</span>
+            <span class="brand-badge" ${brandBadgeStyle}>${brandBadge}</span>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">${escapeHtml(product.name)}</h3>
+            <div class="product-rating">
+                ${starsHtml}
+                <span class="rating-count">(${product.reviewCount || 0})</span>
             </div>
-            <div class="product-details">
-                <h3 class="product-name">${escapeHtml(product.name)}</h3>
-                <div class="product-meta">
-                    <div class="product-rating">
-                        ${starsHtml}
-                        <span class="rating-count">(${product.reviewCount || 0})</span>
-                    </div>
-                    <div class="product-price-range">${priceRangeText}</div>
-                    ${product.brand ? `<span class="product-brand">${escapeHtml(product.brand)}</span>` : ''}
-                </div>
-                <div class="product-price">
-                    <span class="current-price">${formattedPrice}</span>
-                </div>
+            <div class="product-price-range">${priceRangeText}</div>
+            <div class="product-price">
+                <span class="current-price">${formattedPrice}</span>
             </div>
         </div>
     `;
+
+    // If card should be clickable to a product page
+    if (categorySlug) {
+        card.addEventListener('click', function() {
+            window.location.href = `product.html?id=${productId}&category=${categorySlug}`;
+        });
+    }
 
     return card;
 }
@@ -1071,20 +1057,20 @@ function createProductCard(product) {
     // Get min price for range display
     const minPrice = product.minPrice || product.price;
     
-    // Changed format to match screenshot - cleaner format
+    // Format price range text
     let priceRangeText = `Giá chỉ từ: ${formatCurrency(minPrice)}`;
     
-    // Get badge type information from the product if available
-    const badgeType = product.badgeType || "best-seller"; // Default to best-seller if not specified
-    const badgeColor = product.badgeColor || ""; // Get badge color if specified 
+    // Get badge type information
+    const badgeType = product.badgeType || "best-seller";
+    const badgeColor = product.badgeColor || "";
     const badgeStyle = badgeColor ? `style="background-color:${badgeColor}"` : "";
     
-    // Get country/brand badge if available
-    const brandBadge = product.brandBadge || "VN"; // Default to VN
-    const brandBadgeColor = product.brandBadgeColor || ""; // Get brand badge color if specified
+    // Get country/brand badge
+    const brandBadge = product.brandBadge || "VN";
+    const brandBadgeColor = product.brandBadgeColor || "";
     const brandBadgeStyle = brandBadgeColor ? `style="background-color:${brandBadgeColor}"` : "";
 
-    // Calculate discount percentage if original price exists
+    // Calculate discount badge if original price exists
     const discountBadge = product.originalPrice ? 
         `<span class="product-badge sale" style="background-color: #f44336;">-${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : '';
     
@@ -1092,22 +1078,26 @@ function createProductCard(product) {
     const stockBadge = product.stockStatus === 'out_of_stock' ? 
         '<span class="product-badge out-of-stock" style="background-color: #616161;">Hết hàng</span>' : '';
 
+    // Generate stars HTML based on rating
+    const rating = product.rating || 0;
+    const starsHtml = generateStarRating(rating);
+
     card.innerHTML = `
         <div class="product-image-placeholder">
-            <img src="${product.imageUrl || 'https://placehold.co/400x225/e9ecef/495057?text=No+Image'}" alt="${escapeHtml(product.name)}">
+            <img src="${product.imageUrl || 'https://placehold.co/400x225/191c26/e9ecef?text=No+Image'}" alt="${escapeHtml(product.name)}">
             ${discountBadge || stockBadge || `<span class="product-badge ${badgeType}" ${badgeStyle}>Best Seller</span>`}
             <span class="brand-badge" ${brandBadgeStyle}>${brandBadge}</span>
         </div>
         <div class="product-info">
-            ${product.brand ? `<div class="product-brand">${escapeHtml(product.brand)}</div>` : ''}
-            <h3 class="product-title">${escapeHtml(product.name)}</h3>
-            <div class="product-meta">
-                ${product.category ? `<span class="category">${escapeHtml(product.category.name)}</span>` : ''}
-                <div class="product-price-range">${priceRangeText}</div>
+            <h3 class="product-name">${escapeHtml(product.name)}</h3>
+            <div class="product-rating">
+                ${starsHtml}
+                <span class="rating-count">(${product.reviewCount || 0})</span>
             </div>
+            <div class="product-price-range">${priceRangeText}</div>
             <div class="product-price">
                 ${formattedOriginalPrice ? `<span class="original-price">${formattedOriginalPrice}</span>` : ''}
-                <span class="sale-price">${formattedPrice}</span>
+                <span class="current-price">${formattedPrice}</span>
             </div>
         </div>
     `;
@@ -1383,10 +1373,14 @@ function createCategorySectionElement(categoryData) {
 
 // --- MODIFIED: Create Category Summary Card Element (for main shopping page) ---
 function createCategorySummaryCardElement(category, minPrice, maxPrice) {
-    const cardLink = document.createElement('div'); // Changed from <a> to <div>
-    cardLink.className = 'category-summary-card'; // Add a class for styling
-    cardLink.dataset.animate = "fade-up"; // Optional animation
-    cardLink.dataset.slug = category.slug || 'unknown'; // Store slug as data attribute
+    // Create an anchor element for proper navigation
+    const cardLink = document.createElement('a');
+    cardLink.className = 'category-summary-card'; 
+    cardLink.dataset.animate = "fade-up";
+    cardLink.dataset.slug = category.slug || 'unknown';
+    
+    // Set the href directly for better navigation behavior
+    cardLink.href = `category.html?slug=${category.slug || 'unknown'}`;
 
     let priceRangeHTML = '';
     // Check if minPrice and maxPrice are valid numbers
@@ -1397,7 +1391,7 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
         priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: ${formatPrice(minPrice)}</p>`;
     } else {
         // Handle cases with no numeric prices or only special prices
-        priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`; // Or "Liên hệ giá", etc.
+        priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`;
     }
 
     // Basic structure - adjust classes and content as needed for styling
@@ -1414,13 +1408,8 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
         </div>
     `;
 
-    // Add click handler - direct navigation without confirmation
-    cardLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        const slug = this.dataset.slug;
-        // Direct navigation to category page
-        window.location.href = `category.html?slug=${slug}`;
-    });
+    // No need for click handler anymore since it's a proper link with href
+    // This ensures proper navigation behavior including right-click open in new tab
 
     return cardLink;
 }
