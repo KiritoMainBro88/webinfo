@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose'); // Import mongoose
 const User = require('../models/User');
 const authAdmin = require('../middleware/authAdmin');
+const Transaction = require('../models/Transaction');
+const { isAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // === ADD JSON PARSER FOR THIS ROUTER ===
@@ -73,6 +75,159 @@ router.post('/add-balance', authAdmin, async (req, res) => {
               return res.status(400).json({ message: `Validation error: ${error.message}` });
          }
         res.status(500).json({ message: 'Server error updating balance. Check logs.' });
+    }
+});
+
+// Get user info by username or ID
+router.get('/user-info/:identifier', isAdmin, async (req, res) => {
+    try {
+        const { identifier } = req.params;
+        let user;
+
+        // Check if identifier is ObjectId
+        if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
+            user = await User.findById(identifier);
+        } else {
+            user = await User.findOne({ username: identifier });
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const transactions = await Transaction.find({ userId: user._id })
+            .sort({ createdAt: -1 })
+            .limit(50);
+
+        res.json({
+            user: {
+                _id: user._id,
+                username: user.username,
+                balance: user.balance,
+                email: user.email,
+                createdAt: user.createdAt
+            },
+            transactions
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Add balance to user (updated version)
+router.post('/add-balance', isAdmin, async (req, res) => {
+    try {
+        const { userId, amount, description } = req.body;
+        
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const balanceBefore = user.balance;
+        user.balance += parseFloat(amount);
+        await user.save();
+
+        // Record the transaction
+        await Transaction.create({
+            userId: user._id,
+            type: 'admin_adjustment',
+            amount: parseFloat(amount),
+            description,
+            balanceBefore,
+            balanceAfter: user.balance,
+            adminId: req.user._id
+        });
+
+        res.json({ message: 'Balance updated successfully', user });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Get top depositors for current month
+router.get('/top-depositors', isAdmin, async (req, res) => {
+    try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        const topDepositors = await Transaction.aggregate([
+            {
+                $match: {
+                    type: 'deposit',
+                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                }
+            },
+            {
+                $group: {
+                    _id: '$userId',
+                    totalDeposit: { $sum: '$amount' }
+                }
+            },
+            {
+                $sort: { totalDeposit: -1 }
+            },
+            {
+                $limit: 5
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $unwind: '$user'
+            },
+            {
+                $project: {
+                    username: '$user.username',
+                    totalDeposit: 1
+                }
+            }
+        ]);
+
+        res.json(topDepositors);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Get all transactions with pagination
+router.get('/transactions', isAdmin, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const type = req.query.type; // Optional filter by type
+        const userId = req.query.userId; // Optional filter by user
+
+        const query = {};
+        if (type) query.type = type;
+        if (userId) query.userId = userId;
+
+        const transactions = await Transaction.find(query)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('userId', 'username')
+            .populate('adminId', 'username');
+
+        const total = await Transaction.countDocuments(query);
+
+        res.json({
+            transactions,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 

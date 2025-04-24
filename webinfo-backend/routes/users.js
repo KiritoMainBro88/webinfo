@@ -2,6 +2,8 @@ const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
 const mongoose = require('mongoose');
+const Transaction = require('../models/Transaction');
+const { auth } = require('../middleware/auth');
 
 // Middleware to simulate fetching user based on ID from header (INSECURE DEMO)
 // REPLACE THIS with proper JWT/Session middleware later
@@ -50,5 +52,95 @@ router.get('/me', getUserFromHeader, async (req, res) => {
     }
 });
 
+// Get user's transaction history
+router.get('/transactions', auth, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const type = req.query.type; // Optional filter by type
+
+        const query = { userId: req.user._id };
+        if (type) query.type = type;
+
+        const transactions = await Transaction.find(query)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const total = await Transaction.countDocuments(query);
+
+        res.json({
+            transactions,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Get user's monthly transaction summary
+router.get('/transactions/monthly-summary', auth, async (req, res) => {
+    try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        const summary = await Transaction.aggregate([
+            {
+                $match: {
+                    userId: req.user._id,
+                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                }
+            },
+            {
+                $group: {
+                    _id: '$type',
+                    total: { $sum: '$amount' },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        res.json(summary);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Update deposit route to include transaction recording
+router.post('/deposit', auth, async (req, res) => {
+    try {
+        const { amount } = req.body;
+        const parsedAmount = parseFloat(amount);
+
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.status(400).json({ message: 'Invalid amount' });
+        }
+
+        const user = await User.findById(req.user._id);
+        const balanceBefore = user.balance;
+        user.balance += parsedAmount;
+        await user.save();
+
+        // Record the transaction
+        await Transaction.create({
+            userId: user._id,
+            type: 'deposit',
+            amount: parsedAmount,
+            description: 'User deposit',
+            balanceBefore,
+            balanceAfter: user.balance
+        });
+
+        res.json({ message: 'Deposit successful', balance: user.balance });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
 
 module.exports = router;
