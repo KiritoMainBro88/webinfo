@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Backend URL configuration
+    const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
+    
     // Initialize state variables
-    let isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    let isLoggedIn = localStorage.getItem('userId') ? true : false;
     let isLoading = true;
     let purchaseHistory = [];
     let startDate = null;
@@ -237,89 +240,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Fetch purchase history data
-    function fetchPurchaseHistory() {
-        isLoading = true;
-        updateUI();
+    // Fetch purchase history from the API
+    async function fetchPurchaseHistory() {
+        if (!isLoggedIn) return [];
         
-        // Simulate API call with setTimeout
-        setTimeout(() => {
-            // Mock data - in a real app, this would come from an API
-            purchaseHistory = [
-                {
-                    id: 'PUR-123456',
-                    title: 'Netflix Premium Account',
-                    date: '2023-05-15',
-                    price: '190.000₫',
-                    quantity: 1,
-                    status: 'completed',
-                    productType: 'streaming',
-                    accountDetails: {
-                        email: 'user123@example.com',
-                        password: 'securepass123',
-                        expiryDate: '2024-05-15'
-                    }
-                },
-                {
-                    id: 'PUR-123457',
-                    title: 'Spotify Premium Account',
-                    date: '2023-04-10',
-                    price: '95.000₫',
-                    quantity: 1,
-                    status: 'completed',
-                    productType: 'streaming',
-                    accountDetails: {
-                        email: 'user123@example.com',
-                        password: 'spotifypass456',
-                        expiryDate: '2024-04-10'
-                    }
-                },
-                {
-                    id: 'PUR-123458',
-                    title: 'Steam Gift Card',
-                    date: '2023-03-22',
-                    price: '500.000₫',
-                    quantity: 1,
-                    status: 'completed',
-                    productType: 'gaming',
-                    accountDetails: {
-                        code: 'STEAM-GIFT-1234-5678-90AB',
-                        instructions: 'Redeem on Steam store'
-                    }
-                },
-                {
-                    id: 'PUR-123459',
-                    title: 'Adobe Creative Cloud',
-                    date: '2023-02-05',
-                    price: '350.000₫',
-                    quantity: 1,
-                    status: 'pending',
-                    productType: 'software',
-                    accountDetails: {
-                        email: 'user123@example.com',
-                        password: 'adobepass789',
-                        expiryDate: '2024-02-05'
-                    }
-                },
-                {
-                    id: 'PUR-123460',
-                    title: 'PlayStation Plus Subscription',
-                    date: '2023-01-18',
-                    price: '250.000₫',
-                    quantity: 1,
-                    status: 'failed',
-                    productType: 'gaming',
-                    accountDetails: {
-                        code: 'PSN-PLUS-9876-5432-10CD',
-                        instructions: 'Redeem on PlayStation Store'
-                    }
-                }
-            ];
+        try {
+            const userId = localStorage.getItem('userId');
+            if (!userId) throw new Error('No user ID found');
             
-            isLoading = false;
-            updateUI();
-            applyFilters();
-        }, 1500);
+            showLoadingSpinner(true);
+            
+            const response = await fetch(`${BACKEND_URL}/api/purchases/user`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userId}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch purchase history: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.purchases || [];
+        } catch (error) {
+            console.error('Error fetching purchase history:', error);
+            showNotification('Error', 'Failed to load purchase history. Please try again later.', 'error');
+            return [];
+        } finally {
+            showLoadingSpinner(false);
+        }
+    }
+    
+    // Show or hide loading spinner
+    function showLoadingSpinner(show) {
+        if (loadingSpinner) {
+            loadingSpinner.style.display = show ? 'block' : 'none';
+        }
     }
     
     // Apply filters to purchase history
