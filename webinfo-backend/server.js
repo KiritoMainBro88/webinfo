@@ -13,6 +13,7 @@ const purchaseRoutes = require('./routes/purchase'); // <-- IMPORT NEW ROUTE
 const app = express();
 const mongoURI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;
+const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
 
 if (!mongoURI) { console.error("FATAL ERROR: MONGODB_URI is not defined."); process.exit(1); }
 
@@ -20,7 +21,8 @@ if (!mongoURI) { console.error("FATAL ERROR: MONGODB_URI is not defined."); proc
 const allowedOrigins = [
     'http://localhost:5500', // Your local dev environment (adjust port if needed)
     'http://127.0.0.1:5500',
-    'https://kiritomainbro88.github.io' // Your deployed frontend
+    'https://kiritomainbro88.github.io', // Your deployed frontend
+    'https://kiritomainbro.github.io' // An alternative domain (if needed)
 ];
 
 const corsOptions = {
@@ -43,7 +45,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 // =======================
 
-// app.use(express.json()); // <-- REMOVE OR COMMENT OUT GLOBAL JSON PARSER
+// UNCOMMENT THIS LINE - JSON parser is needed for processing request bodies
+app.use(express.json());
 
 mongoose.connect(mongoURI)
  .then(() => console.log("Successfully connected to MongoDB Atlas!"))
@@ -56,6 +59,11 @@ app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/purchase', purchaseRoutes); // <-- USE NEW ROUTE
+
+// Add health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).send('API is healthy');
+});
 
 app.get('/', (req, res) => {
  res.send('Portfolio Backend API is running!');
