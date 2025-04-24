@@ -769,4 +769,17 @@ function showNotification(title, message, type = 'info') {
     setTimeout(() => {
         notification.style.opacity = '1';
     }, 10);
+}
+
+function createCategorySummaryCardElement(category, minPrice, maxPrice) {
+    // Create an anchor element for proper navigation
+    const cardLink = document.createElement('a');
+    cardLink.className = 'category-summary-card'; 
+    cardLink.dataset.animate = "fade-up";
+    cardLink.dataset.slug = category.slug || 'unknown';
+    
+    // Set the href directly for better navigation behavior
+    cardLink.href = `category.html?slug=${category.slug || 'unknown'}`;
+    
+    // ... rest of the function
 } 
