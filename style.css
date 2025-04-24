@@ -363,3 +363,32 @@ body.light-theme .filter-actions .cta-button.primary:hover {
         min-width: 100%; /* Stack vertically on very small screens */
     }
 }
+
+/* Category Title Price Range Styles */
+.category-title .price-range {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-left: 1rem;
+    font-weight: normal;
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--bg-tertiary);
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-primary);
+}
+
+.category-title .price-range:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-secondary);
+}
+
+/* Light theme adjustments */
+body.light-theme .category-title .price-range {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-secondary);
+}
+
+body.light-theme .category-title .price-range:hover {
+    background-color: var(--bg-tertiary);
+}

@@ -253,168 +253,143 @@ window.closeAuthForms = () => {
 
 // --- Shopping Page Dynamic Loading --- (Reverted to Product Grid Layout)
 async function loadAndDisplayShoppingData() {
-    if (!dynamicProductArea) {
-        console.error("Dynamic product area not found.");
+    const dynamicArea = document.getElementById('dynamic-product-area');
+    if (!dynamicArea) {
+        console.error('Product display area not found');
         return;
     }
-    console.log("Attempting to load shopping page data (product grid layout)...");
-    // Set loading state immediately
-    dynamicProductArea.innerHTML = `
-        <p style="text-align: center; padding: 2rem; background-color: var(--bg-tertiary); border-radius: var(--border-radius-md);">
-            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
-            Đang tải sản phẩm...
-        </p>`;
+
+    // Show loading state
+    dynamicArea.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Đang tải danh mục sản phẩm...</p>
+        </div>
+    `;
 
     try {
-        console.log("Fetching categories and all products...");
-        // Fetch data
-        const [categories, allProductsData] = await Promise.all([
-            fetchData('/categories'),
-            fetchData('/products') // Fetch all products
-        ]);
+        // Fetch categories with their products and price ranges
+        const categories = await fetchData('/categories');
+        console.log('Fetched categories:', categories);
 
-        console.log("Fetched Categories:", categories);
-        console.log("Fetched All Products Data:", allProductsData);
-
-        // --- Clear loading message ONLY after successful fetches ---
-        dynamicProductArea.innerHTML = '';
-        dynamicProductArea.classList.remove('category-summary-grid');
-
-        // --- Validate Categories ---
         if (!categories || !Array.isArray(categories)) {
-             console.error("Received invalid data for categories:", categories);
-             // Display error message instead of throwing, allows products to potentially still load if they are valid
-             dynamicProductArea.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--warning-color);">Lỗi: Không thể tải danh mục sản phẩm.</p>';
-             // Optionally return or continue to load products if possible
-             // return; // Or let it continue if products might be useful without categories
+            throw new Error('Invalid categories data received');
         }
 
-        // --- Process Products ---
-        let productArray = [];
-         if (Array.isArray(allProductsData)) { // Handle direct array response (less likely now)
-            productArray = allProductsData;
-        } else if (typeof allProductsData === 'object' && allProductsData !== null && allProductsData.products && Array.isArray(allProductsData.products)) {
-            productArray = allProductsData.products; // Correctly extract from the object
-        } else {
-            console.error("Invalid product data structure received:", allProductsData);
-            // Display error message
-             dynamicProductArea.innerHTML += '<p style="text-align: center; padding: 2rem; color: var(--warning-color);">Lỗi: Không thể tải dữ liệu sản phẩm.</p>';
-             // Decide whether to proceed without products
-             // return;
-        }
-        console.log(`Processed ${productArray.length} products total.`);
+        // Clear loading state
+        dynamicArea.innerHTML = '';
 
-        // --- Render Categories and Products ---
-        if (categories && categories.length > 0) {
-            console.log("Rendering category sections with product grids...");
-            categories.forEach((category, index) => {
-                console.log(`Rendering category ${index}: ${category.name}`);
-                try {
-                    const categorySection = createCategorySectionElement(category);
-                    if (!categorySection) {
-                        console.warn(`Skipping category due to creation error: ${category.name}`);
-                        return; // Skip this iteration
-                    }
-                    const productGrid = categorySection.querySelector('.product-grid');
-                    if (!productGrid) {
-                        console.error(`Product grid container not found for category: ${category.name}`);
-                        return; // Skip this iteration
-                    }
+        // Process each category
+        for (const category of categories) {
+            try {
+                // Fetch category details including products and price range
+                const categoryData = await fetchData(`/categories/${category.slug}`);
+                console.log(`Fetched data for category ${category.name}:`, categoryData);
 
-                    const categoryProducts = productArray.filter(product => product.category?._id === category._id);
-                    console.log(`Found ${categoryProducts.length} products for category ${category.name}`);
-
-                    if (categoryProducts.length > 0) {
-                        categoryProducts.forEach(product => {
-                            try {
-                                // Pass FALSE to prevent buy button on main shopping page previews
-                                // *** MODIFIED: Pass category.slug explicitly ***
-                                const productCard = createProductCardElement(product, false, category.slug); 
-                                if (productCard) { // Check if card creation was successful
-                                    productGrid.appendChild(productCard);
-                                } else {
-                                     console.warn(`Failed to create product card for product ID: ${product._id}`);
-                                }
-                            } catch (cardError) {
-                                console.error(`Error creating product card for ${product?.name || 'unknown product'}:`, cardError);
-                            }
-                        });
-                    } else {
-                         productGrid.innerHTML = '<p style="font-size: 0.9em; color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Chưa có sản phẩm trong danh mục này.</p>';
+                if (categoryData) {
+                    const sectionElement = createCategorySectionElement({
+                        ...categoryData,
+                        categoryName: category.name,
+                        slug: category.slug,
+                        iconClass: category.iconClass
+                    });
+                    
+                    if (sectionElement) {
+                        dynamicArea.appendChild(sectionElement);
                     }
-                    dynamicProductArea.appendChild(categorySection);
-                } catch (renderError) {
-                     console.error(`Error rendering section for category ${category?.name || 'unknown category'}:`, renderError);
-                     // Optionally add a placeholder error message for this specific category
                 }
-            });
-            console.log("Finished rendering categories and products.");
-        } else if (categories && categories.length === 0) {
-             console.log("No categories found, displaying message.");
-             // Ensure loading is cleared before adding this message
-             if (dynamicProductArea.innerHTML === '') { // Check if it was cleared
-                 dynamicProductArea.innerHTML = '<p style="text-align: center; padding: 2rem;">Không tìm thấy danh mục sản phẩm nào.</p>';
-             } else { // Append if other errors occurred
-                 dynamicProductArea.innerHTML += '<p style="text-align: center; padding: 2rem;">Không tìm thấy danh mục sản phẩm nào.</p>';
-             }
+            } catch (categoryError) {
+                console.error(`Error loading category ${category.name}:`, categoryError);
+                // Continue with other categories even if one fails
+            }
         }
 
-        // --- Re-apply animations ---
-        console.log("Re-applying animations...");
-        setTimeout(() => {
-            gsap.utils.toArray('.product-category-section[data-animate].gsap-initiated').forEach(el => el.classList.remove('gsap-initiated'));
-            if (typeof setupProfessionalAnimations === 'function') {
-                setupProfessionalAnimations();
-                console.log("Animations re-applied.");
-            } else {
-                 console.warn("setupProfessionalAnimations function not found.");
-            }
-        }, 150);
+        // If no categories were loaded
+        if (dynamicArea.children.length === 0) {
+            dynamicArea.innerHTML = `
+                <div style="text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
+                    <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                    <p>Chưa có danh mục sản phẩm nào.</p>
+                </div>
+            `;
+        }
+
+        // Setup any necessary event listeners
+        setupShoppingPageBuyListeners();
 
     } catch (error) {
-        console.error("Error loading or rendering shopping page data:", error);
-        // Ensure the loading message is replaced with the error message
-        dynamicProductArea.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--danger-color);">Lỗi tải sản phẩm: ${error.message}. Vui lòng kiểm tra Console (F12) và thử lại sau.</p>`;
+        console.error('Error loading shopping data:', error);
+        dynamicArea.innerHTML = `
+            <div style="text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                <p>Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.</p>
+                <button onclick="location.reload()" class="cta-button primary" style="margin-top: 1rem;">
+                    <i class="fas fa-sync-alt icon-left"></i>Tải lại trang
+                </button>
+            </div>
+        `;
     }
 }
 
 // --- MODIFIED: Create Category Section Element ---
 function createCategorySectionElement(categoryData) {
-    if (!categoryData || !categoryData.name) {
-        console.error('Invalid category data');
-        return null;
-    }
-
-    const sectionElement = document.createElement('section');
-    sectionElement.className = 'product-category-section';
-    sectionElement.dataset.categoryId = categoryData._id || categoryData.id || '';
-    sectionElement.dataset.categorySlug = categoryData.slug || '';
-    sectionElement.dataset.animate = "fade-up";
-
-    // Create the header with category name and make it a link to category.html
-    const headerElement = document.createElement('div');
-    headerElement.className = 'category-title-wrapper';
+    const { products, categoryName, slug, iconClass, minPrice, maxPrice } = categoryData;
     
-    // Create a link for the category title
-    headerElement.innerHTML = `
-        <a href="category.html?slug=${categoryData.slug || ''}" class="category-title-link">
-            <h2 class="category-title">
-                <i class="${categoryData.iconClass || 'fas fa-tag'} icon-left"></i>
-                ${escapeHtml(categoryData.name)}
-            </h2>
-        </a>
+    // Create section container
+    const section = document.createElement('section');
+    section.className = 'product-category-section';
+    
+    // Create category title with link and price range
+    const titleLink = document.createElement('a');
+    titleLink.href = `category.html?slug=${slug}`;
+    titleLink.className = 'category-title-link';
+    
+    // Format the price range
+    const formattedMinPrice = formatPrice(minPrice || 0);
+    const formattedMaxPrice = formatPrice(maxPrice || 0);
+    const priceRangeText = minPrice === maxPrice ? 
+        `${formattedMinPrice}` : 
+        `${formattedMinPrice} - ${formattedMaxPrice}`;
+    
+    titleLink.innerHTML = `
+        <h2 class="category-title">
+            <i class="${iconClass || 'fas fa-tag'} icon-left"></i>
+            ${categoryName}
+            <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
+                ${priceRangeText}
+            </span>
+        </h2>
     `;
     
-    // Create products container (grid)
-    const productsContainer = document.createElement('div');
-    productsContainer.className = 'product-grid';
-    productsContainer.id = `products-${categoryData.slug || 'default'}`;
+    section.appendChild(titleLink);
     
-    // Append elements to section
-    sectionElement.appendChild(headerElement);
-    sectionElement.appendChild(productsContainer);
+    // Create product grid
+    const grid = document.createElement('div');
+    grid.className = 'product-grid';
     
-    return sectionElement;
+    // Add products
+    if (products && products.length > 0) {
+        products.forEach(product => {
+            try {
+                const productCard = createProductCardElement(product, true, slug);
+                if (productCard) {
+                    grid.appendChild(productCard);
+                }
+            } catch (error) {
+                console.error('Error creating product card:', error);
+            }
+        });
+    } else {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <i class="fas fa-box-open" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                <p>Chưa có sản phẩm nào trong danh mục này.</p>
+            </div>
+        `;
+    }
+    
+    section.appendChild(grid);
+    return section;
 }
 
 // --- NEW: Create Category Summary Card Element (for main shopping page) ---
@@ -964,9 +939,6 @@ async function loadCategoryPageData() {
             <div class="error-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
                 <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
                 <p>Không thể tải thông tin danh mục. Vui lòng thử lại sau.</p>
-                <a href="shopping.html" class="cta-button primary" style="margin-top: 1rem;">
-                    <i class="fas fa-arrow-left icon-left"></i>Quay lại cửa hàng
-                </a>
             </div>
         `;
         if (nameDisplay) nameDisplay.textContent = 'Lỗi tải dữ liệu';
