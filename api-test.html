@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .test-container {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Connection Test</h1>
+        
+        <div class="test-container">
+            <h2>1. Test Backend Connectivity</h2>
+            <button id="test-connection">Test Connection</button>
+            <div class="results" id="connection-result"></div>
+        </div>
+        
+        <div class="test-container">
+            <h2>2. Test Categories Endpoint</h2>
+            <button id="test-categories">Load Categories</button>
+            <div class="results" id="categories-result"></div>
+        </div>
+
+        <div class="test-container">
+            <h2>3. Browser Cache Status</h2>
+            <button id="check-cache">Check Browser Cache Info</button>
+            <div class="results" id="cache-result"></div>
+        </div>
+
+        <div class="test-container">
+            <h2>4. Clear Local Storage</h2>
+            <button id="clear-storage">Clear LocalStorage</button>
+            <div class="results" id="storage-result"></div>
+        </div>
+
+        <div class="test-container">
+            <h2>5. Return to Shopping Page</h2>
+            <button id="go-shopping">Go to Shopping Page</button>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
+        
+        // Test backend connection
+        document.getElementById('test-connection').addEventListener('click', async function() {
+            const resultElement = document.getElementById('connection-result');
+            resultElement.innerHTML = `<div class="status">Testing connection to ${BACKEND_URL}...</div>`;
+            
+            try {
+                const startTime = performance.now();
+                const response = await fetch(`${BACKEND_URL}/api/health?_=${Date.now()}`);
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    resultElement.innerHTML = `
+                        <div class="status success">
+                            ✅ Successfully connected to backend!<br>
+                            Response time: ${responseTime}ms<br>
+                            Status: ${response.status} ${response.statusText}<br>
+                            Response: ${data}
+                        </div>
+                    `;
+                } else {
+                    resultElement.innerHTML = `
+                        <div class="status error">
+                            ❌ Backend returned error status ${response.status} ${response.statusText}<br>
+                            Response time: ${responseTime}ms
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `
+                    <div class="status error">
+                        ❌ Could not connect to backend: ${error.message}
+                    </div>
+                `;
+            }
+        });
+        
+        // Test categories endpoint
+        document.getElementById('test-categories').addEventListener('click', async function() {
+            const resultElement = document.getElementById('categories-result');
+            resultElement.innerHTML = `<div class="status">Testing categories endpoint...</div>`;
+            
+            try {
+                const startTime = performance.now();
+                const response = await fetch(`${BACKEND_URL}/api/categories?_=${Date.now()}`);
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultElement.innerHTML = `
+                        <div class="status success">
+                            ✅ Successfully loaded categories!<br>
+                            Response time: ${responseTime}ms<br>
+                            Categories count: ${Array.isArray(data) ? data.length : 'N/A'}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultElement.innerHTML = `
+                        <div class="status error">
+                            ❌ Categories endpoint returned error status ${response.status} ${response.statusText}<br>
+                            Response time: ${responseTime}ms
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `
+                    <div class="status error">
+                        ❌ Could not load categories: ${error.message}
+                    </div>
+                `;
+            }
+        });
+        
+        // Check browser cache information
+        document.getElementById('check-cache').addEventListener('click', function() {
+            const resultElement = document.getElementById('cache-result');
+            
+            // Get localStorage data
+            const localStorageData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                localStorageData[key] = localStorage.getItem(key);
+            }
+            
+            resultElement.innerHTML = `
+                <div class="status">
+                    <h3>Browser Cache Information</h3>
+                    <h4>LocalStorage Items:</h4>
+                    <pre>${JSON.stringify(localStorageData, null, 2)}</pre>
+                    
+                    <h4>Cache API Status:</h4>
+                    <div>Cache API ${('caches' in window) ? 'is supported' : 'is NOT supported'} in this browser</div>
+                </div>
+            `;
+        });
+        
+        // Clear local storage
+        document.getElementById('clear-storage').addEventListener('click', function() {
+            const resultElement = document.getElementById('storage-result');
+            
+            try {
+                const itemCount = localStorage.length;
+                localStorage.clear();
+                resultElement.innerHTML = `
+                    <div class="status success">
+                        ✅ Successfully cleared ${itemCount} items from localStorage
+                    </div>
+                `;
+            } catch (error) {
+                resultElement.innerHTML = `
+                    <div class="status error">
+                        ❌ Error clearing localStorage: ${error.message}
+                    </div>
+                `;
+            }
+        });
+        
+        // Go to shopping page
+        document.getElementById('go-shopping').addEventListener('click', function() {
+            window.location.href = 'shopping.html?nocache=' + Date.now();
+        });
+    </script>
+</body>
+</html> 

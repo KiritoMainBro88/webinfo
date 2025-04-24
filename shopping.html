@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Mua Hàng - KiritoMainBro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- === UPDATE CSS VERSION === -->
-    <link rel="stylesheet" href="style.css?v=1.9.5"> <!-- Version Bump -->
+    <link rel="stylesheet" href="style.css?v=1.9.6"> <!-- Version Bump -->
 </head>
 <body class="dark-theme shopping-page"> <!-- Keep shopping-page class -->
 
@@ -118,8 +122,28 @@
     <!-- === SCRIPTS === -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Cache busting script -->
+    <script>
+    // Force reload if cached version
+    (function() {
+        // Set a timestamp in localStorage when this script runs
+        const currentTimestamp = new Date().getTime();
+        const lastVisit = localStorage.getItem('shopping_page_timestamp');
+        
+        // If we have a previous visit timestamp and it's older than 30 minutes, force refresh
+        if (lastVisit && (currentTimestamp - parseInt(lastVisit)) > 1800000) {
+            localStorage.setItem('shopping_page_timestamp', currentTimestamp);
+            // Add a random parameter to force reload and bypass cache
+            window.location.href = window.location.pathname + '?nocache=' + currentTimestamp;
+        } else {
+            localStorage.setItem('shopping_page_timestamp', currentTimestamp);
+        }
+    })();
+    </script>
+    
     <!-- === UPDATE SCRIPT VERSION === -->
-    <script src="script.js?v=1.9.5"></script> <!-- Version Bump -->
+    <script src="script.js?v=1.9.6"></script> <!-- Version Bump -->
     <script>
     function initializePage() {
         // ... initialization code ...

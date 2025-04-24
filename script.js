@@ -1,4 +1,4 @@
-console.log("Script version 1.9.10 - Category Page Logic"); // Increment version
+console.log("Script version 1.9.11 - Updated with cache busting"); // Increment version
 
 // --- Global Constants & Variables ---
 const BACKEND_URL = 'https://webinfo-zbkq.onrender.com';
@@ -40,6 +40,13 @@ async function fetchData(endpoint, options = {}) {
         headers['x-temp-userid'] = tempUserId;
     }
 
+    // Add cache-busting parameter to GET requests
+    let fullEndpoint = endpoint;
+    if (!options.method || options.method === 'GET') {
+        const cacheBuster = new Date().getTime();
+        fullEndpoint += (endpoint.includes('?') ? '&' : '?') + `_nocache=${cacheBuster}`;
+    }
+
     // *** CHANGE: Conditionally set Content-Type ***
     // Only set Content-Type if the body is NOT FormData
     if (options.body && !(options.body instanceof FormData)) {
@@ -58,7 +65,8 @@ async function fetchData(endpoint, options = {}) {
     }
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api${endpoint}`, config);
+        console.log(`Fetching data from: ${fullEndpoint}`);
+        const response = await fetch(`${BACKEND_URL}/api${fullEndpoint}`, config);
         const contentType = response.headers.get("content-type");
         let data;
         if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -279,6 +287,16 @@ async function loadAndDisplayShoppingData() {
         // Clear loading state
         dynamicArea.innerHTML = '';
 
+        if (categories.length === 0) {
+            dynamicArea.innerHTML = `
+                <div style="text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
+                    <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                    <p>Chưa có danh mục sản phẩm nào.</p>
+                </div>
+            `;
+            return;
+        }
+
         // Process each category
         for (const category of categories) {
             try {
@@ -300,14 +318,28 @@ async function loadAndDisplayShoppingData() {
                 }
             } catch (categoryError) {
                 console.error(`Error loading category ${category.name}:`, categoryError);
-                // Continue with other categories even if one fails
+                // Add fallback UI for the failed category
+                const fallbackSection = document.createElement('section');
+                fallbackSection.className = 'product-category-section';
+                fallbackSection.innerHTML = `
+                    <h2 class="category-title">
+                        <i class="fas fa-tags"></i> ${category.name || 'Danh mục'}
+                    </h2>
+                    <div class="product-grid">
+                        <div style="text-align: center; padding: 2rem; width: 100%; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--danger-color);"></i>
+                            <p>Không thể tải dữ liệu cho danh mục này. Vui lòng thử lại sau.</p>
+                        </div>
+                    </div>
+                `;
+                dynamicArea.appendChild(fallbackSection);
             }
         }
 
         // If no categories were loaded
         if (dynamicArea.children.length === 0) {
             dynamicArea.innerHTML = `
-                <div style="text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md);">
+                <div style="text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: var(--border-radius-md); margin-top: 1rem;">
                     <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
                     <p>Chưa có danh mục sản phẩm nào.</p>
                 </div>
