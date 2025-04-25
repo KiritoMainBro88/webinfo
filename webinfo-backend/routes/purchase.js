@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Product = require('../models/Product');
+const Transaction = require('../models/Transaction'); // Add Transaction model import
 const authUser = require('../middleware/authUser'); // USE A REAL USER AUTH MIDDLEWARE HERE
 
 const router = express.Router();
@@ -77,6 +78,17 @@ router.post('/confirm', authUser, async (req, res) => { // Use authUser middlewa
              // Consider mechanisms to handle potential inconsistencies here
              return res.status(500).json({ success: false, message: 'Lỗi cập nhật số dư người dùng.' });
         }
+
+        // Create transaction record for the purchase
+        await Transaction.create({
+            userId: userId,
+            type: 'purchase',
+            amount: -itemPrice, // Negative amount for purchases (money going out)
+            description: `Purchase of ${product.name}`,
+            balanceBefore: user.balance,
+            balanceAfter: updatedUser.balance,
+            productId: itemId
+        });
 
         console.log(`Purchase successful: User ${userId} bought ${itemId}. New balance: ${updatedUser.balance}`);
 
