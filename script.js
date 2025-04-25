@@ -157,7 +157,13 @@ async function fetchData(endpoint, options = {}) {
         }
         
         // Only try the actual API call if not in backup mode, or if we don't have fallback data for this endpoint
-        const response = await fetch(`${BACKEND_URL}/api${fullEndpoint}`, config);
+        
+        // Fix: Check if endpoint already starts with /api to avoid duplication
+        const apiUrl = endpoint.startsWith('/api') 
+            ? `${BACKEND_URL}${fullEndpoint}`
+            : `${BACKEND_URL}/api${fullEndpoint}`;
+            
+        const response = await fetch(apiUrl, config);
         const contentType = response.headers.get("content-type");
         let data;
         if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -745,7 +751,7 @@ function setupPurchaseModalListeners() {
         try {
             // --- !!! ACTUAL BACKEND CALL !!! ---
             console.log(`Calling backend /purchase/confirm for item: ${itemId}`);
-            const result = await fetchData('/purchase/confirm', { // Call the new backend endpoint
+            const result = await fetchData('/purchase/confirm', { // Call the endpoint - fetchData will add /api prefix
                  method: 'POST',
                  body: JSON.stringify({
                      itemId: itemId // Send only the item ID (backend gets price & userId securely)
@@ -1175,8 +1181,9 @@ async function loadCategoryProducts(categorySlug, page = 1, filters = {}) {
             ...filters
         });
 
-        // Fetch products for category
-        const data = await fetchData(`/api/categories/${categorySlug}/products?${params}`);
+        // Fetch products for category - ensure consistent endpoint format
+        // Use /categories/ format without /api prefix as fetchData will add it
+        const data = await fetchData(`/categories/${categorySlug}/products?${params}`);
         
         // Update category name
         const categoryNameDisplay = document.getElementById('category-name-display');
@@ -1572,7 +1579,8 @@ async function loadUserPurchaseHistory() {
             return;
         }
         
-        const response = await fetchData(`/api/users/${userId}/purchases`);
+        // Removed /api prefix for consistency
+        const response = await fetchData(`/users/${userId}/purchases`);
         if (!response || !response.purchases) {
             throw new Error('Invalid response format');
         }
@@ -1653,7 +1661,8 @@ async function loadTopDepositors() {
         const container = document.getElementById('top-depositors-container');
         if (!container) return;
         
-        const response = await fetchData('/api/stats/top-depositors');
+        // Removed /api prefix for consistency
+        const response = await fetchData('/stats/top-depositors');
         if (!response || !response.topDepositors) {
             throw new Error('Invalid response format');
         }
@@ -1689,7 +1698,8 @@ async function loadRecentTransactions() {
         
         if (!depositsContainer && !purchasesContainer) return;
         
-        const response = await fetchData('/api/stats/recent-transactions');
+        // Removed /api prefix for consistency
+        const response = await fetchData('/stats/recent-transactions');
         if (!response) {
             throw new Error('Invalid response format');
         }
