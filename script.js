@@ -1272,11 +1272,7 @@ function initializePage() {
     setupProfessionalAnimations();
     
     // Page specific initializations
-    if (currentPage === 'category.html') {
-        // Category page initialization
-        console.log("Initializing category page...");
-        setupCategoryPage();
-    } else if (currentPage === 'shopping.html') {
+    if (currentPage === 'shopping.html') {
         // Shopping page initialization
         console.log("Initializing shopping page...");
         loadAndDisplayShoppingData();
