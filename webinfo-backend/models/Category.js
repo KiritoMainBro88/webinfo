@@ -36,8 +36,8 @@ const categorySchema = new mongoose.Schema({
     }
 });
 
-// Add index for slug lookup
-categorySchema.index({ slug: 1 });
+// Remove duplicate slug index since it's already defined with unique: true in the schema
+// categorySchema.index({ slug: 1 }); -- Removed this line
 categorySchema.index({ displayOrder: 1, name: 1 });
 
 // Improved slug generation middleware

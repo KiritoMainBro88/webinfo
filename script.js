@@ -1226,15 +1226,31 @@ async function loadCategoryProducts(categorySlug, page = 1, filters = {}) {
 // Setup category page functionality
 function setupCategoryPage() {
     const urlParams = new URLSearchParams(window.location.search);
-    const categorySlug = urlParams.get('slug');
+    let categorySlug = urlParams.get('slug');
+    const productId = urlParams.get('id');
+    const categoryParam = urlParams.get('category');
+    
+    // If we have both id and category parameters, but no slug, use the category parameter
+    if (!categorySlug && categoryParam) {
+        categorySlug = categoryParam; // Use category parameter as slug
+        console.log(`Using category parameter as slug: ${categorySlug}`);
+    }
     
     if (!categorySlug) {
+        console.error('No category slug found in URL parameters');
         window.location.href = 'shopping.html';
         return;
     }
 
-    // Load initial products
-    loadCategoryProducts(categorySlug);
+    // If we have a product ID, we should load the specific product details
+    if (productId) {
+        console.log(`Loading product details for ID: ${productId} in category: ${categorySlug}`);
+        // This would ideally call a loadProductDetails function, but for now just load category
+        loadCategoryProducts(categorySlug);
+    } else {
+        // Load the category products as normal
+        loadCategoryProducts(categorySlug);
+    }
 
     // Setup filter handlers
     const filterForm = document.querySelector('.filter-bar');
