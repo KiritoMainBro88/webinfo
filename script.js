@@ -528,7 +528,7 @@ function createProductCardElement(product, includeBuyButton = false, categorySlu
     // If card should be clickable to a product page
     if (categorySlug) {
         card.addEventListener('click', function() {
-            window.location.href = `product.html?id=${productId}&category=${categorySlug}`;
+            window.location.href = `shopping-product.html?id=${productId}&category=${categorySlug}`;
         });
     }
 
@@ -1297,6 +1297,10 @@ function initializePage() {
         } else {
             console.warn("Admin functionality not found.");
         }
+    } else if (currentPage === 'shopping-product.html') {
+        // Category page initialization
+        console.log("Initializing category page...");
+        setupCategoryPage();
     }
 
     // Initialize Global Badge Configurations for reuse
@@ -1380,7 +1384,7 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
     cardLink.dataset.slug = category.slug || 'unknown';
     
     // Set the href directly for better navigation behavior
-    cardLink.href = `category.html?slug=${category.slug || 'unknown'}`;
+    cardLink.href = `shopping-product.html?slug=${category.slug || 'unknown'}`;
 
     let priceRangeHTML = '';
     // Check if minPrice and maxPrice are valid numbers
@@ -1407,9 +1411,6 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
              <i class="fas fa-chevron-right"></i>
         </div>
     `;
-
-    // No need for click handler anymore since it's a proper link with href
-    // This ensures proper navigation behavior including right-click open in new tab
 
     return cardLink;
 }

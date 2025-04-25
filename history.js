@@ -779,7 +779,7 @@ function createCategorySummaryCardElement(category, minPrice, maxPrice) {
     cardLink.dataset.slug = category.slug || 'unknown';
     
     // Set the href directly for better navigation behavior
-    cardLink.href = `category.html?slug=${category.slug || 'unknown'}`;
+    cardLink.href = `shopping-product.html?slug=${category.slug || 'unknown'}`;
     
     // ... rest of the function
 } 
