@@ -1317,7 +1317,292 @@ function setupCategoryPage() {
     });
 }
 
-// Main function to run once DOM is ready
+// --- Function to render existing categories on shopping page ---
+function loadExistingCategories() {
+    const existingCategoriesContainer = document.getElementById('existing-categories');
+    if (!existingCategoriesContainer) {
+        console.log('Existing categories container not found');
+        return;
+    }
+
+    // Show loading state
+    existingCategoriesContainer.innerHTML = `
+        <div class="loading-state" style="text-align: center; padding: 2rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+            <p>Đang tải danh mục...</p>
+        </div>
+    `;
+
+    // Fetch categories
+    fetchData('/categories')
+        .then(categories => {
+            if (!categories || categories.length === 0) {
+                existingCategoriesContainer.innerHTML = `
+                    <div class="empty-state" style="text-align: center; padding: 2rem;">
+                        <p>Không có danh mục nào.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Clear loading state
+            existingCategoriesContainer.innerHTML = '';
+
+            // Create category cards
+            categories.forEach(category => {
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'category-card';
+                categoryCard.dataset.categoryId = category._id || category.id;
+                
+                // Get image URL from category data or use a placeholder
+                const imageUrl = category.imageUrl || 'images/placeholder-category.jpg';
+                
+                categoryCard.innerHTML = `
+                    <div class="category-image">
+                        <img src="${imageUrl}" alt="${escapeHtml(category.name)}">
+                    </div>
+                    <div class="category-info">
+                        <h3 class="category-name">
+                            <i class="${category.iconClass || 'fas fa-folder'}"></i>
+                            ${escapeHtml(category.name)}
+                        </h3>
+                        <p class="category-description">${escapeHtml(category.description || 'No description')}</p>
+                        <a href="shopping-product.html?slug=${category.slug}" class="view-category-btn">
+                            <i class="fas fa-eye"></i> Xem sản phẩm
+                        </a>
+                    </div>
+                `;
+                
+                existingCategoriesContainer.appendChild(categoryCard);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading categories:', error);
+            existingCategoriesContainer.innerHTML = `
+                <div class="error-state" style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger-color);"></i>
+                    <p>Không thể tải danh mục. Vui lòng thử lại sau.</p>
+                </div>
+            `;
+        });
+}
+
+// --- Modified: Function to load product details on shopping-product page ---
+async function loadProductDetail(productId, categorySlug) {
+    console.log(`Loading product details for ID: ${productId} in category: ${categorySlug}`);
+    const productDetailContainer = document.getElementById('product-detail-container');
+    
+    if (!productDetailContainer) {
+        console.error('Product detail container not found');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        productDetailContainer.innerHTML = `
+            <div class="loading-state" style="text-align: center; padding: 3rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Đang tải chi tiết sản phẩm...</p>
+            </div>
+        `;
+        
+        // Fetch product details from the category's products endpoint
+        const data = await fetchData(`/categories/${categorySlug}/products`);
+        
+        if (!data || !data.products) {
+            throw new Error('Invalid product data received');
+        }
+        
+        // Find the specific product
+        const product = data.products.find(p => (p._id || p.id) === productId);
+        
+        if (!product) {
+            throw new Error('Product not found');
+        }
+        
+        // Update product detail UI
+        renderProductDetail(product, productDetailContainer);
+        
+    } catch (error) {
+        console.error('Error loading product details:', error);
+        productDetailContainer.innerHTML = `
+            <div class="error-state" style="text-align: center; padding: 3rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                <p>Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.</p>
+                <a href="shopping.html" class="cta-button secondary" style="margin-top: 1rem;">
+                    <i class="fas fa-arrow-left icon-left"></i>Quay lại cửa hàng
+                </a>
+            </div>
+        `;
+    }
+}
+
+// --- Function to render product detail ---
+function renderProductDetail(product, container) {
+    // Format price 
+    const formattedPrice = formatCurrency(product.price);
+    const formattedOriginalPrice = product.originalPrice ? formatCurrency(product.originalPrice) : '';
+    
+    // Generate star rating HTML
+    const starsHtml = generateStarRating(product.rating || 0);
+    
+    // Calculate discount percentage if original price exists
+    const discountPercentage = product.originalPrice ? 
+        Math.round((1 - product.price/product.originalPrice) * 100) : 0;
+    
+    const discountBadge = product.originalPrice ? 
+        `<span class="discount-badge">-${discountPercentage}%</span>` : '';
+    
+    // Create product detail HTML
+    container.innerHTML = `
+        <div class="product-detail">
+            <div class="product-detail-image">
+                <img src="${product.imageUrl || 'https://placehold.co/600x400/191c26/e9ecef?text=No+Image'}" 
+                     alt="${escapeHtml(product.name)}">
+                ${discountBadge}
+            </div>
+            <div class="product-detail-info">
+                <h1 class="product-detail-name">${escapeHtml(product.name)}</h1>
+                
+                <div class="product-detail-meta">
+                    <div class="product-detail-rating">
+                        ${starsHtml}
+                        <span class="rating-count">(${product.reviewCount || 0} đánh giá)</span>
+                    </div>
+                    <div class="product-detail-brand">
+                        ${product.brand ? `<span>Thương hiệu: ${escapeHtml(product.brand)}</span>` : ''}
+                    </div>
+                </div>
+                
+                <div class="product-detail-price">
+                    ${formattedOriginalPrice ? 
+                        `<span class="original-price">${formattedOriginalPrice}</span>` : ''}
+                    <span class="current-price">${formattedPrice}</span>
+                </div>
+                
+                <div class="product-detail-description">
+                    <h3>Mô tả sản phẩm</h3>
+                    <div class="description-content">
+                        ${product.description || 'Không có mô tả cho sản phẩm này.'}
+                    </div>
+                </div>
+                
+                <div class="product-detail-actions">
+                    <button type="button" class="cta-button primary product-buy-btn" 
+                            data-product-id="${product._id || product.id}"
+                            data-product-price="${product.price}">
+                        <i class="fas fa-shopping-cart icon-left"></i>Mua ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listener to buy button
+    const buyButton = container.querySelector('.product-buy-btn');
+    if (buyButton) {
+        buyButton.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const productName = product.name;
+            const productPrice = parseFloat(this.dataset.productPrice);
+            
+            if (!localStorage.getItem('userId')) {
+                alert('Vui lòng đăng nhập để mua hàng!');
+                if (typeof showLoginForm === 'function') showLoginForm();
+            } else {
+                openPurchaseModal(productId, productName, productPrice);
+            }
+        });
+    }
+}
+
+// --- Modified: Setup Category Page function ---
+function setupCategoryPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let categorySlug = urlParams.get('slug');
+    const productId = urlParams.get('id');
+    const categoryParam = urlParams.get('category');
+    
+    // If we have both id and category parameters, but no slug, use the category parameter
+    if (!categorySlug && categoryParam) {
+        categorySlug = categoryParam; // Use category parameter as slug
+        console.log(`Using category parameter as slug: ${categorySlug}`);
+    }
+    
+    if (!categorySlug) {
+        console.error('No category slug found in URL parameters');
+        window.location.href = 'shopping.html';
+        return;
+    }
+
+    // If we have a product ID, we should load the specific product details
+    if (productId) {
+        console.log(`Loading product details for ID: ${productId} in category: ${categorySlug}`);
+        loadProductDetail(productId, categorySlug);
+    } else {
+        // Load the category products as normal
+        loadCategoryProducts(categorySlug);
+    }
+
+    // Setup filter handlers
+    const filterForm = document.querySelector('.filter-bar');
+    const searchInput = document.getElementById('filter-search-input');
+    const searchBtn = document.getElementById('filter-search-btn');
+    const resetBtn = document.getElementById('filter-reset-btn');
+    const priceSelect = document.getElementById('filter-price');
+    const sortSelect = document.getElementById('filter-sort');
+
+    if (filterForm) {
+        // Search button click
+        searchBtn?.addEventListener('click', () => {
+            const filters = {
+                search: searchInput?.value || '',
+                price: priceSelect?.value || 'all',
+                sort: sortSelect?.value || 'default'
+            };
+            loadCategoryProducts(categorySlug, 1, filters);
+        });
+
+        // Reset filters
+        resetBtn?.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (priceSelect) priceSelect.value = 'all';
+            if (sortSelect) sortSelect.value = 'default';
+            loadCategoryProducts(categorySlug);
+        });
+
+        // Price and sort change
+        priceSelect?.addEventListener('change', () => searchBtn?.click());
+        sortSelect?.addEventListener('change', () => searchBtn?.click());
+    }
+
+    // Setup pagination
+    const prevBtn = document.getElementById('prev-page-btn');
+    const nextBtn = document.getElementById('next-page-btn');
+    let currentPage = 1;
+
+    prevBtn?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadCategoryProducts(categorySlug, currentPage, {
+                search: searchInput?.value || '',
+                price: priceSelect?.value || 'all',
+                sort: sortSelect?.value || 'default'
+            });
+        }
+    });
+
+    nextBtn?.addEventListener('click', () => {
+        currentPage++;
+        loadCategoryProducts(categorySlug, currentPage, {
+            search: searchInput?.value || '',
+            price: priceSelect?.value || 'all',
+            sort: sortSelect?.value || 'default'
+        });
+    });
+}
+
+// --- Add loadExistingCategories to initializePage ---
 function initializePage() {
     console.log('Initializing page...');
 
@@ -1345,12 +1630,13 @@ function initializePage() {
         // Shopping page initialization
         console.log("Initializing shopping page...");
         loadAndDisplayShoppingData();
+        loadExistingCategories(); // Add this line to load existing categories
         setupShoppingPageBuyListeners();
     } else if (currentPage === 'index.html' || currentPage === '') {
         // Home page initialization
         console.log("Initializing home page...");
         loadHomePageCategories();
-    } else if (currentPage === 'purchase-history.html') { // Changed from history.html to purchase-history.html
+    } else if (currentPage === 'purchase-history.html') {
         // Purchase history page initialization
         console.log("Initializing purchase history page...");
         // loadUserPurchaseHistory(); // Uncomment when implemented
@@ -1363,8 +1649,8 @@ function initializePage() {
             console.warn("Admin functionality not found.");
         }
     } else if (currentPage === 'shopping-product.html') {
-        // Category page initialization
-        console.log("Initializing category page...");
+        // Category/Product page initialization
+        console.log("Initializing product page...");
         setupCategoryPage();
     }
 
@@ -1379,383 +1665,3 @@ function initializePage() {
 
 // --- Run Initialization on DOM Ready ---
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initializePage); } else { initializePage(); }
-
-// --- MODIFIED: Create Category Section Element ---
-function createCategorySectionElement(categoryData) {
-    const { products, categoryName, slug, iconClass, minPrice, maxPrice } = categoryData;
-    
-    // Create section container
-    const section = document.createElement('section');
-    section.className = 'product-category-section';
-    
-    // Create a non-clickable title for all categories
-    const titleWrapper = document.createElement('div');
-    titleWrapper.className = 'category-title-wrapper';
-    
-    // Format the price range
-    const formattedMinPrice = formatPrice(minPrice || 0);
-    const formattedMaxPrice = formatPrice(maxPrice || 0);
-    const priceRangeText = minPrice === maxPrice ? 
-        `${formattedMinPrice}` : 
-        `${formattedMinPrice} - ${formattedMaxPrice}`;
-        
-    titleWrapper.innerHTML = `
-        <h2 class="category-title">
-            <i class="${iconClass || 'fas fa-folder'} icon-left"></i>
-            ${categoryName}
-            <span style="font-size: 0.8em; color: var(--text-secondary); margin-left: 1rem;">
-                ${priceRangeText}
-            </span>
-        </h2>
-    `;
-    
-    section.appendChild(titleWrapper);
-    
-    // Create product grid
-    const grid = document.createElement('div');
-    grid.className = 'product-grid';
-    
-    // Add products
-    if (products && products.length > 0) {
-        products.forEach(product => {
-            try {
-                const productCard = createProductCardElement(product, true, slug);
-                if (productCard) {
-                    grid.appendChild(productCard);
-                }
-            } catch (error) {
-                console.error('Error creating product card:', error);
-            }
-        });
-    } else {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
-                <i class="fas fa-box-open" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
-                <p>Chưa có sản phẩm nào trong danh mục này.</p>
-            </div>
-        `;
-    }
-    
-    section.appendChild(grid);
-    return section;
-}
-
-// --- MODIFIED: Create Category Summary Card Element (for main shopping page) ---
-function createCategorySummaryCardElement(category, minPrice, maxPrice) {
-    // Create an anchor element for proper navigation
-    const cardLink = document.createElement('a');
-    cardLink.className = 'category-summary-card'; 
-    cardLink.dataset.animate = "fade-up";
-    cardLink.dataset.slug = category.slug || 'unknown';
-    
-    // Set the href directly for better navigation behavior
-    cardLink.href = `shopping-product.html?slug=${category.slug || 'unknown'}`;
-
-    let priceRangeHTML = '';
-    // Check if minPrice and maxPrice are valid numbers
-    const isMinPriceNumeric = typeof minPrice === 'number' && !isNaN(minPrice);
-    
-    // Use actual price value in the display
-    if (isMinPriceNumeric) {
-        priceRangeHTML = `<p class="category-price-range">Giá chỉ từ: ${formatPrice(minPrice)}</p>`;
-    } else {
-        // Handle cases with no numeric prices or only special prices
-        priceRangeHTML = `<p class="category-price-range">Xem sản phẩm</p>`;
-    }
-
-    // Basic structure - adjust classes and content as needed for styling
-    cardLink.innerHTML = `
-        <div class="category-summary-info">
-            <h3 class="category-summary-title">
-                <i class="${category.iconClass || 'fas fa-tag'} icon-left"></i>
-                ${escapeHtml(category.name)}
-            </h3>
-            ${priceRangeHTML}
-        </div>
-        <div class="category-summary-arrow">
-             <i class="fas fa-chevron-right"></i>
-        </div>
-    `;
-
-    return cardLink;
-}
-
-// Function to fetch badge configurations from backend
-async function fetchBadgeConfigurations() {
-    try {
-        // Using a fallback configuration instead of calling the backend
-        // This prevents the 404 error showing in the console
-        const defaultConfigs = [
-            {
-                type: 'best-seller',
-                backgroundColor: '#ff9800',
-                textColor: '#FFFFFF',
-                text: 'Best Seller'
-            },
-            {
-                type: 'new',
-                backgroundColor: '#4caf50',
-                textColor: '#FFFFFF',
-                text: 'New'
-            },
-            {
-                type: 'out-of-stock',
-                backgroundColor: '#616161',
-                textColor: '#FFFFFF',
-                text: 'Hết hàng'
-            },
-            {
-                type: 'sale',
-                backgroundColor: '#f44336',
-                textColor: '#FFFFFF',
-                text: 'Sale'
-            }
-        ];
-        
-        // Store default configs in localStorage
-        localStorage.setItem('badgeConfigs', JSON.stringify(defaultConfigs));
-        console.log('Using default badge configurations');
-        return defaultConfigs;
-    } catch (error) {
-        console.error('Error setting up default badge configurations:', error);
-        return [];
-    }
-}
-
-// Function to get badge configuration for a product
-function getBadgeConfig(badgeType) {
-    try {
-        // Try to get from localStorage first for performance
-        const cachedConfigs = localStorage.getItem('badgeConfigs');
-        const configs = cachedConfigs ? JSON.parse(cachedConfigs) : [];
-        
-        // Find the matching badge config
-        const config = configs.find(c => c.type === badgeType);
-        
-        // Return with defaults if not found
-        return config || {
-            type: badgeType,
-            backgroundColor: getBadgeDefaultColor(badgeType),
-            textColor: '#FFFFFF',
-            text: badgeType.charAt(0).toUpperCase() + badgeType.slice(1).replace(/-/g, ' ')
-        };
-    } catch (error) {
-        console.error('Error getting badge configuration:', error);
-        return {
-            type: badgeType,
-            backgroundColor: getBadgeDefaultColor(badgeType),
-            textColor: '#FFFFFF',
-            text: badgeType.charAt(0).toUpperCase() + badgeType.slice(1).replace(/-/g, ' ')
-        };
-    }
-}
-
-// Helper function to get default color for badge types
-function getBadgeDefaultColor(badgeType) {
-    const colorMap = {
-        'best-seller': '#ff9800',
-        'new': '#4caf50',
-        'sale': '#f44336',
-        'out-of-stock': '#616161',
-        'limited': '#9c27b0',
-        'featured': '#2196F3'
-    };
-    
-    return colorMap[badgeType] || '#212121';
-}
-
-// Function to initialize badge configurations when the page loads
-async function initializeBadgeConfigurations() {
-    await fetchBadgeConfigurations();
-    console.log('Badge configurations initialized');
-}
-
-// Function to load user purchase history
-async function loadUserPurchaseHistory() {
-    try {
-        const userId = getCurrentUserId();
-        if (!userId) {
-            displayMessage('Vui lòng đăng nhập để xem lịch sử mua hàng', 'error');
-            return;
-        }
-        
-        // Removed /api prefix for consistency
-        const response = await fetchData(`/users/${userId}/purchases`);
-        if (!response || !response.purchases) {
-            throw new Error('Invalid response format');
-        }
-        
-        displayPurchaseHistory(response.purchases);
-    } catch (error) {
-        console.error('Failed to load purchase history:', error);
-        displayMessage('Không thể tải lịch sử mua hàng. Vui lòng thử lại sau.', 'error');
-    }
-}
-
-// Function to display purchase history
-function displayPurchaseHistory(purchases) {
-    const container = document.getElementById('purchase-history-container');
-    if (!container) return;
-    
-    container.innerHTML = ''; // Clear container
-    
-    if (purchases.length === 0) {
-        container.innerHTML = '<div class="empty-state">Bạn chưa có giao dịch nào.</div>';
-        return;
-    }
-    
-    purchases.forEach(purchase => {
-        const purchaseElement = document.createElement('div');
-        purchaseElement.className = 'purchase-history-item';
-        
-        let purchaseDetails = '';
-        if (purchase.type === 'account') {
-            purchaseDetails = `
-                <div class="purchase-detail">
-                    <span class="label">Account:</span>
-                    <span class="value">${escapeHtml(purchase.account || '')}</span>
-                </div>
-                <div class="purchase-detail">
-                    <span class="label">Password:</span>
-                    <span class="value password-value">${escapeHtml(purchase.password || '')}</span>
-                </div>
-            `;
-        } else if (purchase.type === 'code') {
-            purchaseDetails = `
-                <div class="purchase-detail">
-                    <span class="label">Code:</span>
-                    <span class="value code-value">${escapeHtml(purchase.code || '')}</span>
-                </div>
-            `;
-        }
-        
-        purchaseElement.innerHTML = `
-            <div class="purchase-header">
-                <span class="purchase-date">${formatDate(purchase.purchaseDate)}</span>
-                <span class="purchase-price">-${formatPrice(purchase.price)}</span>
-            </div>
-            <div class="purchase-body">
-                <div class="purchase-detail">
-                    <span class="label">Product UID:</span>
-                    <span class="value">${escapeHtml(purchase.productId || '')}</span>
-                </div>
-                <div class="purchase-detail">
-                    <span class="label">Product Name:</span>
-                    <span class="value">${escapeHtml(purchase.productName || '')}</span>
-                </div>
-                ${purchaseDetails}
-                <div class="purchase-detail">
-                    <span class="label">Description:</span>
-                    <span class="value">${escapeHtml(purchase.description || '')}</span>
-                </div>
-            </div>
-        `;
-        
-        container.appendChild(purchaseElement);
-    });
-}
-
-// Function to load top depositors (for homepage)
-async function loadTopDepositors() {
-    try {
-        const container = document.getElementById('top-depositors-container');
-        if (!container) return;
-        
-        // Removed /api prefix for consistency
-        const response = await fetchData('/stats/top-depositors');
-        if (!response || !response.topDepositors) {
-            throw new Error('Invalid response format');
-        }
-        
-        const topDepositors = response.topDepositors;
-        container.innerHTML = ''; // Clear container
-        
-        topDepositors.forEach((user, index) => {
-            const listItem = document.createElement('div');
-            listItem.className = 'top-depositor-item';
-            
-            // Mask username - show first 2 chars and last 2 chars
-            const maskedUsername = maskUsername(user.username);
-            
-            listItem.innerHTML = `
-                <span class="rank">${index + 1}.</span>
-                <span class="username">${maskedUsername}</span>
-                <span class="amount">${formatPrice(user.totalDeposits)}</span>
-            `;
-            
-            container.appendChild(listItem);
-        });
-    } catch (error) {
-        console.error('Failed to load top depositors:', error);
-    }
-}
-
-// Function to load recent transactions (deposits and purchases)
-async function loadRecentTransactions() {
-    try {
-        const depositsContainer = document.getElementById('recent-deposits-container');
-        const purchasesContainer = document.getElementById('recent-purchases-container');
-        
-        if (!depositsContainer && !purchasesContainer) return;
-        
-        // Removed /api prefix for consistency
-        const response = await fetchData('/stats/recent-transactions');
-        if (!response) {
-            throw new Error('Invalid response format');
-        }
-        
-        // Display recent deposits if container exists
-        if (depositsContainer && response.recentDeposits) {
-            depositsContainer.innerHTML = '';
-            
-            response.recentDeposits.forEach(deposit => {
-                const listItem = document.createElement('div');
-                listItem.className = 'recent-transaction-item';
-                
-                const maskedUsername = maskUsername(deposit.username);
-                
-                listItem.innerHTML = `
-                    <span class="username">${maskedUsername}</span>
-                    <span class="action">đã nạp</span>
-                    <span class="amount">+${formatPrice(deposit.amount)}</span>
-                `;
-                
-                depositsContainer.appendChild(listItem);
-            });
-        }
-        
-        // Display recent purchases if container exists
-        if (purchasesContainer && response.recentPurchases) {
-            purchasesContainer.innerHTML = '';
-            
-            response.recentPurchases.forEach(purchase => {
-                const listItem = document.createElement('div');
-                listItem.className = 'recent-transaction-item';
-                
-                const maskedUsername = maskUsername(purchase.username);
-                
-                listItem.innerHTML = `
-                    <span class="username">${maskedUsername}</span>
-                    <span class="action">đã mua</span>
-                    <span class="product">${escapeHtml(purchase.productName)}</span>
-                    <span class="amount">-${formatPrice(purchase.amount)}</span>
-                `;
-                
-                purchasesContainer.appendChild(listItem);
-            });
-        }
-    } catch (error) {
-        console.error('Failed to load recent transactions:', error);
-    }
-}
-
-// Utility function to mask username
-function maskUsername(username) {
-    if (!username || username.length < 4) return username;
-    
-    const firstChars = username.substring(0, 3);
-    const lastChars = username.substring(username.length - 2);
-    const maskedPart = '*'.repeat(username.length - 5);
-    
-    return firstChars + maskedPart + lastChars;
-}
